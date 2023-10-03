@@ -1,0 +1,9 @@
+﻿  App.cpp
+C:\Users\omerd\Downloads\YS\c++\Vergodt Engine\GUI\src\App.cpp(123,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\omerd\Downloads\YS\c++\Vergodt Engine\GUI\src\App.cpp(186,17): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  Generating code
+  1494 of 4142 functions (36.1%) were compiled, the rest were copied from previous compilation.
+    128 functions were new in current compilation
+    247 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  example_sdl2_vulkan.vcxproj -> C:\Users\omerd\Downloads\YS\c++\Vergodt Engine\GUI\Release\GUI.exe
