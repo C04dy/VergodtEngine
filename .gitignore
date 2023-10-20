@@ -1,10 +1,2 @@
 VergodtEngine
-obj/BaseScene.o
-obj/BoxCollider.o
-obj/CircleCollider.o
-obj/Engine.o
-obj/main.o
-obj/Node.o
-obj/PhysicsBody.o
-obj/Scene.o
-obj/Sprite.o
+obj
