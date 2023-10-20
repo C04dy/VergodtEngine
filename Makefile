@@ -1,9 +1,13 @@
 CC = g++
 CXXFLAGS = -std=c++11 -Wall
 
-program_LIBRARIES := SDL2 SDL2_image box2d
+SDL2_LIB := libs/SDL2/libs/libSDL2.a
+SDL2_IMAGE_LIB := libs/SDL2/libs/libSDL2_image.so
+BOX2D_LIB := libs/Box2D/libs/libbox2d.a
 
-LDFLAGS += $(foreach library,$(program_LIBRARIES),-l$(library))
+LDFLAGS += $(SDL2_LIB)
+LDFLAGS += $(SDL2_IMAGE_LIB)
+LDFLAGS += $(BOX2D_LIB)
 
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
