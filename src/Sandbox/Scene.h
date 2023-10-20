@@ -30,7 +30,6 @@ private:
 	Sprite Grounds;
 	PhysicsBody Groundp;
 	BoxCollider Groundb;
-
 };
 
 #endif

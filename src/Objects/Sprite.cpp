@@ -24,7 +24,7 @@ void Sprite::DrawImage()
     SDL_Rect srcRect = { 0, 0, m_w, m_h };
     SDL_Rect dstRect = { (Transform.Position.x - m_w * Transform.Size.x / 2) + m_cam->Transform.Position.x - LocalPosition.x
                              , (Transform.Position.y - m_h * Transform.Size.y / 2) - m_cam->Transform.Position.y - LocalPosition.y
-                                    , m_w * Transform.Size.y, m_h * Transform.Size.y};
+                                    , m_w * Transform.Size.x, m_h * Transform.Size.y};
     SDL_RenderCopyEx(m_renderer, m_texture, &srcRect, &dstRect, Transform.Angle, nullptr, SDL_FLIP_NONE);
 }
 

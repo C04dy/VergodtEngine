@@ -19,6 +19,9 @@ void Engine::EngineStart(BaseScene* S)
 
     m_physicsworld = new b2World({ 0.0f, 9.8f });
 
+    m_physicsworld->SetWarmStarting(true);
+    m_physicsworld->SetContinuousPhysics(true);
+
     unsigned int StartTime = SDL_GetTicks();
     unsigned int EndTime = SDL_GetTicks();
     double delta = 0;
@@ -43,27 +46,21 @@ void Engine::EngineStart(BaseScene* S)
         scene->Update(delta / 1000);
 
         m_physicsworld->Step(1.0f / 480.0f, velocityIterations, positionIterations);
+        if (delta > 1000 / 60)
+        {
+            EndTime = StartTime;
+        }
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         scene->Draw();
         SDL_RenderPresent(renderer);
-
-        if (delta > 1000 / 60)
-        {
-            //std::cout << "fps: " << 1000 / delta << std::endl;
-
-            EndTime = StartTime;
-        }
-
     }
 
     scene->Clean();
 
     delete m_physicsworld;
     m_physicsworld = nullptr;
-    delete scene;
-    scene = nullptr;
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
