@@ -9,7 +9,7 @@ void PhysicsBody::InitPhysicsBody(b2World* w, Collider* col, b2BodyType bt)
 	m_physicsbodydef.position = Transform.Position;
 	m_physicsbody = w->CreateBody(&m_physicsbodydef);
 	if(bt == b2BodyType::b2_dynamicBody){
-		m_physicsbody->CreateFixture(col->GetCollider(), 100);
+		m_physicsbody->CreateFixture(col->GetCollider(), 1.0f);
 	}else{
 		m_physicsbody->CreateFixture(col->GetCollider(), 0.0f);
 	}

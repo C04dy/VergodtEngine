@@ -2,5 +2,6 @@
 
 void CircleCollider::InitCircleCollider()
 {
-	m_collisionshapecircle.m_radius = Radious;
+	m_collisionshapecircle.m_radius = Radius;
+	//m_fixturedef.shape = &m_collisionshapecircle;
 }

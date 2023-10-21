@@ -29,6 +29,7 @@ void Engine::EngineStart(BaseScene* S)
     scene->SetRenderer(renderer);
     scene->SetPhysicsWorld(m_physicsworld);
     scene->Start();
+    std::cout << "Started" << std::endl;
     while (IsRunning()) {
         StartTime = SDL_GetTicks();
         delta = StartTime - EndTime;

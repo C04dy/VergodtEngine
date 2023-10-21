@@ -11,6 +11,7 @@
 #include "Objects/Sprite.h"
 #include "Objects/PhysicsBody.h"
 #include "Objects/BoxCollider.h"
+#include "Objects/CircleCollider.h"
 
 class Scene : public BaseScene
 {
@@ -30,6 +31,15 @@ private:
 	Sprite Grounds;
 	PhysicsBody Groundp;
 	BoxCollider Groundb;
+
+	Sprite Cirs;
+	PhysicsBody Cirp;
+	CircleCollider Cirb;
+
+	b2CircleShape shape;
+	b2BodyDef bd;
+	b2Body* m_bodies;
+
 };
 
 #endif
