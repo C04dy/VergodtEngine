@@ -16,46 +16,48 @@ void Engine::EngineStart(BaseScene* S)
 
 	int32 velocityIterations = 6;
 	int32 positionIterations = 2;
+    double timeStep = 1.0f / 480.0f;
 
     m_physicsworld = new b2World({ 0.0f, 9.8f });
 
     m_physicsworld->SetWarmStarting(true);
     m_physicsworld->SetContinuousPhysics(true);
 
-    unsigned int StartTime = SDL_GetTicks();
-    unsigned int EndTime = SDL_GetTicks();
+    unsigned int StartTime = SDL_GetPerformanceCounter();
+    unsigned int EndTime = 0;
     double delta = 0;
 
     scene->SetRenderer(renderer);
     scene->SetPhysicsWorld(m_physicsworld);
     scene->Start();
-    std::cout << "Started" << std::endl;
-    while (IsRunning()) {
-        StartTime = SDL_GetTicks();
-        delta = StartTime - EndTime;
 
-        while (SDL_PollEvent(&e) > 0)
-        {
+    while (IsRunning()) {
+        EndTime = StartTime;
+        StartTime = SDL_GetPerformanceCounter();
+        delta = (double)((StartTime - EndTime)*1000 / (double)SDL_GetPerformanceFrequency() );
+
+        while (SDL_PollEvent(&e) > 0) {
             switch (e.type)
             {
             case SDL_QUIT:
                 SetRunning(false);
                 break;
+            case SDL_KEYUP:
+                break;
+            case SDL_KEYDOWN:
+                break;
             }
         }
 
-        scene->Update(delta / 1000);
+        scene->Update(delta);
 
-        m_physicsworld->Step(1.0f / 480.0f, velocityIterations, positionIterations);
-        if (delta > 1000 / 60)
-        {
-            EndTime = StartTime;
-        }
+        m_physicsworld->Step(timeStep, velocityIterations, positionIterations);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         scene->Draw();
         SDL_RenderPresent(renderer);
+        //if (delta > 1000 / 60) { }
     }
 
     scene->Clean();

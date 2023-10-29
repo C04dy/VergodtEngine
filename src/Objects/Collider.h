@@ -6,6 +6,8 @@ class Collider : public Node
 {
 public:
 	virtual b2Shape* GetCollider() { return nullptr; }
-	virtual b2FixtureDef* GetFixture() { return nullptr; }
+	b2FixtureDef* GetFixture() { return &m_fixturedef; }
+protected:
+	b2FixtureDef m_fixturedef;
 };
 

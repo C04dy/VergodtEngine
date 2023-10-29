@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS = -std=c++11 -Wall
+CXXFLAGS = -std=c++11 -Wall -O3
 
 SDL2_LIB := libs/SDL2/libs/libSDL2.a
 SDL2_IMAGE_LIB := libs/SDL2/libs/libSDL2_image.so

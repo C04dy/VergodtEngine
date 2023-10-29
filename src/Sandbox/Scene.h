@@ -16,6 +16,9 @@
 class Scene : public BaseScene
 {
 public:
+	Scene();
+	~Scene();
+
     void Start();
 	void Update(double dt);
 	void Draw();
@@ -36,10 +39,13 @@ private:
 	PhysicsBody Cirp;
 	CircleCollider Cirb;
 
+	Sprite Groundss;
+	PhysicsBody Groundpp;
+	BoxCollider Groundbb;
+
 	b2CircleShape shape;
 	b2BodyDef bd;
 	b2Body* m_bodies;
-
 };
 
 #endif
