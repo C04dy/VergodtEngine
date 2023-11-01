@@ -12,7 +12,7 @@ set_property(TARGET SDL2_image PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE
 add_library(Box2D STATIC IMPORTED)
 set_property(TARGET Box2D PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/Box2D/lib/libbox2d.a)
 
-file(GLOB SRCS "src/*.cpp" "src/Engine/*.cpp" "src/Objects/*.cpp" "src/Sandbox/*.cpp")
+file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Objects/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
 

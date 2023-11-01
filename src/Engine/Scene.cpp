@@ -1,22 +1,13 @@
 #include "Scene.h"
-#include <string>
 
-template <typename T>
-void Print(T log)
-{
-    std::cout << log << "\n";
-}
-
-Scene::Scene()
-{
+Scene::Scene(){
+    SetGameName("VergodtEngineGame");
     SetWindowsWidth(1280);
     SetWindowsHeight(720);
-    SetGameName("VergodtEngineGameHello");
 }
 
-Scene::~Scene()
-{
-
+Scene::~Scene(){
+    
 }
 
 void Scene::Start()
