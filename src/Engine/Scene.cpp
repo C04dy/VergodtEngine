@@ -23,7 +23,7 @@ void Scene::Start()
 {
     s.SetRenderer(Renderer);
     s.SetCam(&cam);
-    s.LoadImage("Assets/Test1.png");
+    s.LoadImage("Assets/Test1.png"); 
     
     b.ColliderSize = Vector2(100, 100);
     b.InitBoxCollider();

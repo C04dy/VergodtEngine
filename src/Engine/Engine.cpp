@@ -1,12 +1,12 @@
 #include "Engine.h"
 #include <box2d/b2_world.h>
 
-void Engine::EngineStart(BaseScene* S)
+void Engine::EngineStart()
 {
     SDL_SetMainReady();
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    BaseScene* scene = S;
+    Scene* scene = new Scene;
 
     SDL_Window* window = SDL_CreateWindow(scene->GetGameName().c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scene->GetWindowWidth(), scene->GetWindowHeight(), 0);
 
@@ -64,6 +64,9 @@ void Engine::EngineStart(BaseScene* S)
 
     delete m_physicsworld;
     m_physicsworld = nullptr;
+
+    delete scene;
+    scene = nullptr;
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
