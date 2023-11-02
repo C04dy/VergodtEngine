@@ -1,12 +1,12 @@
 #include "Engine.h"
 #include <box2d/b2_world.h>
 
-void Engine::EngineStart()
+void Engine::EngineStart(BaseScene* S)
 {
     SDL_SetMainReady();
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    Scene* scene = new Scene;
+    BaseScene* scene = S;
 
     SDL_Window* window = SDL_CreateWindow(scene->GetGameName().c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scene->GetWindowWidth(), scene->GetWindowHeight(), 0);
 
