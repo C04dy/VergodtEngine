@@ -1,12 +1,12 @@
 #include "Engine.h"
 #include <box2d/b2_world.h>
 
-void Engine::EngineStart()
+void Engine::EngineStart(BaseScene* S)
 {
     SDL_SetMainReady();
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    Scene* scene = new Scene;
+    BaseScene* scene = S;
 
     SDL_Window* window = SDL_CreateWindow(scene->GetGameName().c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scene->GetWindowWidth(), scene->GetWindowHeight(), 0);
 
@@ -16,7 +16,7 @@ void Engine::EngineStart()
 
 	int32 velocityIterations = 6;
 	int32 positionIterations = 2;
-    double timeStep = 1.0f / 480.0f;
+    double timeStep = 1.0f / 60.0f;
 
     m_physicsworld = new b2World({ 0.0f, 9.8f });
 
@@ -51,7 +51,7 @@ void Engine::EngineStart()
 
         scene->Update(delta);
 
-        m_physicsworld->Step(timeStep, velocityIterations, positionIterations);
+        m_physicsworld->Step(timeStep * delta, velocityIterations, positionIterations);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
@@ -64,9 +64,6 @@ void Engine::EngineStart()
 
     delete m_physicsworld;
     m_physicsworld = nullptr;
-
-    delete scene;
-    scene = nullptr;
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

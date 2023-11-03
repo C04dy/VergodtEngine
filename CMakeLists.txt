@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.27.7)
 
 project(VergodtEngine)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_compile_options(-O3 -Wall)
+
 add_library(SDL2 STATIC IMPORTED)
 set_property(TARGET SDL2 PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL2/lib/libSDL2.a)
 

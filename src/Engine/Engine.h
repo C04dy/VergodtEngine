@@ -4,15 +4,14 @@
 #include <SDL2/SDL_image.h>
 #include <iostream>
 #include <string>
-
-#include "Scene.h"
+#include "BaseScene.h"
 
 class b2World;
 
 class Engine
 {
 public:
-	void EngineStart();
+	void EngineStart(BaseScene* S);
 
 	bool IsRunning() { return m_running; }
 	void SetRunning(bool running) { m_running = running; }

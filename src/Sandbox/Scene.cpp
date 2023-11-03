@@ -23,7 +23,7 @@ void Scene::Start()
 {
     s.SetRenderer(Renderer);
     s.SetCam(&cam);
-    s.LoadImage("Assets/Test1.png"); 
+    s.LoadImage("Assets/Test1.png");
     
     b.ColliderSize = Vector2(100, 100);
     b.InitBoxCollider();
@@ -71,7 +71,6 @@ void Scene::Start()
     Cirb.InitCircleCollider();
     Cirp.Transform.Position = Vector2(250, 250);
     Cirp.InitPhysicsBody(PhysicsWorld, &Cirb, b2BodyType::b2_dynamicBody);
-
 
     Cirp.AddChild(&Cirs);
     Cirp.AddChild(&Cirb);

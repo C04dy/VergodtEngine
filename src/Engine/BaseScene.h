@@ -2,24 +2,15 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
-#include "Objects/Camera.h"
-#include "Objects/Sprite.h"
-#include "Objects/PhysicsBody.h"
-#include "Objects/BoxCollider.h"
-#include "Objects/CircleCollider.h"
-
 class b2World;
 
-class Scene
+class BaseScene
 {
 public:
-	Scene();
-	~Scene();
-
-	void Start();
-	void Update(double dt);
-	void Draw();
-	void Clean();
+	virtual void Start();
+	virtual void Update(double dt);
+	virtual void Draw();
+	virtual void Clean();
 
 	void SetRenderer(SDL_Renderer* r) { Renderer = r; }
 	void SetPhysicsWorld(b2World* w) { PhysicsWorld = w; }
@@ -42,26 +33,4 @@ private:
 
 	int m_windowwidth = 1280, m_windowheight = 720;
 
-private:
-	Camera cam;
-	
-	Sprite s;
-	PhysicsBody p;
-	BoxCollider b;
-
-	Sprite Grounds;
-	PhysicsBody Groundp;
-	BoxCollider Groundb;
-
-	Sprite Cirs;
-	PhysicsBody Cirp;
-	CircleCollider Cirb;
-
-	Sprite Groundss;
-	PhysicsBody Groundpp;
-	BoxCollider Groundbb;
-
-	b2CircleShape shape;
-	b2BodyDef bd;
-	b2Body* m_bodies;
 };

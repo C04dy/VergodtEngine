@@ -14,7 +14,7 @@ public:
 	struct{
 		Vector2 Position = Vector2(0, 0);
 		Vector2 Size = Vector2(1, 1);
-		float Angle;
+		float Angle = 0;
 	}Transform;
 
 	void AddChild(Node* c);
