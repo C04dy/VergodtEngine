@@ -10,7 +10,7 @@ cd SDL
 mkdir include
 mkdir lib
 cd include
-mkdir SDL
+mkdir SDL3
 cd ../..
 mkdir Box2D
 cd Box2D
@@ -31,7 +31,7 @@ copy libSDL3.a %dir%\libs\SDL\lib
 copy libSDL3.dll.a %dir%\libs\SDL\lib
 copy SDL3.dll %dir%\build
 cd ../include
-robocopy SDL3 %dir%\libs\SDL\include\SDL
+robocopy SDL3 %dir%\libs\SDL\include\SDL3
 
 cd %dir%
 
@@ -47,7 +47,7 @@ copy libSDL3_image.a %dir%\libs\SDL\lib
 copy libSDL3_image.dll.a %dir%\libs\SDL\lib
 copy SDL3_image.dll %dir%\build
 cd ../include
-robocopy SDL3_image %dir%\libs\SDL\include\SDL
+robocopy SDL3_image %dir%\libs\SDL\include\SDL3
 
 cd %dir%
 
