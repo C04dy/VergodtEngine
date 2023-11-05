@@ -1,7 +1,6 @@
 #include "PolygonCollider.h"
 
-void PolygonCollider::InitPolygonCollider(int32 PolygonCount)
+void PolygonCollider::InitPolygonCollider(Vector2 Polygons[], int32 PolygonCount)
 {
-    m_polygoncount = PolygonCount;
-    m_collisionshape.Set(nullptr , m_polygoncount);
+    m_collisionshape.Set(Polygons, PolygonCount);
 }

@@ -74,6 +74,22 @@ void Scene::Start()
 
     Cirp.AddChild(&Cirs);
     Cirp.AddChild(&Cirb);
+
+    Polys.SetRenderer(Renderer);
+    Polys.SetCam(&cam);
+    Polys.LoadImage("Assets/Test3.png");
+
+    Vector2 pols[3];
+    pols[0].Set(0.0f, -50.0f);
+    pols[1].Set(50.0f, 50.0f);
+    pols[2].Set(-50.0f, 50.0f);
+
+    Polyc.InitPolygonCollider(pols, sizeof(pols)/sizeof(pols[0]));
+    Polyp.Transform.Position = Vector2(250, 0);
+    Polyp.InitPhysicsBody(PhysicsWorld, &Polyc, b2BodyType::b2_dynamicBody);
+
+    Polyp.AddChild(&Polys);
+    Polyp.AddChild(&Polyc);
 }
 
 void Scene::Update(double dt)
@@ -82,11 +98,15 @@ void Scene::Update(double dt)
     Groundp.UpdatePhysicsNode();
     Groundpp.UpdatePhysicsNode();
     Cirp.UpdatePhysicsNode();
-    
+    Polyp.UpdatePhysicsNode();
+
+    //Print(Groundp.Transform.Position.y);
+
     p.UpdateChild();
     Groundp.UpdateChild();
     Groundpp.UpdateChild();  
     Cirp.UpdateChild();
+    Polyp.UpdateChild();
 }
 
 void Scene::Draw()
@@ -95,6 +115,7 @@ void Scene::Draw()
     Groundss.DrawImage();
     s.DrawImage();
     Cirs.DrawImage();
+    Polys.DrawImage();
 }
 
 void Scene::Clean()
@@ -103,4 +124,5 @@ void Scene::Clean()
     Groundss.CleanImage();
     s.CleanImage();
     Cirs.CleanImage();
+    Polys.CleanImage();
 }

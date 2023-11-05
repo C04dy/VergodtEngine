@@ -3,4 +3,3 @@
 class Camera : public Node
 {
 };
-

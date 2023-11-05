@@ -8,11 +8,10 @@
 class PolygonCollider : public Collider
 {
 public:
-    void InitPolygonCollider(int32 PolygonCount);
+    void InitPolygonCollider(Vector2 Polygons[], int32 PolygonCount);
 	b2Shape* GetCollider() { return &m_collisionshape; }
 private:
     b2PolygonShape m_collisionshape;
-    int32 m_polygoncount;
 };
 
 #endif

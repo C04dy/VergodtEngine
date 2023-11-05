@@ -10,7 +10,7 @@ class Sprite : public Node
 public:
 	void LoadImage(std::string FilePath);
 
-	void DrawImage();
+	void DrawImage(); 
 
 	void CleanImage();
 
