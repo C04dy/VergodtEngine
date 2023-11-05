@@ -3,7 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
+                "${workspaceFolder}/libs/Box2D/include",
+                "${workspaceFolder}/libs/SDL/include",
                 "${workspaceFolder}/src"
             ],
             "defines": [],

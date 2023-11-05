@@ -1,16 +1,29 @@
 #include "Engine.h"
+#include "Scene.h"
 #include <box2d/b2_world.h>
 
 void Engine::EngineStart()
 {
-    SDL_SetMainReady();
-    SDL_Init(SDL_INIT_EVERYTHING);
-
     Scene* scene = new Scene;
 
-    SDL_Window* window = SDL_CreateWindow(scene->GetGameName().c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scene->GetWindowWidth(), scene->GetWindowHeight(), 0);
+    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+        SDL_Log("SDL_Init failed (%s)", SDL_GetError());
+        return;
+    }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+    SDL_Window* window = nullptr;
+
+    SDL_Renderer* renderer = nullptr;
+
+    if (SDL_CreateWindowAndRenderer(scene->GetWindowWidth(), scene->GetWindowHeight(), SDL_WindowFlags::SDL_WINDOW_VULKAN, &window, &renderer) < 0) {
+        SDL_Log("SDL_CreateWindowAndRenderer failed (%s)", SDL_GetError());
+        SDL_Quit();
+        return ;
+    }
+    SDL_SetWindowTitle(window, scene->GetGameName().c_str());
+
+    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
 
     SDL_Event e;
 
@@ -39,12 +52,12 @@ void Engine::EngineStart()
         while (SDL_PollEvent(&e) > 0) {
             switch (e.type)
             {
-            case SDL_QUIT:
+            case SDL_EVENT_QUIT:
                 SetRunning(false);
                 break;
-            case SDL_KEYUP:
+            case SDL_EVENT_KEY_UP:
                 break;
-            case SDL_KEYDOWN:
+            case SDL_EVENT_KEY_DOWN:
                 break;
             }
         }

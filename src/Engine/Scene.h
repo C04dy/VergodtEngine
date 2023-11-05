@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include <SDL2/SDL.h>
+#include <SDL/SDL.h>
 
 #include "Objects/Camera.h"
 #include "Objects/Sprite.h"
@@ -17,10 +17,10 @@ public:
 	Scene();
 	~Scene();
 
-	virtual void Start();
-	virtual void Update(double dt);
-	virtual void Draw();
-	virtual void Clean();
+	void Start();
+	void Update(double dt);
+	void Draw();
+	void Clean();
 
 	void SetRenderer(SDL_Renderer* r) { Renderer = r; }
 	void SetPhysicsWorld(b2World* w) { PhysicsWorld = w; }
