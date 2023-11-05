@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include <SDL/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "Objects/Camera.h"
 #include "Objects/Sprite.h"

@@ -1,7 +1,7 @@
 #pragma once
 #define SDL_MAIN_HANDLED
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_image.h>
 #include <iostream>
 #include <string>
 
