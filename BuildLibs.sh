@@ -1,5 +1,4 @@
 mkdir build
-cp -r Assets ./build
 
 mkdir libs
 cd ./libs

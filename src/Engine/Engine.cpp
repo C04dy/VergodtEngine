@@ -59,6 +59,10 @@ void Engine::EngineStart()
                 break;
             case SDL_EVENT_KEY_DOWN:
                 break;
+            case SDL_EVENT_MOUSE_MOTION:
+                scene->mx = e.motion.x;
+                scene->my = e.motion.y;
+                break;
             }
         }
 

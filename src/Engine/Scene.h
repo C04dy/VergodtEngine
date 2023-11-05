@@ -1,5 +1,7 @@
 #pragma once
 #include <iostream>
+#include <fstream>
+#include <vector>
 #include <SDL3/SDL.h>
 
 #include "Objects/Camera.h"
@@ -8,6 +10,7 @@
 #include "Objects/BoxCollider.h"
 #include "Objects/CircleCollider.h"
 #include "Objects/PolygonCollider.h"
+#include "Objects/Node.h"
 
 class b2World;
 
@@ -33,6 +36,8 @@ public:
 
 	void SetWindowsWidth(int w) { m_windowwidth = w; }
 	void SetWindowsHeight(int h) { m_windowheight = h; }
+
+	float mx, my;
 
 protected:
 	SDL_Renderer* Renderer;
@@ -66,4 +71,6 @@ private:
 	PhysicsBody Polyp;
 	PolygonCollider Polyc;
 
+	std::vector<Node*> Nodes;
+	
 };

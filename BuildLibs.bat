@@ -1,7 +1,6 @@
 SET Dir=%cd%
 
 mkdir build
-robocopy Assets %dir%\build\Assets
 
 mkdir libs
 cd libs

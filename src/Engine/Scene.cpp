@@ -7,6 +7,16 @@ void Print(T log)
     std::cout << log << "\n";
 }
 
+enum NodeType {
+    Null,
+    NODE
+};
+
+NodeType GetNodeType (std::string const& inString) {
+    if (inString == "NODE") return NODE;
+    return Null;
+}
+
 Scene::Scene()
 {
     SetWindowsWidth(1280);
@@ -23,8 +33,8 @@ void Scene::Start()
 {
     s.SetRenderer(Renderer);
     s.SetCam(&cam);
-    s.LoadImage("Assets/Test1.png");
-    
+    s.LoadImage("../Assets/Test1.png");
+
     b.ColliderSize = Vector2(100, 100);
     b.InitBoxCollider();
 
@@ -37,7 +47,7 @@ void Scene::Start()
 
     Grounds.SetRenderer(Renderer);
     Grounds.SetCam(&cam);
-    Grounds.LoadImage("Assets/Test1.png");
+    Grounds.LoadImage("../Assets/Test1.png");
     Grounds.Transform.Size.x = 3;
 
     Groundb.ColliderSize = Vector2(300, 100);
@@ -51,7 +61,7 @@ void Scene::Start()
 
     Groundss.SetRenderer(Renderer);
     Groundss.SetCam(&cam);
-    Groundss.LoadImage("Assets/Test1.png");
+    Groundss.LoadImage("../Assets/Test1.png");
     Groundss.Transform.Size.x = 3;
 
     Groundbb.ColliderSize = Vector2(300, 100);
@@ -65,7 +75,7 @@ void Scene::Start()
 
     Cirs.SetRenderer(Renderer);
     Cirs.SetCam(&cam);
-    Cirs.LoadImage("Assets/Test2.png");
+    Cirs.LoadImage("../Assets/Test2.png");
 
     Cirb.Radius = 50;
     Cirb.InitCircleCollider();
@@ -77,7 +87,7 @@ void Scene::Start()
 
     Polys.SetRenderer(Renderer);
     Polys.SetCam(&cam);
-    Polys.LoadImage("Assets/Test3.png");
+    Polys.LoadImage("../Assets/Test3.png");
 
     Vector2 pols[3];
     pols[0].Set(0.0f, -50.0f);
@@ -90,6 +100,28 @@ void Scene::Start()
 
     Polyp.AddChild(&Polys);
     Polyp.AddChild(&Polyc);
+
+    std::string Text;
+
+    std::ifstream SceneFile("../Assets/test.vscene"); 
+
+    while (std::getline(SceneFile, Text)) {
+
+        switch (GetNodeType(Text.substr((Text.find("[") + 10), (Text.find("]") - (Text.find("[") + 10)))))
+        {
+        case NodeType::Null:
+            break;
+        case NodeType::NODE:
+            Nodes.push_back(new Node);
+            std::string pos = Text.substr(Text.find("[POSITION(") + 10, Text.find("]", Text.find("[POSITION(")) - (Text.find("[POSITION(") + 11));
+            float PosX = std::stof(pos.substr(0, pos.find(",")));
+            float PosY = std::stof(pos.substr(pos.find(",") + 1, pos.length() - pos.find(",")));
+            Nodes[Nodes.size() - 1]->Transform.Position.Set(PosX, PosY);
+            break;
+        }
+    }
+
+    SceneFile.close();
 }
 
 void Scene::Update(double dt)
@@ -100,11 +132,9 @@ void Scene::Update(double dt)
     Cirp.UpdatePhysicsNode();
     Polyp.UpdatePhysicsNode();
 
-    //Print(Groundp.Transform.Position.y);
-
     p.UpdateChild();
     Groundp.UpdateChild();
-    Groundpp.UpdateChild();  
+    Groundpp.UpdateChild();
     Cirp.UpdateChild();
     Polyp.UpdateChild();
 }
@@ -125,4 +155,11 @@ void Scene::Clean()
     s.CleanImage();
     Cirs.CleanImage();
     Polys.CleanImage();
+
+    for (int i = 0; i < (int)Nodes.size(); i++)
+    {
+        delete Nodes[i];
+        Nodes[i] = nullptr;
+    }
+    
 }
