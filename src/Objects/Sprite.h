@@ -22,5 +22,5 @@ private:
 	SDL_Texture* m_texture;
 	SDL_Renderer* m_renderer;
 	Camera* m_cam;
-	int m_w, m_h;
+	float m_w, m_h;
 };
