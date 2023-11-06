@@ -62,7 +62,7 @@ void Scene::Start()
 {
     Grounds.SetRenderer(Renderer);
     Grounds.SetCam(&cam);
-    Grounds.LoadImage("../Assets/Test1.png");
+    Grounds.LoadImage("Assets/Test1.png");
     Grounds.Transform.Size.x = 3;
 
     Groundb.ColliderSize = Vector2(300, 100);
@@ -76,7 +76,7 @@ void Scene::Start()
 
     Polys.SetRenderer(Renderer);
     Polys.SetCam(&cam);
-    Polys.LoadImage("../Assets/Test3.png");
+    Polys.LoadImage("Assets/Test3.png");
 
     Vector2 pols[3];
     pols[0].Set(0.0f, -50.0f);
@@ -93,7 +93,7 @@ void Scene::Start()
 
     std::string Line;
 
-    std::ifstream SceneFile("../Assets/test.vscene"); 
+    std::ifstream SceneFile("Assets/test.vscene"); 
 
     while (std::getline(SceneFile, Line)) {
 
