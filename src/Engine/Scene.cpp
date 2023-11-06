@@ -9,12 +9,41 @@ void Print(T log)
 
 enum NodeType {
     Null,
-    NODE
+    NODE,
+    SPRITE,
+    CAM
 };
 
-NodeType GetNodeType (std::string const& inString) {
+NodeType GetNodeType (std::string const& inString) 
+{
     if (inString == "NODE") return NODE;
+    if (inString == "SPRITE") return SPRITE;
+    if (inString == "CAMERA") return CAM;
     return Null;
+}
+
+void SetNode(Node* node, std::string Line)
+{
+    std::string pos = Line.substr(Line.find("[POSITION(") + 10, Line.find("]", Line.find("[POSITION(")) - (Line.find("[POSITION(") + 11));
+    float PosX = std::stof(pos.substr(0, pos.find(",")));
+    float PosY = std::stof(pos.substr(pos.find(",") + 1, pos.length() - pos.find(",")));
+    node->Transform.Position.Set(PosX, PosY);
+
+    std::string size = Line.substr(Line.find("[SIZE(") + 6, Line.find("]", Line.find("[SIZE(")) - (Line.find("[SIZE(") + 7));
+    float sizeX = std::stof(size.substr(0, size.find(",")));
+    float sizeY = std::stof(size.substr(size.find(",") + 1, size.length() - size.find(",")));
+    node->Transform.Size.Set(sizeX, sizeY);
+
+    std::string ang = Line.substr(Line.find("[ANGLE(") + 7, Line.find("]", Line.find("[ANGLE(")) - (Line.find("[ANGLE(") + 8));
+    float angle = std::stof(ang);
+    node->Transform.Angle = angle;
+
+    std::string child = Line.substr(Line.find("[CHILD=") + 7, Line.find("]", Line.find("[CHILD=")) - (Line.find("[CHILD=") + 7));
+    if(child == "TRUE"){
+        Print("have");
+    }else {
+        Print("Do not have");
+    }
 }
 
 Scene::Scene()
@@ -31,20 +60,6 @@ Scene::~Scene()
 
 void Scene::Start()
 {
-    s.SetRenderer(Renderer);
-    s.SetCam(&cam);
-    s.LoadImage("../Assets/Test1.png");
-
-    b.ColliderSize = Vector2(100, 100);
-    b.InitBoxCollider();
-
-    p.Transform.Position = Vector2(250, 400);
-    p.Transform.Angle = 44;
-    p.InitPhysicsBody(PhysicsWorld, &b, b2_dynamicBody);
-
-    p.AddChild(&b);
-    p.AddChild(&s);
-
     Grounds.SetRenderer(Renderer);
     Grounds.SetCam(&cam);
     Grounds.LoadImage("../Assets/Test1.png");
@@ -53,37 +68,11 @@ void Scene::Start()
     Groundb.ColliderSize = Vector2(300, 100);
     Groundb.InitBoxCollider();
 
-    Groundp.Transform.Position = Vector2(550, 700);
+    Groundp.Transform.Position = Vector2(250, 650);
     Groundp.InitPhysicsBody(PhysicsWorld, &Groundb, b2BodyType::b2_staticBody);
 
     Groundp.AddChild(&Groundb);
     Groundp.AddChild(&Grounds);
-
-    Groundss.SetRenderer(Renderer);
-    Groundss.SetCam(&cam);
-    Groundss.LoadImage("../Assets/Test1.png");
-    Groundss.Transform.Size.x = 3;
-
-    Groundbb.ColliderSize = Vector2(300, 100);
-    Groundbb.InitBoxCollider();
-
-    Groundpp.Transform.Position = Vector2(250, 600);
-    Groundpp.InitPhysicsBody(PhysicsWorld, &Groundbb, b2BodyType::b2_staticBody);
-
-    Groundpp.AddChild(&Groundbb);
-    Groundpp.AddChild(&Groundss);
-
-    Cirs.SetRenderer(Renderer);
-    Cirs.SetCam(&cam);
-    Cirs.LoadImage("../Assets/Test2.png");
-
-    Cirb.Radius = 50;
-    Cirb.InitCircleCollider();
-    Cirp.Transform.Position = Vector2(250, 250);
-    Cirp.InitPhysicsBody(PhysicsWorld, &Cirb, b2BodyType::b2_dynamicBody);
-
-    Cirp.AddChild(&Cirs);
-    Cirp.AddChild(&Cirb);
 
     Polys.SetRenderer(Renderer);
     Polys.SetCam(&cam);
@@ -101,65 +90,91 @@ void Scene::Start()
     Polyp.AddChild(&Polys);
     Polyp.AddChild(&Polyc);
 
-    std::string Text;
+
+    std::string Line;
 
     std::ifstream SceneFile("../Assets/test.vscene"); 
 
-    while (std::getline(SceneFile, Text)) {
+    while (std::getline(SceneFile, Line)) {
 
-        switch (GetNodeType(Text.substr((Text.find("[") + 10), (Text.find("]") - (Text.find("[") + 10)))))
+        switch (GetNodeType(Line.substr((Line.find("[") + 10), (Line.find("]") - (Line.find("[") + 10)))))
         {
         case NodeType::Null:
             break;
         case NodeType::NODE:
             Nodes.push_back(new Node);
-            std::string pos = Text.substr(Text.find("[POSITION(") + 10, Text.find("]", Text.find("[POSITION(")) - (Text.find("[POSITION(") + 11));
-            float PosX = std::stof(pos.substr(0, pos.find(",")));
-            float PosY = std::stof(pos.substr(pos.find(",") + 1, pos.length() - pos.find(",")));
-            Nodes[Nodes.size() - 1]->Transform.Position.Set(PosX, PosY);
+            SetNode(Nodes[Nodes.size() - 1], Line);
+            break;
+        case NodeType::SPRITE:{
+            Sprites.push_back(new Sprite);
+            SetNode(Sprites[Sprites.size() - 1], Line);
+            Sprites[Sprites.size() - 1]->SetRenderer(Renderer);
+            std::string sprite = Line.substr(Line.find("[ASSET=") + 7, Line.find("]", Line.find("[ASSET=")) - (Line.find("[ASSET=") + 7));
+            Sprites[Sprites.size() - 1]->LoadImage(sprite);
+            }break;
+        case CAM:
+            Cameras.push_back(new Camera);
+            SetNode(Cameras[Cameras.size() - 1], Line);
+            std::string active = Line.substr(Line.find("[ACTIVE=") + 8, Line.find("]", Line.find("[ACTIVE=")) - (Line.find("[ACTIVE=") + 8));
+            if(active == "TRUE"){
+                Cameras[Cameras.size() - 1]->IsActive = true;
+            }else{
+                Cameras[Cameras.size() - 1]->IsActive = false;
+            }
             break;
         }
     }
+
+    for (int i = 0; i < (int)Cameras.size(); i++)
+    {
+        if(Cameras[i]->IsActive){
+            for (int j = 0; j < (int)Sprites.size(); j++)
+            {
+                Sprites[j]->SetCam(Cameras[i]);
+            }
+            break;
+        }
+    }
+    
 
     SceneFile.close();
 }
 
 void Scene::Update(double dt)
 {
-    p.UpdatePhysicsNode();
     Groundp.UpdatePhysicsNode();
-    Groundpp.UpdatePhysicsNode();
-    Cirp.UpdatePhysicsNode();
     Polyp.UpdatePhysicsNode();
 
-    p.UpdateChild();
     Groundp.UpdateChild();
-    Groundpp.UpdateChild();
-    Cirp.UpdateChild();
     Polyp.UpdateChild();
 }
 
 void Scene::Draw()
 {
     Grounds.DrawImage();
-    Groundss.DrawImage();
-    s.DrawImage();
-    Cirs.DrawImage();
     Polys.DrawImage();
+
+    for (int i = 0; i < (int)Sprites.size(); i++)
+    {
+        Sprites[i]->DrawImage();
+    }
+    
 }
 
 void Scene::Clean()
 {
     Grounds.CleanImage();
-    Groundss.CleanImage();
-    s.CleanImage();
-    Cirs.CleanImage();
     Polys.CleanImage();
 
+    for (int i = 0; i < (int)Sprites.size(); i++)
+    {
+        Sprites[i]->CleanImage();
+        delete Sprites[i];
+        Sprites[i] = nullptr;
+    }
     for (int i = 0; i < (int)Nodes.size(); i++)
     {
         delete Nodes[i];
         Nodes[i] = nullptr;
     }
-    
 }

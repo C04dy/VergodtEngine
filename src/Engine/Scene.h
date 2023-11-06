@@ -50,27 +50,16 @@ private:
 
 private:
 	Camera cam;
-	
-	Sprite s;
-	PhysicsBody p;
-	BoxCollider b;
 
 	Sprite Grounds;
 	PhysicsBody Groundp;
 	BoxCollider Groundb;
-
-	Sprite Cirs;
-	PhysicsBody Cirp;
-	CircleCollider Cirb;
-
-	Sprite Groundss;
-	PhysicsBody Groundpp;
-	BoxCollider Groundbb;
 
 	Sprite Polys;
 	PhysicsBody Polyp;
 	PolygonCollider Polyc;
 
 	std::vector<Node*> Nodes;
-	
+	std::vector<Sprite*> Sprites;
+	std::vector<Camera*> Cameras;
 };
