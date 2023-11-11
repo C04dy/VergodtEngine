@@ -68,7 +68,7 @@ void Engine::EngineStart()
             input->SetMousePos(Vector2(e.motion.x, e.motion.y));
                 break;
             case SDL_EVENT_MOUSE_BUTTON_UP:
-            e.button.button
+            
                 break;
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
             

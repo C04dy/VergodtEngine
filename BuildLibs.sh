@@ -27,7 +27,7 @@ cp -R SDL3 ../../../libs/SDL/include
 cd ../../SDL_image
 mkdir build
 cd ./build
-sudo cmake .. -DBUILD_SHARED_LIBS=OFF
+sudo cmake .. -DBUILD_SHARED_LIBS=OFF -DBOX2D_BUILD_UNIT_TESTS=OFF -DBOX2D_BUILD_TESTBED=OFF
 sudo make
 
 cp -i libSDL3_image.a ../../../libs/SDL/lib

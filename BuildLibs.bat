@@ -53,7 +53,7 @@ cd %dir%
 cd vendor/box2d
 mkdir build
 cd build 
-cmake .. -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=OFF
+cmake .. -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=OFF -DBOX2D_BUILD_UNIT_TESTS=OFF -DBOX2D_BUILD_TESTBED=OFF
 mingw32-make
 
 cd bin
