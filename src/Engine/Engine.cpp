@@ -1,10 +1,13 @@
 #include "Engine.h"
 #include "Scene.h"
+#include "Input.h"
 #include <box2d/b2_world.h>
 
 void Engine::EngineStart()
 {
     Scene* scene = new Scene;
+
+    Input* input = new Input; 
 
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         SDL_Log("SDL_Init failed (%s)", SDL_GetError());
@@ -45,6 +48,7 @@ void Engine::EngineStart()
 
     scene->SetRenderer(renderer);
     scene->SetPhysicsWorld(m_physicsworld);
+    scene->SetInput(input);
     scene->Start();
 
     while (IsRunning()) {
@@ -52,15 +56,22 @@ void Engine::EngineStart()
             switch (e.type)
             {
             case SDL_EVENT_QUIT:
-                SetRunning(false);
+            SetRunning(false);
                 break;
             case SDL_EVENT_KEY_UP:
+            input->SetKeyUp(e.key.keysym.sym);
                 break;
             case SDL_EVENT_KEY_DOWN:
+            input->SetKeyDown(e.key.keysym.sym);
                 break;
             case SDL_EVENT_MOUSE_MOTION:
-                scene->mx = e.motion.x;
-                scene->my = e.motion.y;
+            input->SetMousePos(Vector2(e.motion.x, e.motion.y));
+                break;
+            case SDL_EVENT_MOUSE_BUTTON_UP:
+            e.button.button
+                break;
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            
                 break;
             }
         }
@@ -88,6 +99,8 @@ void Engine::EngineStart()
     m_physicsworld = nullptr;
     delete scene;
     scene = nullptr;
+    delete input;
+    input = nullptr;
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

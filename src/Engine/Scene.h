@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <SDL3/SDL.h>
+#include "Input.h"
 
 #include "Objects/Camera.h"
 #include "Objects/Sprite.h"
@@ -34,12 +35,14 @@ public:
 	void SetWindowsWidth(int w) { m_windowwidth = w; }
 	void SetWindowsHeight(int h) { m_windowheight = h; }
 
-	float mx, my;
+	void SetInput(Input* Input) { input = Input; }
 
 protected:
 	SDL_Renderer* Renderer;
 
 	b2World* PhysicsWorld;
+
+	Input* input;
 private:
 	std::string m_gamename = "VergodtEngineGame";
 
