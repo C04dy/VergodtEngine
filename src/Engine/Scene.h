@@ -7,9 +7,6 @@
 #include "Objects/Camera.h"
 #include "Objects/Sprite.h"
 #include "Objects/PhysicsBody.h"
-#include "Objects/BoxCollider.h"
-#include "Objects/CircleCollider.h"
-#include "Objects/PolygonCollider.h"
 #include "Objects/Node.h"
 
 class b2World;
@@ -49,17 +46,9 @@ private:
 	int m_windowwidth = 1280, m_windowheight = 720;
 
 private:
-	Camera cam;
-
-	Sprite Grounds;
-	PhysicsBody Groundp;
-	BoxCollider Groundb;
-
-	Sprite Polys;
-	PhysicsBody Polyp;
-	PolygonCollider Polyc;
+	Camera Cam;
 
 	std::vector<Node*> Nodes;
 	std::vector<Sprite*> Sprites;
-	std::vector<Camera*> Cameras;
+	std::vector<PhysicsBody*> PhysicsBodys;
 };

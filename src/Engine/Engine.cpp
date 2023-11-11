@@ -39,8 +39,8 @@ void Engine::EngineStart()
     Uint64 PerfFreq = SDL_GetPerformanceFrequency();
     Uint64 FpsCounter = SDL_GetPerformanceCounter();
     Uint64 EndTime = 0;
-    Uint64 ElapsedTime;
-    Uint64 FPS;
+    Uint64 ElapsedTime = 0;
+    //Uint64 FPS = 0;
     double delta = 0;
 
     scene->SetRenderer(renderer);
@@ -67,6 +67,7 @@ void Engine::EngineStart()
 
         scene->Update(delta);
 
+
         m_physicsworld->Step(timeStep * delta * 1000, velocityIterations, positionIterations);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -77,7 +78,7 @@ void Engine::EngineStart()
         EndTime = SDL_GetPerformanceCounter();
         ElapsedTime = EndTime - FpsCounter;
         delta = (double)ElapsedTime / (double)PerfFreq;
-        FPS = (double)PerfFreq / (double)ElapsedTime;
+        //FPS = (double)PerfFreq / (double)ElapsedTime;
         FpsCounter = EndTime;
     }
 

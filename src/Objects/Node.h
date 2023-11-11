@@ -20,6 +20,8 @@ public:
 	void AddChild(Node* c);
 	void UpdateChild();
 
+	std::string Name;
+
 protected:
 	std::vector<Node*> m_childNode;
 };
