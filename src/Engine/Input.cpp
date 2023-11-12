@@ -1,5 +1,4 @@
 #include "Input.h"
-
 #include <iostream>
 
 Input::Input()
@@ -31,7 +30,6 @@ void Input::SetMousePos(Vector2 MousePos){
 }
 
 void Input::SetMouseKeyDown(Uint8 Button){
-    std::cout << Button;
     m_mousekey = Button;
     m_ismousekeydown = true;
     m_ismousekeyup = false;
@@ -76,7 +74,7 @@ bool Input::IsKeyNotPressed(SDL_Keycode Key){
 }
 
 bool Input::IsMouseKeyDown(Uint8 Key){
-    if(m_ismousekeydown && Key == m_key){
+    if(m_ismousekeydown && Key == m_mousekey){
         m_ismousekeydown = false;
         return true;
     }
@@ -84,7 +82,7 @@ bool Input::IsMouseKeyDown(Uint8 Key){
 }
 
 bool Input::IsMouseKeyUp(Uint8 Key){
-    if(m_ismousekeyup && Key == m_key){
+    if(m_ismousekeyup && Key == m_mousekey){
         m_ismousekeyup = false;
         return true;
     }
@@ -92,14 +90,14 @@ bool Input::IsMouseKeyUp(Uint8 Key){
 }
 
 bool Input::IsMouseKeyPressed(Uint8 Key){
-    if(m_mousekeypressed && Key == m_key){
+    if(m_mousekeypressed && Key == m_mousekey){
         return true;
     }
     return false;
 }
 
 bool Input::IsMouseKeyNotPressed(Uint8 Key){
-    if(m_mousekeypressed == false && Key == m_key){
+    if(m_mousekeypressed == false && Key == m_mousekey){
         return true;
     }
     return false;

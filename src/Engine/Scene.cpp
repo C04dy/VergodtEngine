@@ -2,7 +2,7 @@
 #include <string>
 
 template <typename T>
-void Print(T log)
+void Log(T log)
 {
     std::cout << log << "\n";
 }
@@ -85,7 +85,7 @@ void Scene::Start()
         switch (GetNodeType(Line.substr((Line.find("[") + 10), (Line.find("]") - (Line.find("[") + 10)))))
         {
         case NodeType::Null:
-            Print("Cannot load the node");
+            Log("Cannot load the node");
             break;
         case NodeType::NODE:
             Nodes.push_back(new Node);
