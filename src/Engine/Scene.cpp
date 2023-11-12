@@ -194,12 +194,6 @@ void Scene::Update(double dt)
     {
         Nodes[i]->UpdateChild();
     }
-
-    if(input->IsKeyNotPressed(SDL_KeyCode::SDLK_SPACE)) {
-        Print("ji");
-    } else {
-        Print("hi");
-    }
 }
 
 void Scene::Draw()
