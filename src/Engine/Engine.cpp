@@ -3,7 +3,7 @@
 #include "Input.h"
 #include <box2d/b2_world.h>
 
-void Engine::EngineStart()
+int Engine::EngineStart()
 {
     Scene* scene = new Scene;
 
@@ -11,7 +11,7 @@ void Engine::EngineStart()
 
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         SDL_Log("SDL_Init failed (%s)", SDL_GetError());
-        return;
+        return 1;
     }
 
     SDL_Window* window = nullptr;
@@ -21,7 +21,7 @@ void Engine::EngineStart()
     if (SDL_CreateWindowAndRenderer(scene->GetWindowWidth(), scene->GetWindowHeight(), SDL_WindowFlags::SDL_WINDOW_VULKAN, &window, &renderer) < 0) {
         SDL_Log("SDL_CreateWindowAndRenderer failed (%s)", SDL_GetError());
         SDL_Quit();
-        return ;
+        return 1;
     }
     SDL_SetWindowTitle(window, scene->GetGameName().c_str());
 
@@ -105,4 +105,6 @@ void Engine::EngineStart()
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+
+    return 0;
 }

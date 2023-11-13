@@ -11,7 +11,7 @@ class b2World;
 class Engine
 {
 public:
-	void EngineStart();
+	int EngineStart();
 
 	bool IsRunning() { return m_running; }
 	void SetRunning(bool running) { m_running = running; }

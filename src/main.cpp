@@ -6,6 +6,4 @@ int main()
     Engine engine;
     
     engine.EngineStart();
-
-    return 0;
 }
