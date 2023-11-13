@@ -22,8 +22,8 @@ void Sprite::LoadImage(std::string FilePath)
 void Sprite::DrawImage()
 {
     SDL_FRect srcRect = { 0, 0, m_w, m_h };
-    SDL_FRect dstRect = { (Transform.Position.x - m_w * Transform.Size.x / 2) - m_cam->Transform.Position.x - LocalPosition.x
-                             , (Transform.Position.y - m_h * Transform.Size.y / 2) - m_cam->Transform.Position.y - LocalPosition.y
+    SDL_FRect dstRect = { (Transform.Position.x - m_w * Transform.Size.x / 2) - m_cam->Transform.Position.x
+                             , (Transform.Position.y - m_h * Transform.Size.y / 2) - m_cam->Transform.Position.y
                                     , m_w * Transform.Size.x, m_h * Transform.Size.y};
     SDL_RenderTextureRotated(m_renderer, m_texture, &srcRect, &dstRect, Transform.Angle, nullptr, SDL_FLIP_NONE);
 }

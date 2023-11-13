@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include <string>
+//#include <lua.hpp>
 
 template <typename T>
 void Log(T log)
@@ -23,7 +24,6 @@ NodeType GetNodeType (std::string const& inString)
     if (inString == "PHYSICSBODY") return PHYSICSBODY;
     return Null;
 }
-
 
 std::string GetLineBetween(std::string Text, std::string Start, std::string Finish){
     return Text.substr( Text.find( Start ) + ( Start.length()  ) , Text.find( Finish, Text.find(Start) ) - ( Text.find(Start) + (Start.length()  ) ) );
@@ -60,6 +60,14 @@ void SetNode(Node* node, std::string Line, std::vector<Node*> Child)
         }
     }
 }
+
+/*bool CheckLua(lua_State* L, int r){
+    if(r != LUA_OK){
+        Log(lua_tostring(L, -1));
+        return false;
+    }
+    return true;
+}*/
 
 Scene::Scene()
 {

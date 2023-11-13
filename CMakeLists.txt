@@ -16,6 +16,10 @@ set_target_properties(SDL PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRE
 add_library(SDL_image STATIC IMPORTED)
 set_property(TARGET SDL_image PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL/lib/libSDL3_image.dll.a)
 
+add_library(Lua STATIC IMPORTED)
+set_property(TARGET Lua PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/Lua/lib/liblua54.a)
+set_target_properties(Lua PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/libs/Lua/include)
+
 else()
 
 add_library(SDL STATIC IMPORTED)
@@ -24,6 +28,10 @@ set_target_properties(SDL PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRE
 
 add_library(SDL_image STATIC IMPORTED)
 set_property(TARGET SDL_image PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL/lib/libSDL3_image.a)
+
+add_library(Lua STATIC IMPORTED)
+set_property(TARGET Lua PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/Lua/lib/liblua54_linux.a)
+set_target_properties(Lua PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/libs/Lua/include)
 
 endif()
 
@@ -37,4 +45,4 @@ add_executable(${PROJECT_NAME} ${SRCS})
 
 include_directories(${PROJECT_NAME} src)
 
-target_link_libraries(${PROJECT_NAME} SDL SDL_image Box2D)
+target_link_libraries(${PROJECT_NAME} SDL SDL_image Box2D Lua)

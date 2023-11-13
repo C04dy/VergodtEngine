@@ -1,4 +1,5 @@
 build
-libs
+libs/SDL
+libs/Box2D
 Makefile
 CleanLibs.sh

@@ -19,6 +19,7 @@
             "includePath": [
                 "${workspaceFolder}/libs/Box2D/include",
                 "${workspaceFolder}/libs/SDL/include",
+                "${workspaceFolder}/libs/Lua/include",
                 "${workspaceFolder}/src"
             ],
             "defines": [

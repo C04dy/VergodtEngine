@@ -1,8 +1,6 @@
-function Start()
-	io.write("hello\n")
-	io.write("hi\n")
-	io.write("kms\n")
-end
+var = "../Assets/Node.lua"
+dofile(var)
 
-function Update()
-end
+Sprite = {
+	["this"] = Node 
+}

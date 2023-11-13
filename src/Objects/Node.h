@@ -9,8 +9,6 @@ using Vector2 = b2Vec2;
 class Node
 {
 public:
-	Vector2 LocalPosition = Vector2(0, 0);
-
 	struct{
 		Vector2 Position = Vector2(0, 0);
 		Vector2 Size = Vector2(1, 1);
