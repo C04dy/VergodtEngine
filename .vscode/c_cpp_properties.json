@@ -20,7 +20,8 @@
                 "${workspaceFolder}/libs/Box2D/include",
                 "${workspaceFolder}/libs/SDL/include",
                 "${workspaceFolder}/libs/Lua/include",
-                "${workspaceFolder}/src"
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/Editor/src"
             ],
             "defines": [
                 "_DEBUG",

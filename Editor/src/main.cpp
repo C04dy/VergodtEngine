@@ -1,7 +1,7 @@
 #include <iostream>
 #include "App.h"
 
-int maint(){
+int main(){
     App app;
 
     app.RunApp();
