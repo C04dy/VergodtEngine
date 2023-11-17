@@ -13,24 +13,18 @@ add_library(SDL STATIC IMPORTED)
 set_property(TARGET SDL PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../libs/SDL/lib/libSDL3.dll.a)
 set_target_properties(SDL PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/../libs/SDL/include)
 
-add_library(SDL_image STATIC IMPORTED)
-set_property(TARGET SDL_image PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../libs/SDL/lib/libSDL3_image.dll.a)
-
 else()
 
 add_library(SDL STATIC IMPORTED)
 set_property(TARGET SDL PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../libs/SDL/lib/libSDL3.a)
 set_target_properties(SDL PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/../libs/SDL/include)
 
-add_library(SDL_image STATIC IMPORTED)
-set_property(TARGET SDL_image PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../libs/SDL/lib/libSDL3_image.a)
-
 endif()
 
-file(GLOB SRCS src/*.cpp)
+file(GLOB SRCS src/*.cpp ImGui/Include/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
 
-include_directories(${PROJECT_NAME} src)
+include_directories(${PROJECT_NAME} src ImGui/Include)
 
-target_link_libraries(${PROJECT_NAME} SDL SDL_image)
+target_link_libraries(${PROJECT_NAME} SDL)

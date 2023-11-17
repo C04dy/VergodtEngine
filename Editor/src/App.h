@@ -3,7 +3,7 @@
 
 #pragma once
 #define SDL_MAIN_HANDLED
-#include <SDL3/SDL.h>
+#include <iostream>
 
 class App
 {
@@ -11,7 +11,7 @@ public:
     App();
     ~App();
 
-    int RunApp();
+    void RunApp();
 
 private:
 
