@@ -5,8 +5,12 @@
 Using Box2D, SDL libraries for physics, window, input  
 
 # TODO:
-  Editor
-  Lua Scripting
-  Audio
+  Editor,
+  Lua Scripting,
+  Steam Audio
 
-if you want to use the engine first you need to build the libraries with Buildlibs.bat if you use windows "you need to run as and admin" or Buildlibs.sh if you use linux
+
+# HOW TO USE
+
+engine is still in development so there is no realeses for this engine 
+if you want to contribute to the development clone repo with the libraries included with '--recursive' and run 'BuildLibs' (if you use windows run it as admin) to build the libraries 
