@@ -4,7 +4,7 @@
 
 Using Box2D, SDL libraries for physics, window, input  
 
-TODO:
+# TODO:
   Editor
   Lua Scripting
   Audio
