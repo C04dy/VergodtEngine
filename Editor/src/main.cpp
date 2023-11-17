@@ -28,6 +28,8 @@ int main(int, char**)
 {
     App app;
 
+    app.InitApp();
+
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD) != 0)
     {
@@ -88,7 +90,7 @@ int main(int, char**)
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != nullptr);
 
-    bool show_demo_window = true;
+    bool show_demo_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Main loop
@@ -123,8 +125,8 @@ int main(int, char**)
         ImGui::NewFrame();
 
 
-        ImGui::ShowDemoWindow(&show_demo_window);
         app.RunApp();
+        ImGui::ShowDemoWindow(&show_demo_window);
         
 
         // Rendering
