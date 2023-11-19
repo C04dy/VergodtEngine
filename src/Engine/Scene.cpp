@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "util/SceneFileFunctions.hpp"
 #include <string>
 #include <lua.hpp>
 #include <LuaBridge.h>
@@ -24,10 +25,6 @@ NodeType GetNodeType (std::string const& inString)
     if (inString == "CAMERA") return CAM;
     if (inString == "PHYSICSBODY") return PHYSICSBODY;
     return Null;
-}
-
-std::string GetLineBetween(std::string Text, std::string Start, std::string Finish){
-    return Text.substr( Text.find( Start ) + ( Start.length()  ) , Text.find( Finish, Text.find(Start) ) - ( Text.find(Start) + (Start.length()  ) ) );
 }
 
 void SetNode(Node* node, std::string Line, std::vector<Node*> Child)

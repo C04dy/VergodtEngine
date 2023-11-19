@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
+#include "SceneFileFunctions.hpp"
 
 App::App()
 {
@@ -15,10 +16,17 @@ App::~App()
 
 void App::InitApp()
 {
-    m_scenefile.open("../../Assets/test.vscene");
+    m_scenefile.open("../../Assets/testFORGUI.vscene");
     std::string ln;
     while (std::getline(m_scenefile, ln)) {
         m_lines.push_back(ln);
+
+        std::string pos = GetLineBetween(ln, "[POSITION(", ")]");
+        
+        m_posX.push_back(std::stof(pos.substr(0, pos.find(",")).c_str()));
+        m_posY.push_back(std::stof(pos.substr(pos.find(",") + 1, pos.length() - pos.find(",")).c_str()));
+
+        m_name.push_back( GetLineBetween(ln, "[NAME=", "]") );
     }
 }
 
@@ -28,7 +36,7 @@ void App::RunApp()
     {
         static bool opt_fullscreen = true;
         static bool opt_padding = false;
-        bool* p_open = new bool(true);
+        bool p_open = true;
         static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -53,7 +61,7 @@ void App::RunApp()
 
         if (!opt_padding)
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("DockSpace Demo", p_open, window_flags);
+        ImGui::Begin("DockSpace Demo", &p_open, window_flags);
         if (!opt_padding)
             ImGui::PopStyleVar();
 
@@ -84,7 +92,7 @@ void App::RunApp()
                 ImGui::Separator();
 
                 if (ImGui::MenuItem("Close", NULL, false, p_open != NULL))
-                    *p_open = false;
+                    p_open = false;
                 ImGui::EndMenu();
             }
 
@@ -93,20 +101,19 @@ void App::RunApp()
 
         ImGui::End();
     }
+    // Inspector
     {
-        static float f = 0.0f;
-        static int counter = 0;
-
         ImGui::Begin("Inspector");
 
-        ImGui::Text("This is some useful text.");
+        ImGui::InputText("Name", (char*)m_name[m_scenefileindex].c_str(), m_name[m_scenefileindex].length() + 1);
 
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+        std::cout << m_name[m_scenefileindex].length() << '\n' << m_name[m_scenefileindex] << '\n'; 
+        
 
-        if (ImGui::Button("Button"))   
-            counter++;
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
+        ImGui::Text("Transform");
+        ImGui::Text("Position");
+        ImGui::InputFloat("X", &m_posX[m_scenefileindex]);
+        ImGui::InputFloat("Y", &m_posY[m_scenefileindex]);
 
         ImGui::End();
     }

@@ -25,6 +25,6 @@ file(GLOB SRCS src/*.cpp ImGui/Include/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
 
-include_directories(${PROJECT_NAME} src ImGui/Include)
+include_directories(${PROJECT_NAME} src ImGui/Include ../src/util)
 
 target_link_libraries(${PROJECT_NAME} SDL)

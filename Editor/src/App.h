@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <string>
 
 class App
 {
@@ -17,7 +18,13 @@ public:
     void RunApp();
 private:
     std::vector<std::string> m_lines;
-    std::ifstream m_scenefile; 
+    std::ifstream m_scenefile;
+
+    int m_scenefileindex = 0;
+
+    std::vector<float> m_posX, m_posY;
+
+    std::vector<std::string> m_name;
 };
 
 #endif
