@@ -20,6 +20,8 @@ public:
 
 	std::string Name;
 
+	std::string Script;
+
 protected:
 	std::vector<Node*> m_childNode;
 };

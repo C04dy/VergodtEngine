@@ -12,6 +12,8 @@
 
 class b2World;
 
+class lua_State;
+
 class Scene
 {
 public:
@@ -48,6 +50,7 @@ private:
 
 	int m_windowwidth = 1280, m_windowheight = 720;
 
+	lua_State* L;
 private:
 	Camera Cam;
 

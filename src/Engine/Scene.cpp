@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include <string>
-//#include <lua.hpp>
+#include <lua.hpp>
+#include <LuaBridge.h>
 
 template <typename T>
 void Log(T log)
@@ -59,15 +60,17 @@ void SetNode(Node* node, std::string Line, std::vector<Node*> Child)
             }
         }
     }
+
+    node->Script = GetLineBetween(Line, "[SCRIPT=", "]");
 }
 
-/*bool CheckLua(lua_State* L, int r){
+bool CheckLua(lua_State* L, int r){
     if(r != LUA_OK){
         Log(lua_tostring(L, -1));
         return false;
     }
     return true;
-}*/
+}
 
 Scene::Scene()
 {
@@ -83,6 +86,9 @@ Scene::~Scene()
 
 void Scene::Start()
 {
+    L = luaL_newstate();
+    luaL_openlibs(L);
+
     std::vector<Node*> Childs;
 
     std::string Line;
@@ -95,11 +101,18 @@ void Scene::Start()
         case NodeType::Null:
             Log("Cannot load the node");
             break;
-        case NodeType::NODE:
+        case NodeType::NODE:{
             Nodes.push_back(new Node);
             SetNode(Nodes[Nodes.size() - 1], Line, Childs);
             Childs.push_back(Nodes[Nodes.size() - 1]);
-            break;
+
+            if(Nodes[Nodes.size() - 1]->Script != "NULL"){
+                if(CheckLua(L, luaL_dofile(L, Nodes[Nodes.size() - 1]->Script.c_str()))){
+                    luabridge::LuaRef start = luabridge::getGlobal(L, "Start");
+                    luabridge::LuaResult s = start();   
+                }
+            }
+            }break;
         case NodeType::SPRITE:{
             Sprites.push_back(new Sprite);
             SetNode(Sprites[Sprites.size() - 1], Line, Childs);     
@@ -109,10 +122,10 @@ void Scene::Start()
             Sprites[Sprites.size() - 1]->LoadImage(sprite);
             Childs.push_back(Sprites[Sprites.size() - 1]);
             }break;
-        case NodeType::CAM:
+        case NodeType::CAM:{
             SetNode(&Cam, Line, Childs);
-            break;
-        case NodeType::PHYSICSBODY:
+            }break;
+        case NodeType::PHYSICSBODY:{
             PhysicsBodys.push_back(new PhysicsBody);
             SetNode(PhysicsBodys[PhysicsBodys.size() - 1], Line, Childs);
             std::string ColType = GetLineBetween(Line, "[COLLIDER=", "]");
@@ -175,7 +188,7 @@ void Scene::Start()
                 }
             }
             Childs.push_back(PhysicsBodys[PhysicsBodys.size() - 1]);
-            break;
+            }break;
         }
     }
 
@@ -185,6 +198,12 @@ void Scene::Start()
     }
 
     SceneFile.close();
+
+
+
+
+
+
 }
 
 void Scene::Update(double dt)
@@ -230,4 +249,6 @@ void Scene::Clean()
         delete PhysicsBodys[i];
         PhysicsBodys[i] = nullptr;
     }
+
+    lua_close(L);
 }
