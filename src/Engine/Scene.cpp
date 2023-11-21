@@ -1,8 +1,7 @@
 #include "Scene.h"
 #include "util/SceneFileFunctions.hpp"
 #include <string>
-#include <lua.hpp>
-#include <LuaBridge.h>
+#include "Luascript.hpp"
 
 template <typename T>
 void Log(T log)
@@ -84,7 +83,10 @@ Scene::~Scene()
 void Scene::Start()
 {
     L = luaL_newstate();
+
     luaL_openlibs(L);
+
+    LuaScript::Wrap(L);
 
     std::vector<Node*> Childs;
 
@@ -105,8 +107,13 @@ void Scene::Start()
 
             if(Nodes[Nodes.size() - 1]->Script != "NULL"){
                 if(CheckLua(L, luaL_dofile(L, Nodes[Nodes.size() - 1]->Script.c_str()))){
+                    
+                    LuaScript::InitNode(Nodes[Nodes.size() - 1], L);
+                    
                     luabridge::LuaRef start = luabridge::getGlobal(L, "Start");
-                    luabridge::LuaResult s = start();   
+                    start();
+
+                    LuaScript::SetNode(Nodes[Nodes.size() - 1], L);
                 }
             }
             }break;
@@ -195,12 +202,6 @@ void Scene::Start()
     }
 
     SceneFile.close();
-
-
-
-
-
-
 }
 
 void Scene::Update(double dt)
@@ -218,6 +219,11 @@ void Scene::Update(double dt)
     {
         Nodes[i]->UpdateChild();
     }
+
+    luabridge::LuaRef update = luabridge::getGlobal(L, "Update");
+    update();
+
+    LuaScript::SetNode(Nodes[0], L);
 }
 
 void Scene::Draw()

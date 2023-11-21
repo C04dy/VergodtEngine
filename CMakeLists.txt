@@ -43,6 +43,6 @@ file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Objects/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
 
-include_directories(${PROJECT_NAME} src ${CMAKE_CURRENT_SOURCE_DIR}/libs/LuaBridge)
+include_directories(${PROJECT_NAME} src ${CMAKE_CURRENT_SOURCE_DIR}/libs/LuaBridge ${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Script src/Math)
 
 target_link_libraries(${PROJECT_NAME} SDL SDL_image Box2D Lua)

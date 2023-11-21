@@ -4,9 +4,7 @@
 #pragma once
 
 #include <SDL3/SDL_events.h>
-#include <box2d/b2_math.h>
-
-using Vector2 = b2Vec2;
+#include "Vector2.h"
 
 class Input
 {

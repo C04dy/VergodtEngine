@@ -2,18 +2,19 @@
 
 #include <iostream>
 #include <vector>
-#include <box2d/b2_math.h>
+#include "Vector2.h"
 
-using Vector2 = b2Vec2;
+class Transform{
+public:
+	Vector2 Position = Vector2(0, 0);
+	Vector2 Size = Vector2(1, 1);
+	float Angle = 0;
+};
 
 class Node
 {
 public:
-	struct{
-		Vector2 Position = Vector2(0, 0);
-		Vector2 Size = Vector2(1, 1);
-		float Angle = 0;
-	}Transform;
+	Transform Transform;
 
 	void AddChild(Node* c);
 	void UpdateChild();

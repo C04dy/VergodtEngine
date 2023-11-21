@@ -65,6 +65,7 @@ void PhysicsBody::InitPhysicsBodyPolygon(b2World* w, b2BodyType bt, Vector2 Poly
 
 void PhysicsBody::UpdatePhysicsNode()
 {
-	Transform.Position = m_physicsbody->GetPosition();
+	Transform.Position.x = m_physicsbody->GetPosition().x;
+	Transform.Position.y = m_physicsbody->GetPosition().y;
 	Transform.Angle = m_physicsbody->GetAngle() * RADIAN_IN_DEGREES;
 }
