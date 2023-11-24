@@ -37,9 +37,4 @@ namespace LuaScript{
         luabridge::LuaRef init = luabridge::getGlobal(L, "InitNode");
         init(node);
     }
-
-    void SetNode(Node* node, lua_State* L){
-        luabridge::LuaRef set = luabridge::getGlobal(L, "SetNode");
-        set(node);
-    }
 }

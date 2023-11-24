@@ -92,7 +92,12 @@ void Scene::Start()
 
     std::string Line;
 
-    std::ifstream SceneFile("../Assets/test.vscene"); 
+    std::ifstream SceneFile("../Assets/test.vscene");
+
+
+    if(!CheckLua(L, luaL_dofile(L, "../Assets/VergodtEngine.lua"))){
+        Log("Cannot Load Lua");
+    }
 
     while (std::getline(SceneFile, Line)) {
         switch (GetNodeType(Line.substr((Line.find("[") + 10), (Line.find("]") - (Line.find("[") + 10)))))
@@ -106,15 +111,12 @@ void Scene::Start()
             Childs.push_back(Nodes[Nodes.size() - 1]);
 
             if(Nodes[Nodes.size() - 1]->Script != "NULL"){
-                if(CheckLua(L, luaL_dofile(L, Nodes[Nodes.size() - 1]->Script.c_str()))){
-                    
-                    LuaScript::InitNode(Nodes[Nodes.size() - 1], L);
-                    
-                    luabridge::LuaRef start = luabridge::getGlobal(L, "Start");
-                    start();
-
-                    LuaScript::SetNode(Nodes[Nodes.size() - 1], L);
-                }
+                m_scriptcount++;
+                luabridge::LuaRef Add = luabridge::getGlobal(L, "AddScript");
+                
+                Add(Nodes[Nodes.size() - 1]->Script.c_str(), m_scriptcount, Nodes[Nodes.size() - 1]);
+                
+                Nodes[Nodes.size() - 1]->ScriptIndex = m_scriptcount;
             }
             }break;
         case NodeType::SPRITE:{
@@ -202,6 +204,10 @@ void Scene::Start()
     }
 
     SceneFile.close();
+
+    luabridge::LuaRef init = luabridge::getGlobal(L, "InitNode");
+
+    init(Nodes[0]);
 }
 
 void Scene::Update(double dt)
@@ -218,12 +224,12 @@ void Scene::Update(double dt)
     for (int i = 0; i < (int)Nodes.size(); i++)
     {
         Nodes[i]->UpdateChild();
+
+        if(Nodes[i]->Script != "NULL"){
+            //luabridge::LuaRef update = luabridge::getGlobal(L, "UpdateScript");
+            //update(Nodes[i]->ScriptIndex);
+        }
     }
-
-    luabridge::LuaRef update = luabridge::getGlobal(L, "Update");
-    update();
-
-    LuaScript::SetNode(Nodes[0], L);
 }
 
 void Scene::Draw()

@@ -22,6 +22,7 @@ public:
 	std::string Name;
 
 	std::string Script;
+	int ScriptIndex = 0;
 
 protected:
 	std::vector<Node*> m_childNode;

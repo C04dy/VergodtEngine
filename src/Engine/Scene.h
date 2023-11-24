@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <memory>
 #include <fstream>
 #include <vector>
 #include <SDL3/SDL.h>
@@ -57,4 +58,8 @@ private:
 	std::vector<Node*> Nodes;
 	std::vector<Sprite*> Sprites;
 	std::vector<PhysicsBody*> PhysicsBodys;
+
+
+	Node TestNode;
+	int m_scriptcount = 0;
 };
