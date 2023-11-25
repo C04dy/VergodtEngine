@@ -26,7 +26,6 @@ namespace LuaScript{
             .beginClass<Node>("Node")
             .addProperty("Name", &Node::Name)
             .addProperty("Transform", &Node::Transform)
-            .addFunction("Start", &Node::Start)
             .endClass();
         
         luabridge::getGlobalNamespace(L)
@@ -35,13 +34,18 @@ namespace LuaScript{
 
     }
 
-    void InitNode(Node* node, lua_State* L){
+    void InitNode(lua_State* L, Node* node){
         luabridge::LuaRef init = luabridge::getGlobal(L, "InitNode");
         init(node);
-        
-        std::string startfunc = node->Name + "Start";
+
+        std::string startfunc = node->Name + "_Start";
 
         luabridge::LuaRef start = luabridge::getGlobal(L, startfunc.c_str());
         start();
+    }
+
+    void UpdateNode(lua_State* L, Node* node){
+        luabridge::LuaRef update = luabridge::getGlobal(L, (node->Name + "_Update").c_str());
+        update();
     }
 }

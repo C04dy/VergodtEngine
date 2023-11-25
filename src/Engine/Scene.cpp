@@ -104,10 +104,9 @@ void Scene::Start()
             Nodes.push_back(new Node);
             SetNode(Nodes[Nodes.size() - 1], Line, Childs);
             Childs.push_back(Nodes[Nodes.size() - 1]);
-
             if(Nodes[Nodes.size() - 1]->Script != "NULL"){
                 if(CheckLua(L, luaL_dofile(L, Nodes[Nodes.size() - 1]->Script.c_str()))){
-                    LuaScript::InitNode(Nodes[Nodes.size() - 1], L);
+                    LuaScript::InitNode(L, Nodes[Nodes.size() - 1]);
                 }
             }
             }break;
@@ -196,10 +195,6 @@ void Scene::Start()
     }
 
     SceneFile.close();
-
-    luabridge::LuaRef init = luabridge::getGlobal(L, "InitNode");
-
-    init(Nodes[0]);
 }
 
 void Scene::Update(double dt)
@@ -218,12 +213,14 @@ void Scene::Update(double dt)
         Nodes[i]->UpdateChild();
 
         if(Nodes[i]->Script != "NULL"){
-            std::string updatefunc = Nodes[i]->Name + "Update";
-            luabridge::LuaRef update = luabridge::getGlobal(L, updatefunc.c_str());
-            update();
+            LuaScript::UpdateNode(L, Nodes[i]);
         }
     }
 }
+
+
+
+
 
 void Scene::Draw()
 {

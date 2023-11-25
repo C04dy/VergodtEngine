@@ -58,8 +58,4 @@ private:
 	std::vector<Node*> Nodes;
 	std::vector<Sprite*> Sprites;
 	std::vector<PhysicsBody*> PhysicsBodys;
-
-
-	Node TestNode;
-	int m_scriptcount = 0;
 };

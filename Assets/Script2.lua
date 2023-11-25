@@ -2,12 +2,11 @@ dofile("../Assets/VergodtEngine.lua")
 
 f = 0
 
-function NODEEStart()
-	print("hello")
+function NODEE_Start()
+	print(This.Transform.Position.x)
 end
 
-function NODEEUpdate()
+function NODEE_Update()
 	f = f + 1
-	This.Transform.Position.x = f 
-    print(This.Transform.Position.x)
+	This.Transform.Position.x = f
 end
