@@ -50,8 +50,6 @@ private:
 	std::string m_gamename = "VergodtEngineGame";
 
 	int m_windowwidth = 1280, m_windowheight = 720;
-
-	lua_State* L;
 private:
 	Camera Cam;
 

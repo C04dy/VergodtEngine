@@ -6,8 +6,9 @@ Using Box2D, SDL libraries for physics, window, input
 
 # TODO:
   Editor,
-  Lua Scripting,
-  Steam Audio
+  Python Scripting,
+  Steam Audio,
+  Text Rendering
 
 
 # HOW TO USE

@@ -1,7 +1,6 @@
 #include "Scene.h"
 #include "util/SceneFileFunctions.hpp"
 #include <string>
-#include "Luascript.hpp"
 
 template <typename T>
 void Log(T log)
@@ -60,14 +59,6 @@ void SetNode(Node* node, std::string Line, std::vector<Node*> Child)
     node->Script = GetLineBetween(Line, "[SCRIPT=", "]");
 }
 
-bool CheckLua(lua_State* L, int r){
-    if(r != LUA_OK){
-        Log(lua_tostring(L, -1));
-        return false;
-    }
-    return true;
-}
-
 Scene::Scene()
 {
     SetWindowsWidth(1280);
@@ -82,12 +73,6 @@ Scene::~Scene()
 
 void Scene::Start()
 {
-    L = luaL_newstate();
-
-    luaL_openlibs(L);
-
-    LuaScript::Wrap(L);
-
     std::vector<Node*> Childs;
 
     std::string Line;
@@ -105,9 +90,7 @@ void Scene::Start()
             SetNode(Nodes[Nodes.size() - 1], Line, Childs);
             Childs.push_back(Nodes[Nodes.size() - 1]);
             if(Nodes[Nodes.size() - 1]->Script != "NULL"){
-                if(CheckLua(L, luaL_dofile(L, Nodes[Nodes.size() - 1]->Script.c_str()))){
-                    LuaScript::InitNode(L, Nodes[Nodes.size() - 1]);
-                }
+                
             }
             }break;
         case NodeType::SPRITE:{
@@ -213,7 +196,7 @@ void Scene::Update(double dt)
         Nodes[i]->UpdateChild();
 
         if(Nodes[i]->Script != "NULL"){
-            LuaScript::UpdateNode(L, Nodes[i]);
+            
         }
     }
 }
@@ -248,6 +231,4 @@ void Scene::Clean()
         delete PhysicsBodys[i];
         PhysicsBodys[i] = nullptr;
     }
-
-    lua_close(L);
 }
