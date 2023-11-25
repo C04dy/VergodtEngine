@@ -94,11 +94,6 @@ void Scene::Start()
 
     std::ifstream SceneFile("../Assets/test.vscene");
 
-
-    if(!CheckLua(L, luaL_dofile(L, "../Assets/VergodtEngine.lua"))){
-        Log("Cannot Load Lua");
-    }
-
     while (std::getline(SceneFile, Line)) {
         switch (GetNodeType(Line.substr((Line.find("[") + 10), (Line.find("]") - (Line.find("[") + 10)))))
         {
@@ -111,12 +106,9 @@ void Scene::Start()
             Childs.push_back(Nodes[Nodes.size() - 1]);
 
             if(Nodes[Nodes.size() - 1]->Script != "NULL"){
-                m_scriptcount++;
-                luabridge::LuaRef Add = luabridge::getGlobal(L, "AddScript");
-                
-                Add(Nodes[Nodes.size() - 1]->Script.c_str(), m_scriptcount, Nodes[Nodes.size() - 1]);
-                
-                Nodes[Nodes.size() - 1]->ScriptIndex = m_scriptcount;
+                if(CheckLua(L, luaL_dofile(L, Nodes[Nodes.size() - 1]->Script.c_str()))){
+                    LuaScript::InitNode(Nodes[Nodes.size() - 1], L);
+                }
             }
             }break;
         case NodeType::SPRITE:{
@@ -226,8 +218,9 @@ void Scene::Update(double dt)
         Nodes[i]->UpdateChild();
 
         if(Nodes[i]->Script != "NULL"){
-            //luabridge::LuaRef update = luabridge::getGlobal(L, "UpdateScript");
-            //update(Nodes[i]->ScriptIndex);
+            std::string updatefunc = Nodes[i]->Name + "Update";
+            luabridge::LuaRef update = luabridge::getGlobal(L, updatefunc.c_str());
+            update();
         }
     }
 }

@@ -24,6 +24,7 @@ public:
 	std::string Script;
 	int ScriptIndex = 0;
 
+	void Start() { std::cout << "s"; }
 protected:
 	std::vector<Node*> m_childNode;
 };
