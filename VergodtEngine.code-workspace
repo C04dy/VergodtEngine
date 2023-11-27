@@ -5,9 +5,6 @@
 		},
 		{
 			"path": "./Editor"
-		},
-		{
-			"path": "./PyBindModule"
 		}
 	],
 	"settings": {
