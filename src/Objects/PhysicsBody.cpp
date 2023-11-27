@@ -74,9 +74,6 @@ void PhysicsBody::UpdatePhysicsNode(){
 }
 
 void PhysicsBody::CleanPhysicsNode(){
-	delete m_collisionshapePolygon;
-	delete m_collisionshapecircle;
-
 	m_physicsbody = nullptr;
 	m_collisionshapePolygon = nullptr;
 	m_collisionshapecircle = nullptr;

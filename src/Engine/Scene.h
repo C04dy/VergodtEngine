@@ -35,13 +35,13 @@ public:
 	void SetWindowsWidth(int Width) { m_windowwidth = Width; }
 	void SetWindowsHeight(int Height) { m_windowheight = Height; }
 
-	void SetInput(Input* _Input) { Input = _Input; }
+	void SetInput(Input* _Input) { input = _Input; }
 protected:
 	SDL_Renderer* Renderer;
 
 	b2World* PhysicsWorld;
 
-	Input* Input;
+	Input* input;
 private:
 	std::string m_gamename = "VergodtEngineGame";
 
