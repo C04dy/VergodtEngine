@@ -9,9 +9,6 @@
 class Input
 {
 public:
-    Input();
-    ~Input();
-
     void SetKeyDown(SDL_Keycode KeyCode);
     void SetKeyUp(SDL_Keycode KeyCode);
     
@@ -34,6 +31,7 @@ public:
 
     Vector2 GetMousePos() { return m_mousepos; }
 
+    const Uint8* keystates = nullptr;
 private:
     int m_key = 0;
     bool m_iskeyup = false;

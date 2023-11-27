@@ -4,7 +4,7 @@
 #include <vector>
 #include "Vector2.h"
 
-class Transform{
+class TransformClass{
 public:
 	Vector2 Position = Vector2(0, 0);
 	Vector2 Size = Vector2(1, 1);
@@ -14,9 +14,10 @@ public:
 class Node
 {
 public:
-	Transform Transform;
+	TransformClass Transform;
 
-	void AddChild(Node* c);
+	void AddChild(Node* Child);
+	
 	void UpdateChild();
 
 	std::string Name;
@@ -25,4 +26,3 @@ public:
 protected:
 	std::vector<Node*> m_childNode;
 };
-

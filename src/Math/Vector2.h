@@ -18,7 +18,7 @@ public:
 		x = sx;
 	}
 
-	float GetX() const {
+	float GetX() const{
 		return x;
 	}
 
@@ -26,7 +26,7 @@ public:
 		y = sy;
 	}
 
-	float GetY() const {
+	float GetY() const{
 		return y;
 	}
 };

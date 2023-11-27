@@ -1,16 +1,6 @@
 #include "Input.h"
 #include <iostream>
 
-Input::Input()
-{
-
-}
-
-Input::~Input()
-{
-
-}
-
 void Input::SetKeyDown(SDL_Keycode KeyCode){
     m_key = KeyCode;
     m_iskeydown = true;
@@ -60,14 +50,14 @@ bool Input::IsKeyUp(SDL_Keycode Key){
 }
 
 bool Input::IsKeyPressed(SDL_Keycode Key){
-    if(m_keypressed && Key == m_key){
+    if(keystates[Key - 93]){
         return true;
     }
     return false;
 }
 
 bool Input::IsKeyNotPressed(SDL_Keycode Key){
-    if(m_keypressed == false && Key == m_key){
+    if(!keystates[Key - 93]){
         return true;
     }
     return false;

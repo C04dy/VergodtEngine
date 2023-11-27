@@ -3,13 +3,12 @@
 #include "Input.h"
 #include <box2d/b2_world.h>
 
-int Engine::EngineStart()
-{
+int Engine::EngineStart(){
     Scene* scene = new Scene;
 
     Input* input = new Input; 
 
-    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+    if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
         SDL_Log("SDL_Init failed (%s)", SDL_GetError());
         return 1;
     }
@@ -18,7 +17,7 @@ int Engine::EngineStart()
 
     SDL_Renderer* renderer = nullptr;
 
-    if (SDL_CreateWindowAndRenderer(scene->GetWindowWidth(), scene->GetWindowHeight(), SDL_WindowFlags::SDL_WINDOW_VULKAN, &window, &renderer) < 0) {
+    if(SDL_CreateWindowAndRenderer(scene->GetWindowWidth(), scene->GetWindowHeight(), SDL_WindowFlags::SDL_WINDOW_VULKAN, &window, &renderer) < 0){
         SDL_Log("SDL_CreateWindowAndRenderer failed (%s)", SDL_GetError());
         SDL_Quit();
         return 1;
@@ -31,7 +30,7 @@ int Engine::EngineStart()
 
 	int32 velocityIterations = 6;
 	int32 positionIterations = 2;
-    double timeStep = 1.0f / 60.0f;
+    double timeStep = 1.0f / 480.0f;
 
     m_physicsworld = new b2World({ 0.0f, 9.8f });
 
@@ -50,34 +49,33 @@ int Engine::EngineStart()
     scene->SetInput(input);
     scene->Start();
 
-    while (IsRunning()) {
-        while (SDL_PollEvent(&e) > 0) {
+    while(IsRunning()){
+        while(SDL_PollEvent(&e) > 0){
+            if(e.type == SDL_EVENT_KEY_DOWN && e.key.repeat == 0){
+                input->SetKeyDown(e.key.keysym.sym);
+            }
+            if(e.type == SDL_EVENT_KEY_UP && e.key.repeat == 0){
+                input->SetKeyUp(e.key.keysym.sym);
+            }
             switch (e.type)
             {
             case SDL_EVENT_QUIT:
-            SetRunning(false);
-                break;
-            case SDL_EVENT_KEY_UP:
-            input->SetKeyUp(e.key.keysym.sym);
-                break;
-            case SDL_EVENT_KEY_DOWN:
-            input->SetKeyDown(e.key.keysym.sym);
+                SetRunning(false);
                 break;
             case SDL_EVENT_MOUSE_MOTION:
-            input->SetMousePos(Vector2(e.motion.x, e.motion.y));
+                input->SetMousePos(Vector2(e.motion.x, e.motion.y));
                 break;
             case SDL_EVENT_MOUSE_BUTTON_UP:
-            input->SetMouseKeyUp(e.button.button);
+                input->SetMouseKeyUp(e.button.button);
                 break;
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            input->SetMouseKeyDown(e.button.button);
+                input->SetMouseKeyDown(e.button.button);
                 break;
             }
         }
-
+        input->keystates = SDL_GetKeyboardState(NULL);
         
         scene->Update(delta);
-
 
         m_physicsworld->Step(timeStep * delta * 1000, velocityIterations, positionIterations);
 

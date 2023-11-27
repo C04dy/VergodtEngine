@@ -12,7 +12,7 @@ void Log(T log)
     std::cout << log << "\n";
 }
 
-enum NodeType {
+enum NodeType{
     Null,
     NODE,
     SPRITE,
@@ -20,8 +20,7 @@ enum NodeType {
     PHYSICSBODY
 };
 
-NodeType GetNodeType (std::string const& inString) 
-{
+NodeType GetNodeType(std::string const& inString){
     if (inString == "NODE") return NODE;
     if (inString == "SPRITE") return SPRITE;
     if (inString == "CAMERA") return CAM;
@@ -29,11 +28,9 @@ NodeType GetNodeType (std::string const& inString)
     return Null;
 }
 
-void SetNode(Node* node, std::string Line, std::vector<Node*> Child)
-{
+void SetNode(Node* node, std::string Line, std::vector<Node*> Child){
     std::string pos = GetLineBetween(Line, "[POSITION(", ")]");
     
-
     float PosX = std::stof(pos.substr(0, pos.find(",")).c_str());
     float PosY = std::stof(pos.substr(pos.find(",") + 1, pos.length() - pos.find(",")).c_str());
     node->Transform.Position.Set(PosX, PosY);
@@ -52,8 +49,7 @@ void SetNode(Node* node, std::string Line, std::vector<Node*> Child)
     std::string Havechild = GetLineBetween(Line, "[CHILD=", "]");
 
     if(Havechild == "TRUE"){
-        for (int i = 0; i < (int)Child.size(); i++)
-        {
+        for(int i = 0; i < (int)Child.size(); i++){
             if(Child[i]->Name == GetLineBetween(Line, "[CHILDNAME=", "]")){
                 node->AddChild(Child[i]);
             }
@@ -63,20 +59,7 @@ void SetNode(Node* node, std::string Line, std::vector<Node*> Child)
     node->Script = GetLineBetween(Line, "[SCRIPT=", "]");
 }
 
-Scene::Scene()
-{
-    SetWindowsWidth(1280);
-    SetWindowsHeight(720);
-    SetGameName("VergodtEngineGameHello");
-}
-
-Scene::~Scene()
-{
-
-}
-
-void Scene::Start()
-{
+void Scene::Start(){
     py::scoped_interpreter guard{};
     py::print("Hello, World!");
 
@@ -101,13 +84,10 @@ void Scene::Start()
             }
             }break;
         case NodeType::SPRITE:{
-            Sprites.push_back(new Sprite);
-            SetNode(Sprites[Sprites.size() - 1], Line, Childs);     
-            Sprites[Sprites.size() - 1]->SetCam(&Cam);
-            Sprites[Sprites.size() - 1]->SetRenderer(Renderer);
             std::string sprite = GetLineBetween(Line, "[ASSET=", "]");
-            Sprites[Sprites.size() - 1]->LoadImage(sprite);
+            Sprites.push_back(new Sprite(sprite, &Cam, Renderer));
             Childs.push_back(Sprites[Sprites.size() - 1]);
+            SetNode(Sprites[Sprites.size() - 1], Line, Childs);     
             }break;
         case NodeType::CAM:{
             SetNode(&Cam, Line, Childs);
@@ -179,27 +159,22 @@ void Scene::Start()
         }
     }
 
-    for (int i = 0; i < (int)Childs.size(); i++)
-    {
+    for(int i = 0; i < (int)Childs.size(); i++){
         Childs[i] = nullptr;
     }
 
     SceneFile.close();
 }
 
-void Scene::Update(double dt)
-{
-    for (int i = 0; i < (int)PhysicsBodys.size(); i++)
-    {
+void Scene::Update(double dt){
+    for(int i = 0; i < (int)PhysicsBodys.size(); i++){
         PhysicsBodys[i]->UpdatePhysicsNode();
         PhysicsBodys[i]->UpdateChild();
     }
-    for (int i = 0; i < (int)Sprites.size(); i++)
-    {
+    for(int i = 0; i < (int)Sprites.size(); i++){
         Sprites[i]->UpdateChild();
     }
-    for (int i = 0; i < (int)Nodes.size(); i++)
-    {
+    for(int i = 0; i < (int)Nodes.size(); i++){
         Nodes[i]->UpdateChild();
 
         if(Nodes[i]->Script != "NULL"){
@@ -208,33 +183,24 @@ void Scene::Update(double dt)
     }
 }
 
-
-
-
-
-void Scene::Draw()
-{
-    for (int i = 0; i < (int)Sprites.size(); i++)
-    {
+void Scene::Draw(){
+    for(int i = 0; i < (int)Sprites.size(); i++){
         Sprites[i]->DrawImage();
     }
 }
 
-void Scene::Clean()
-{
-    for (int i = 0; i < (int)Sprites.size(); i++)
-    {
+void Scene::Clean(){
+    for(int i = 0; i < (int)Sprites.size(); i++){
         Sprites[i]->CleanImage();
         delete Sprites[i];
         Sprites[i] = nullptr;
     }
-    for (int i = 0; i < (int)Nodes.size(); i++)
-    {
+    for(int i = 0; i < (int)Nodes.size(); i++){
         delete Nodes[i];
         Nodes[i] = nullptr;
     }
-    for (int i = 0; i < (int)PhysicsBodys.size(); i++)
-    {
+    for(int i = 0; i < (int)PhysicsBodys.size(); i++){
+        PhysicsBodys[i]->CleanPhysicsNode();
         delete PhysicsBodys[i];
         PhysicsBodys[i] = nullptr;
     }

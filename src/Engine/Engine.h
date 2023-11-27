@@ -5,7 +5,6 @@
 #include <iostream>
 #include <string>
 
-
 class b2World;
 
 class Engine
@@ -14,8 +13,8 @@ public:
 	int EngineStart();
 
 	bool IsRunning() { return m_running; }
-	void SetRunning(bool running) { m_running = running; }
 
+	void SetRunning(bool running) { m_running = running; }
 private:
 	bool m_running = true;
 

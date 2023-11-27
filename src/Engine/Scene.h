@@ -18,34 +18,30 @@ class lua_State;
 class Scene
 {
 public:
-	Scene();
-	~Scene();
-
 	void Start();
 	void Update(double dt);
 	void Draw();
 	void Clean();
 
-	void SetRenderer(SDL_Renderer* r) { Renderer = r; }
-	void SetPhysicsWorld(b2World* w) { PhysicsWorld = w; }
+	void SetRenderer(SDL_Renderer* _Renderer) { Renderer = _Renderer; }
+	void SetPhysicsWorld(b2World* _PhysicsWorld) { PhysicsWorld = _PhysicsWorld; }
 
 	std::string GetGameName() { return m_gamename; }
-	void SetGameName(std::string gamename) { m_gamename = gamename; }
+	void SetGameName(std::string GameName) { m_gamename = GameName; }
 
 	int GetWindowWidth() { return m_windowwidth; }
 	int GetWindowHeight() { return m_windowheight; }
 
-	void SetWindowsWidth(int w) { m_windowwidth = w; }
-	void SetWindowsHeight(int h) { m_windowheight = h; }
+	void SetWindowsWidth(int Width) { m_windowwidth = Width; }
+	void SetWindowsHeight(int Height) { m_windowheight = Height; }
 
-	void SetInput(Input* Input) { input = Input; }
-
+	void SetInput(Input* _Input) { Input = _Input; }
 protected:
 	SDL_Renderer* Renderer;
 
 	b2World* PhysicsWorld;
 
-	Input* input;
+	Input* Input;
 private:
 	std::string m_gamename = "VergodtEngineGame";
 
