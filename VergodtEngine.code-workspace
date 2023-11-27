@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "./Editor"
+		},
+		{
+			"path": "./PybindModule"
 		}
 	],
 	"settings": {
