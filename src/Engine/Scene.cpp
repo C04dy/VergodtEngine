@@ -2,6 +2,10 @@
 #include "util/SceneFileFunctions.hpp"
 #include <string>
 
+#include <pybind11/embed.h>
+
+namespace py = pybind11;
+
 template <typename T>
 void Log(T log)
 {
@@ -73,6 +77,9 @@ Scene::~Scene()
 
 void Scene::Start()
 {
+    py::scoped_interpreter guard{};
+    py::print("Hello, World!");
+
     std::vector<Node*> Childs;
 
     std::string Line;

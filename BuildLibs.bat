@@ -4,6 +4,7 @@ mkdir build
 
 mkdir libs
 cd libs
+mkdir pybind11
 mkdir SDL
 cd SDL
 mkdir include

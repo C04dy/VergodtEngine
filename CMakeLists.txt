@@ -31,10 +31,12 @@ add_library(Box2D STATIC IMPORTED)
 set_property(TARGET Box2D PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/Box2D/lib/libbox2d.a)
 set_target_properties(Box2D PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/libs/Box2D/include)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor/pybind11)
+
 file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Objects/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
 
-include_directories(${PROJECT_NAME} src ${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Script src/Math)
+include_directories(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/Math)
 
-target_link_libraries(${PROJECT_NAME} SDL SDL_image Box2D)
+target_link_libraries(${PROJECT_NAME} SDL SDL_image Box2D pybind11::embed)
