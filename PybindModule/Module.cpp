@@ -1,13 +1,21 @@
 #include <pybind11/pybind11.h>
+#include "Objects/Node.h"
 
 namespace py = pybind11;
 
-int add(int i, int j) {
-    return i + j;
-}
+PYBIND11_MODULE(VergodtEngine, m){
+    py::class_<Vector2>(m, "Vector2")
+        .def("SetX", &Vector2::SetX)
+        .def("SetY", &Vector2::SetY)
+        .def("GetX", &Vector2::GetX)
+        .def("GetY", &Vector2::GetY);
 
-PYBIND11_MODULE(test, m) {
-    m.doc() = "pybind11 example plugin";
-
-    m.def("add", &add, "A function that adds two numbers");
+    py::class_<TransformClass>(m, "TransformClass")
+        .def_readwrite("Position", &TransformClass::Position)
+        .def_readwrite("Size", &TransformClass::Size)
+        .def_readwrite("Angle", &TransformClass::Angle);
+    
+    py::class_<Node>(m, "Node")
+        .def_readwrite("Transform", &Node::Transform)
+        .def_readwrite("Name", &Node::Name);
 }

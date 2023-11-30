@@ -195,16 +195,13 @@ void Scene::Clean(){
         delete Sprites[i];
         Sprites[i] = nullptr;
     }
-    Log("Sprite Cleaned");
     for(int i = 0; i < (int)Nodes.size(); i++){
         delete Nodes[i];
         Nodes[i] = nullptr;
     }
-    Log("Node Cleaned");
     for(int i = 0; i < (int)PhysicsBodys.size(); i++){
         PhysicsBodys[i]->CleanPhysicsNode();
         delete PhysicsBodys[i];
         PhysicsBodys[i] = nullptr;
     }
-    Log("PhysicsBody Cleaned");
 }
