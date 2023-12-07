@@ -13,6 +13,11 @@ int Engine::EngineStart(){
         return 1;
     }
 
+    if(IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_AVIF | IMG_INIT_JXL | IMG_INIT_TIF | IMG_INIT_WEBP) < 0){
+        SDL_Log("IMG_Init failed (%s)", SDL_GetError());
+        return 1;
+    }
+
     SDL_Window* window = nullptr;
 
     SDL_Renderer* renderer = nullptr;
@@ -30,18 +35,13 @@ int Engine::EngineStart(){
 
 	int32 velocityIterations = 6;
 	int32 positionIterations = 2;
-    double timeStep = 1.0f / 480.0f;
 
     m_physicsworld = new b2World({ 0.0f, 9.8f });
 
     m_physicsworld->SetWarmStarting(true);
     m_physicsworld->SetContinuousPhysics(true);
 
-    Uint64 PerfFreq = SDL_GetPerformanceFrequency();
-    Uint64 FpsCounter = SDL_GetPerformanceCounter();
-    Uint64 EndTime = 0;
-    Uint64 ElapsedTime = 0;
-    //Uint64 FPS = 0;
+    double EndTime = 0;
     double delta = 0;
 
     scene->SetRenderer(renderer);
@@ -50,6 +50,10 @@ int Engine::EngineStart(){
     scene->Start();
 
     while(IsRunning()){
+        float time = (float)(SDL_GetTicks()) / 1000.0f;
+        delta = time - EndTime;
+        EndTime = time;
+
         while(SDL_PollEvent(&e) > 0){
             if(e.type == SDL_EVENT_KEY_DOWN && e.key.repeat == 0){
                 input->SetKeyDown(e.key.keysym.sym);
@@ -77,18 +81,12 @@ int Engine::EngineStart(){
         
         scene->Update(delta);
 
-        m_physicsworld->Step(timeStep * delta * 1000, velocityIterations, positionIterations);
+        m_physicsworld->Step(delta, velocityIterations, positionIterations);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         scene->Draw();
         SDL_RenderPresent(renderer);
-
-        EndTime = SDL_GetPerformanceCounter();
-        ElapsedTime = EndTime - FpsCounter;
-        delta = (double)ElapsedTime / (double)PerfFreq;
-        //FPS = (double)PerfFreq / (double)ElapsedTime;
-        FpsCounter = EndTime;
     }
 
     scene->Clean();

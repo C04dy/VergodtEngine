@@ -9,6 +9,8 @@ class Sprite : public Node
 {
 public:
 	Sprite(std::string FilePath, Camera* Cam, SDL_Renderer* Renderer);
+	
+	~Sprite();
 
 	void LoadImage(std::string FilePath);
 

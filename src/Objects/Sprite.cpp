@@ -6,6 +6,10 @@ Sprite::Sprite(std::string FilePath, Camera* Cam, SDL_Renderer* Renderer){
     LoadImage(FilePath);
 }
 
+Sprite::~Sprite(){
+    SDL_DestroyTexture(m_texture);
+}
+
 void Sprite::LoadImage(std::string FilePath){
     SDL_Surface* surface = IMG_Load(FilePath.c_str());
 
@@ -22,6 +26,8 @@ void Sprite::LoadImage(std::string FilePath){
         SDL_Log("Failed to create texture from surface: %s", SDL_GetError());
         return;
     }
+
+    SDL_DestroySurface(surface);
 }
 
 void Sprite::DrawImage(){
@@ -31,10 +37,6 @@ void Sprite::DrawImage(){
                         , m_w * Transform.Size.x
                         , m_h * Transform.Size.y};
     SDL_RenderTextureRotated(m_renderer, m_texture, &srcRect, &dstRect, Transform.Angle, nullptr, SDL_FLIP_NONE);
-}
-
-void Sprite::CleanImage(){
-    SDL_DestroyTexture(m_texture);
 }
 
 void Sprite::SetCam(Camera* Cam){

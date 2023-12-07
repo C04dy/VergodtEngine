@@ -35,21 +35,32 @@ public:
 	void SetWindowsWidth(int Width) { m_windowwidth = Width; }
 	void SetWindowsHeight(int Height) { m_windowheight = Height; }
 
-	void SetInput(Input* _Input) { input = _Input; }
+	void SetInput(Input* _Input) { Input = _Input; }
 protected:
 	SDL_Renderer* Renderer;
 
 	b2World* PhysicsWorld;
 
-	Input* input;
+	Input* Input;
 private:
 	std::string m_gamename = "VergodtEngineGame";
 
 	int m_windowwidth = 1280, m_windowheight = 720;
 private:
-	Camera Cam;
+	Camera* Cam = nullptr;
 
-	std::vector<Node*> Nodes;
-	std::vector<Sprite*> Sprites;
-	std::vector<PhysicsBody*> PhysicsBodys;
+	PhysicsBody* Test1p = nullptr;
+	Sprite* Test1s = nullptr;
+
+	PhysicsBody* Test2p = nullptr;
+	Sprite* Test2s = nullptr;
+
+	PhysicsBody* Test3p = nullptr;
+	Sprite* Test3s = nullptr;
+
+	PhysicsBody* Test4p = nullptr;
+	Sprite* Test4s = nullptr;
+
+	PhysicsBody* Test5p = nullptr;
+	Sprite* Test5s = nullptr;
 };

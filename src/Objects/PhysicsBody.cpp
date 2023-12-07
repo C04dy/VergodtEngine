@@ -1,80 +1,81 @@
 #include "PhysicsBody.h"
 
 #define RADIAN_IN_DEGREES	57.3f
+#define PIXEL_TO_METER      100.0f
 
-void PhysicsBody::InitPhysicsBodyBox(b2World* PhysicsWorld, b2BodyType BodyType, float ColSizeX, float ColSizeY){
-	m_physicsbodydef.type = BodyType;
-	m_physicsbodydef.angle = Transform.Angle / RADIAN_IN_DEGREES;
-	m_physicsbodydef.position.x = Transform.Position.x / 48;
-	m_physicsbodydef.position.y = Transform.Position.y / 48;
-	m_physicsbody = PhysicsWorld->CreateBody(&m_physicsbodydef);
+void PhysicsBody::InitPhysicsBodyBox(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 ColSize, float Friction, float Density){
+	b2BodyDef physicsbodydef;
+	physicsbodydef.type = BodyType;
+	physicsbodydef.angle = Transform.Angle / RADIAN_IN_DEGREES;
+	physicsbodydef.position.x = Transform.Position.x / PIXEL_TO_METER;
+	physicsbodydef.position.y = Transform.Position.y / PIXEL_TO_METER;
+	m_physicsbody = PhysicsWorld->CreateBody(&physicsbodydef);
 
-	m_collisionshapePolygon = new b2PolygonShape;
+	b2PolygonShape shape;
 
-	m_collisionshapePolygon->SetAsBox(((ColSizeX / 2) / 48) * Transform.Size.x, ((ColSizeY / 2) / 48) * Transform.Size.y);
-	b2FixtureDef m_fixturedef;
-	m_fixturedef.shape = m_collisionshapePolygon;
-	m_fixturedef.density = 1.0f;
-	m_fixturedef.friction = 0.3f;
+	shape.SetAsBox(((ColSize.x / 2) / PIXEL_TO_METER) * Transform.Size.x, ((ColSize.y / 2) / PIXEL_TO_METER) * Transform.Size.y);
+	
+	b2FixtureDef fixturedef;
+	fixturedef.shape = &shape;
+	fixturedef.density = Density;
+	fixturedef.friction = Friction;
 
-	if(BodyType == b2BodyType::b2_dynamicBody){
-		m_physicsbody->CreateFixture(m_collisionshapePolygon, 1.0f);
-	}else{
-		m_physicsbody->CreateFixture(m_collisionshapePolygon, 0.0f);
-	}
+	m_physicsbody->CreateFixture(&fixturedef);
+
 }
 
-void PhysicsBody::InitPhysicsBodyCircle(b2World* PhysicsWorld, b2BodyType BodyType, float Radius){
-	m_physicsbodydef.type = BodyType;
-	m_physicsbodydef.angle = Transform.Angle / RADIAN_IN_DEGREES;
-	m_physicsbodydef.position.x = Transform.Position.x / 48;
-	m_physicsbodydef.position.y = Transform.Position.y / 48;
-	m_physicsbody = PhysicsWorld->CreateBody(&m_physicsbodydef);
+void PhysicsBody::InitPhysicsBodyCircle(b2World* PhysicsWorld, b2BodyType BodyType, float Radius, float Friction, float Density){
+	b2BodyDef physicsbodydef;
+	physicsbodydef.type = BodyType;
+	physicsbodydef.angle = Transform.Angle / RADIAN_IN_DEGREES;
+	physicsbodydef.position.x = Transform.Position.x / PIXEL_TO_METER;
+	physicsbodydef.position.y = Transform.Position.y / PIXEL_TO_METER;
+	m_physicsbody = PhysicsWorld->CreateBody(&physicsbodydef);
 
-	m_collisionshapecircle = new b2CircleShape;
+	b2CircleShape shape;
+	shape.m_radius = Radius / PIXEL_TO_METER;
+	
+	b2FixtureDef fixturedef;
+	fixturedef.shape = &shape;
+	fixturedef.density = Density;
+	fixturedef.friction = Friction;
 
-	m_collisionshapecircle->m_radius = Radius / 48;
-	b2FixtureDef m_fixturedef;
-	m_fixturedef.shape = m_collisionshapecircle;
-
-	if(BodyType == b2BodyType::b2_dynamicBody){
-		m_physicsbody->CreateFixture(m_collisionshapecircle, 1.0f);
-	}else{
-		m_physicsbody->CreateFixture(m_collisionshapecircle, 0.0f);
-	}
+	m_physicsbody->CreateFixture(&fixturedef);
 }
 
-void PhysicsBody::InitPhysicsBodyPolygon(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 Polygons[], int32 PolygonCount){
-	m_physicsbodydef.type = BodyType;
-	m_physicsbodydef.angle = Transform.Angle / RADIAN_IN_DEGREES;
-	m_physicsbodydef.position.x = Transform.Position.x / 48;
-	m_physicsbodydef.position.y = Transform.Position.y / 48;
-	m_physicsbody = PhysicsWorld->CreateBody(&m_physicsbodydef);
+void PhysicsBody::InitPhysicsBodyPolygon(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 Polygons[], int32 PolygonCount, float Friction, float Density){
+	b2BodyDef physicsbodydef;
+	physicsbodydef.type = BodyType;
+	physicsbodydef.angle = Transform.Angle / RADIAN_IN_DEGREES;
+	physicsbodydef.position.x = Transform.Position.x / PIXEL_TO_METER;
+	physicsbodydef.position.y = Transform.Position.y / PIXEL_TO_METER;
+	m_physicsbody = PhysicsWorld->CreateBody(&physicsbodydef);
 
-	m_collisionshapePolygon = new b2PolygonShape;
+	b2PolygonShape shape;
 
 	for(int i = 0; i < PolygonCount; i++){
-		Polygons[i].x = Polygons[i].x / 48;
-		Polygons[i].y = Polygons[i].y / 48;
+		Polygons[i].x = Polygons[i].x / PIXEL_TO_METER;
+		Polygons[i].y = Polygons[i].y / PIXEL_TO_METER;
 	}
 	
-	m_collisionshapePolygon->Set(Polygons, PolygonCount);
+	shape.Set(Polygons, PolygonCount);
 
-	if(BodyType == b2BodyType::b2_dynamicBody){
-		m_physicsbody->CreateFixture(m_collisionshapePolygon, 1.0f);
-	}else{
-		m_physicsbody->CreateFixture(m_collisionshapePolygon, 0.0f);
-	}
+	b2FixtureDef fixturedef;
+	fixturedef.shape = &shape;
+	fixturedef.density = Density;
+	fixturedef.friction = Friction;
+
+	m_physicsbody->CreateFixture(&fixturedef);
 }
 
 void PhysicsBody::UpdatePhysicsNode(){
-	Transform.Position.x = m_physicsbody->GetPosition().x * 48;
-	Transform.Position.y = m_physicsbody->GetPosition().y * 48;
+	Transform.Position.x = m_physicsbody->GetPosition().x * PIXEL_TO_METER;
+	Transform.Position.y = m_physicsbody->GetPosition().y * PIXEL_TO_METER;
+	
 	Transform.Angle = m_physicsbody->GetAngle() * RADIAN_IN_DEGREES;
 }
 
-void PhysicsBody::CleanPhysicsNode(){
+PhysicsBody::~PhysicsBody(){
+	m_physicsbody->GetWorld()->DestroyBody(m_physicsbody);
 	m_physicsbody = nullptr;
-	m_collisionshapePolygon = nullptr;
-	m_collisionshapecircle = nullptr;
 }

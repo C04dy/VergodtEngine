@@ -29,6 +29,14 @@ public:
 	float GetY() const{
 		return y;
 	}
+
+	Vector2 operator=(const b2Vec2& other){
+		if(this == &other)
+			return *this;
+
+		x = other.x;
+		y = other.y;
+	}
 };
 
 #endif

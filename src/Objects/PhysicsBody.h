@@ -5,19 +5,15 @@
 class PhysicsBody : public Node
 {
 public:
-	void InitPhysicsBodyBox(b2World* PhysicsWorld, b2BodyType BodyType, float ColSizeX, float ColSizeY);
-	void InitPhysicsBodyCircle(b2World* PhysicsWorld, b2BodyType BodyType, float Radius);
-	void InitPhysicsBodyPolygon(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 Polygons[], int32 PolygonCount);
+	void InitPhysicsBodyBox(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 ColSize, float Friction = 0.3f, float Density = 1.0f);
+	void InitPhysicsBodyCircle(b2World* PhysicsWorld, b2BodyType BodyType, float Radius, float Friction = 0.3f, float Density = 1.0f);
+	void InitPhysicsBodyPolygon(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 Polygons[], int32 PolygonCount, float Friction = 0.3f, float Density = 1.0f);
+
+	~PhysicsBody();
 
 	b2Body* GetBody() { return m_physicsbody; }
 
 	void UpdatePhysicsNode();
-
-	void CleanPhysicsNode();
 private:
-	b2BodyDef m_physicsbodydef;
 	b2Body* m_physicsbody;
-
-	b2PolygonShape* m_collisionshapePolygon;
-	b2CircleShape* m_collisionshapecircle;
 };
