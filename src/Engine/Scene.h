@@ -13,7 +13,7 @@
 
 class b2World;
 
-class lua_State;
+class VisualScript;
 
 class Scene
 {
@@ -63,4 +63,6 @@ private:
 
 	PhysicsBody* Test5p = nullptr;
 	Sprite* Test5s = nullptr;
+
+	VisualScript* script = nullptr;
 };

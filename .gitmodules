@@ -7,6 +7,3 @@
 [submodule "vendor/box2d"]
 	path = vendor/box2d
 	url = https://github.com/erincatto/box2d.git
-[submodule "PybindModule/pybind11"]
-	path = PybindModule/pybind11
-	url = https://github.com/pybind/pybind11.git
