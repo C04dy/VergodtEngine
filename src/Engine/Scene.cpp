@@ -1,9 +1,9 @@
 #include "Scene.h"
 #include <string>
 
-//#include <pybind11/embed.h>
-//
-//namespace py = pybind11;
+#include <pybind11/embed.h>
+
+namespace py = pybind11;
 
 template <typename T>
 void Log(T log)
@@ -29,8 +29,18 @@ NodeType GetNodeType(std::string const& inString){
 }*/
 
 void Scene::Start(){
-    //py::scoped_interpreter guard{};
-    //py::print("Hello, World!");
+    py::scoped_interpreter guard{};
+    py::print("Hello, World!");
+    
+    /*std::ifstream script("../Assets/test.py");
+    std::string line;
+    
+    while (std::getline(script, line))
+    {
+        py::exec(line.c_str());
+    }
+    script.close();*/
+    
 
     /* TODO: Implement the scene file Load
     std::string Line;
@@ -38,7 +48,6 @@ void Scene::Start(){
     std::ifstream SceneFile("../Assets/test.vscene");
 
     SceneFile.close();*/
-
     Cam = new Camera;
 
     Test1s = new Sprite("../Assets/Test1.png", Cam, Renderer);

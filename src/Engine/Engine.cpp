@@ -1,6 +1,7 @@
 #include "Engine.h"
 #include "Scene.h"
 #include "Input.h"
+#include "Window.h"
 #include <box2d/b2_world.h>
 
 int Engine::EngineStart(){
@@ -18,18 +19,7 @@ int Engine::EngineStart(){
         return 1;
     }
 
-    SDL_Window* window = nullptr;
-
-    SDL_Renderer* renderer = nullptr;
-
-    if(SDL_CreateWindowAndRenderer(scene->GetWindowWidth(), scene->GetWindowHeight(), SDL_WindowFlags::SDL_WINDOW_VULKAN, &window, &renderer) < 0){
-        SDL_Log("SDL_CreateWindowAndRenderer failed (%s)", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
-    SDL_SetWindowTitle(window, scene->GetGameName().c_str());
-
-    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    Window* window = new Window(scene->GetGameName(), scene->GetWindowWidth(), scene->GetWindowHeight());
 
     SDL_Event e;
 
@@ -44,7 +34,7 @@ int Engine::EngineStart(){
     double EndTime = 0;
     double delta = 0;
 
-    scene->SetRenderer(renderer);
+    scene->SetRenderer(window->GetRenderer());
     scene->SetPhysicsWorld(m_physicsworld);
     scene->SetInput(input);
     scene->Start();
@@ -83,10 +73,10 @@ int Engine::EngineStart(){
 
         m_physicsworld->Step(delta, velocityIterations, positionIterations);
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(window->GetRenderer(), 0, 0, 0, 255);
+        SDL_RenderClear(window->GetRenderer());
         scene->Draw();
-        SDL_RenderPresent(renderer);
+        SDL_RenderPresent(window->GetRenderer());
     }
 
     scene->Clean();
@@ -97,9 +87,8 @@ int Engine::EngineStart(){
     scene = nullptr;
     delete input;
     input = nullptr;
-
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    delete window;
+    window = nullptr;
 
     return 0;
 }
