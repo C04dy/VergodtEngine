@@ -1,10 +1,5 @@
 #include "Scene.h"
 #include <string>
-#include "VisualScripting/ScriptingNodes.hpp"
-
-//#include <pybind11/embed.h>
-
-//namespace py = pybind11;
 
 template <typename T>
 void Log(T log)
@@ -30,19 +25,6 @@ NodeType GetNodeType(std::string const& inString){
 }*/
 
 void Scene::Start(){
-    //py::scoped_interpreter guard{};
-    //py::print("Hello, World!");
-    
-    /*std::ifstream script("../Assets/test.py");
-    std::string line;
-    
-    while (std::getline(script, line))
-    {
-        py::exec(line.c_str());
-    }
-    script.close();*/
-    
-
     /* TODO: Implement the scene file Load
     std::string Line;
 
@@ -91,6 +73,8 @@ void Scene::Start(){
     Test5p->InitPhysicsBodyPolygon(PhysicsWorld, b2BodyType::b2_dynamicBody, polygons, 3);
     Test5p->AddChild(Test5s);
 
+    // Visual Scripting stuff that im gonna totaly implement obviously lol
+
     StartNode* s = new StartNode;
 
     UpdateNode* u = new UpdateNode;
@@ -98,11 +82,11 @@ void Scene::Start(){
     PrintNode* printn1 = new PrintNode;
     printn1->Message = "Start";
 
-    PrintNode* printn2 = new PrintNode;
-    printn2->Message = "Update";
-
     s->ConnectedNode = printn1;
-    u->ConnectedNode = printn2;
+
+    InputNode* input = new InputNode(Input, SDLK_SPACE);
+
+    u->ConnectedNode = input;
 
     script = new VisualScript(s, u);
     

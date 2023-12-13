@@ -1,4 +1,5 @@
 #include "Input.h"
+#include "VisualScripting/ScriptingNodes.hpp"
 #include <iostream>
 
 void Input::SetKeyDown(SDL_Keycode KeyCode){
@@ -6,6 +7,7 @@ void Input::SetKeyDown(SDL_Keycode KeyCode){
     m_iskeydown = true;
     m_iskeyup = false;
     m_keypressed = true;
+    UpdateInputNodes();
 }
 
 void Input::SetKeyUp(SDL_Keycode KeyCode){
@@ -13,6 +15,7 @@ void Input::SetKeyUp(SDL_Keycode KeyCode){
     m_iskeyup = true;
     m_iskeydown = false;
     m_keypressed = false;
+    UpdateInputNodes();
 }
 
 void Input::SetMousePos(Vector2 MousePos){
@@ -50,14 +53,14 @@ bool Input::IsKeyUp(SDL_Keycode Key){
 }
 
 bool Input::IsKeyPressed(SDL_Keycode Key){
-    if(keystates[Key - 93]){
+    if(keystates[SDL_GetScancodeFromKey(Key)]){
         return true;
     }
     return false;
 }
 
 bool Input::IsKeyNotPressed(SDL_Keycode Key){
-    if(!keystates[Key - 93]){
+    if(!keystates[SDL_GetScancodeFromKey(Key)]){
         return true;
     }
     return false;
@@ -91,4 +94,14 @@ bool Input::IsMouseKeyNotPressed(Uint8 Key){
         return true;
     }
     return false;
+}
+
+void Input::UpdateInputNodes(){
+    for (int i = 0; i < (int)InputNodes.size(); i++){
+        InputNodes[i]->SendSignal();
+    }   
+}
+
+void Input::SetInputNode(InputNode* InputNode){
+    InputNodes.push_back(InputNode);
 }

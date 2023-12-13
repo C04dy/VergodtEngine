@@ -101,7 +101,14 @@
 			"xmemory": "cpp",
 			"xstring": "cpp",
 			"xtr1common": "cpp",
-			"xutility": "cpp"
+			"xutility": "cpp",
+			"complex": "cpp",
+			"coroutine": "cpp",
+			"filesystem": "cpp",
+			"queue": "cpp",
+			"typeindex": "cpp",
+			"xhash": "cpp",
+			"xtree": "cpp"
 		}
 	}
 }

@@ -7,6 +7,8 @@
 class ScriptingNode
 {
 public:
+    virtual ~ScriptingNode() {}
+
     virtual void SendSignal() {}
     virtual void ReciveSignal() {}
 };
@@ -55,6 +57,37 @@ public:
     }
 
     std::string Message = "";
+};
+
+class InputNode : public ScriptingNode
+{
+public:
+    enum class InputType{
+
+    };
+public:
+    InputNode(Input* Input, SDL_Keycode KeyCode){
+        m_input = Input;
+        m_input->SetInputNode(this);
+        m_keycode = KeyCode;
+    }
+
+    ~InputNode(){
+        m_input = nullptr;
+        ConnectedNode = nullptr;
+        delete ConnectedNode;
+    }
+
+    void SendSignal() override {
+        if(m_input->IsKeyPressed(m_keycode) && ConnectedNode != nullptr)
+            ConnectedNode->ReciveSignal();
+    }
+
+    ScriptingNode* ConnectedNode = nullptr;
+private:
+    SDL_Keycode m_keycode;
+
+    Input* m_input = nullptr;
 };
 
 class VisualScript

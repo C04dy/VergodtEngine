@@ -3,8 +3,6 @@
 
 #pragma once
 
-// Was using Vector2 = b2Vec2; but lua made me convert this into a class sooooo
-
 #include <box2d/b2_math.h>
 
 class Vector2 : public b2Vec2
@@ -30,10 +28,7 @@ public:
 		return y;
 	}
 
-	Vector2 operator=(const b2Vec2& other){
-		if(this == &other)
-			return *this;
-
+	void operator=(const b2Vec2& other){
 		x = other.x;
 		y = other.y;
 	}

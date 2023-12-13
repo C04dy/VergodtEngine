@@ -4,11 +4,18 @@
 #pragma once
 
 #include <SDL3/SDL_events.h>
+#include <vector>
 #include "Vector2.h"
+
+class InputNode;
 
 class Input
 {
 public:
+    void SetInputNode(InputNode* InputNode);
+
+    void UpdateInputNodes();
+
     void SetKeyDown(SDL_Keycode KeyCode);
     void SetKeyUp(SDL_Keycode KeyCode);
     
@@ -44,6 +51,8 @@ private:
     bool m_mousekeypressed = false;
 
     Vector2 m_mousepos = Vector2(0, 0);
+
+    std::vector<InputNode*> InputNodes;
 };
 
 #endif

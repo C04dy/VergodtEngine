@@ -1,7 +1,5 @@
 #pragma once
 #include <iostream>
-#include <memory>
-#include <fstream>
 #include <vector>
 #include <SDL3/SDL.h>
 #include "Input.h"
@@ -11,9 +9,9 @@
 #include "Objects/PhysicsBody.h"
 #include "Objects/Node.h"
 
-class b2World;
+#include "VisualScripting/ScriptingNodes.hpp"
 
-class VisualScript;
+class b2World;
 
 class Scene
 {

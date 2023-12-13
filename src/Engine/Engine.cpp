@@ -5,9 +5,9 @@
 #include <box2d/b2_world.h>
 
 int Engine::EngineStart(){
-    Scene* scene = new Scene;
+    Scene Scene;
 
-    Input* input = new Input; 
+    Input Input; 
 
     if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
         SDL_Log("SDL_Init failed (%s)", SDL_GetError());
@@ -19,12 +19,12 @@ int Engine::EngineStart(){
         return 1;
     }
 
-    Window* window = new Window(scene->GetGameName(), scene->GetWindowWidth(), scene->GetWindowHeight());
+    Window* Windowptr = new Window(Scene.GetGameName(), Scene.GetWindowWidth(), Scene.GetWindowHeight());
 
     SDL_Event e;
 
-	int32 velocityIterations = 6;
-	int32 positionIterations = 2;
+	int32 VelocityIterations = 6;
+	int32 PositionIterations = 2;
 
     m_physicsworld = new b2World({ 0.0f, 9.8f });
 
@@ -32,63 +32,65 @@ int Engine::EngineStart(){
     m_physicsworld->SetContinuousPhysics(true);
 
     double EndTime = 0;
-    double delta = 0;
+    double Delta = 0;
 
-    scene->SetRenderer(window->GetRenderer());
-    scene->SetPhysicsWorld(m_physicsworld);
-    scene->SetInput(input);
-    scene->Start();
+    Scene.SetRenderer(Windowptr->GetRenderer());
+    Scene.SetPhysicsWorld(m_physicsworld);
+    Scene.SetInput(&Input);
+    Scene.Start();
 
     while(IsRunning()){
-        float time = (float)(SDL_GetTicks()) / 1000.0f;
-        delta = time - EndTime;
-        EndTime = time;
+        float Time = (float)(SDL_GetTicks()) / 1000.0f;
+        Delta = Time - EndTime;
+        EndTime = Time;
 
         while(SDL_PollEvent(&e) > 0){
             if(e.type == SDL_EVENT_KEY_DOWN && e.key.repeat == 0){
-                input->SetKeyDown(e.key.keysym.sym);
+                Input.SetKeyDown(e.key.keysym.sym);
             }
             if(e.type == SDL_EVENT_KEY_UP && e.key.repeat == 0){
-                input->SetKeyUp(e.key.keysym.sym);
+                Input.SetKeyUp(e.key.keysym.sym);
             }
             switch (e.type)
             {
             case SDL_EVENT_QUIT:
                 SetRunning(false);
+                goto Quit;
                 break;
             case SDL_EVENT_MOUSE_MOTION:
-                input->SetMousePos(Vector2(e.motion.x, e.motion.y));
+                Input.SetMousePos(Vector2(e.motion.x, e.motion.y));
                 break;
             case SDL_EVENT_MOUSE_BUTTON_UP:
-                input->SetMouseKeyUp(e.button.button);
+                Input.SetMouseKeyUp(e.button.button);
                 break;
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                input->SetMouseKeyDown(e.button.button);
+                Input.SetMouseKeyDown(e.button.button);
                 break;
             }
         }
-        input->keystates = SDL_GetKeyboardState(NULL);
+        Input.keystates = SDL_GetKeyboardState(NULL);
         
-        scene->Update(delta);
+        Scene.Update(Delta);
 
-        m_physicsworld->Step(delta, velocityIterations, positionIterations);
+        m_physicsworld->Step(Delta, VelocityIterations, PositionIterations);
 
-        SDL_SetRenderDrawColor(window->GetRenderer(), 0, 0, 0, 255);
-        SDL_RenderClear(window->GetRenderer());
-        scene->Draw();
-        SDL_RenderPresent(window->GetRenderer());
+        SDL_SetRenderDrawColor(Windowptr->GetRenderer(), 0, 0, 0, 255);
+        SDL_RenderClear(Windowptr->GetRenderer());
+        Scene.Draw();
+        SDL_RenderPresent(Windowptr->GetRenderer());
     }
+    
+Quit:
 
-    scene->Clean();
+    Scene.Clean();
 
     delete m_physicsworld;
     m_physicsworld = nullptr;
-    delete scene;
-    scene = nullptr;
-    delete input;
-    input = nullptr;
-    delete window;
-    window = nullptr;
+    delete Windowptr;
+    Windowptr = nullptr;
 
+    SDL_Quit();
+    IMG_Quit();
+    
     return 0;
 }
