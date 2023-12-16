@@ -45,12 +45,6 @@ int Engine::EngineStart(){
         EndTime = Time;
 
         while(SDL_PollEvent(&e) > 0){
-            if(e.type == SDL_EVENT_KEY_DOWN && e.key.repeat == 0){
-                Input.SetKeyDown(e.key.keysym.sym);
-            }
-            if(e.type == SDL_EVENT_KEY_UP && e.key.repeat == 0){
-                Input.SetKeyUp(e.key.keysym.sym);
-            }
             switch (e.type)
             {
             case SDL_EVENT_QUIT:
@@ -66,10 +60,19 @@ int Engine::EngineStart(){
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
                 Input.SetMouseKeyDown(e.button.button);
                 break;
+            case SDL_EVENT_KEY_DOWN:
+                Input.SetKeyDown(e.key.keysym.sym);
+                break;
+            case SDL_EVENT_KEY_UP:
+                Input.SetKeyUp(e.key.keysym.sym);
+                break;
             }
+
         }
         Input.keystates = SDL_GetKeyboardState(NULL);
-        
+        Input.UpdateMouseInputNodes();
+        Input.UpdateKeyboardInputNodes();
+
         Scene.Update(Delta);
 
         m_physicsworld->Step(Delta, VelocityIterations, PositionIterations);

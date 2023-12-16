@@ -79,14 +79,12 @@ void Scene::Start(){
 
     UpdateNode* u = new UpdateNode;
 
+    //MouseInputNode* input = new MouseInputNode(Input, 1, MouseInputNode::MouseInputType::IsMouseKeyPressed);
+    KeyboardInputNode* input = new KeyboardInputNode(Input, SDLK_SPACE, KeyboardInputNode::KeyboardInputType::IsKeyNotPressed);
     PrintNode* printn1 = new PrintNode;
     printn1->Message = "Start";
 
-    s->ConnectedNode = printn1;
-
-    InputNode* input = new InputNode(Input, SDLK_SPACE);
-
-    u->ConnectedNode = input;
+    input->ConnectedNodes.push_back(printn1);
 
     script = new VisualScript(s, u);
     

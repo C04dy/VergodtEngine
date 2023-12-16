@@ -9,7 +9,7 @@
 #include "Objects/PhysicsBody.h"
 #include "Objects/Node.h"
 
-#include "VisualScripting/ScriptingNodes.hpp"
+#include "VisualScripting/ScriptingNodes.h"
 
 class b2World;
 

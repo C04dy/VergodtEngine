@@ -31,7 +31,7 @@ add_library(Box2D STATIC IMPORTED)
 set_property(TARGET Box2D PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/Box2D/lib/libbox2d.a)
 set_target_properties(Box2D PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/libs/Box2D/include)
 
-file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Engine/VisualScripting/*.hpp src/Objects/*.cpp)
+file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Engine/VisualScripting/*.cpp src/Objects/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
 
