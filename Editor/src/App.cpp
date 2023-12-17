@@ -2,7 +2,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
-#include "SceneFileFunctions.hpp"
+#include "SceneFileFunctions.h"
 
 App::App()
 {
@@ -14,20 +14,27 @@ App::~App()
 
 }
 
-void App::InitApp()
-{
+void App::InitApp(){
     m_scenefile.open("../../Assets/testFORGUI.vscene");
+    bool Child = false;
     std::string ln;
-    while (std::getline(m_scenefile, ln)) {
+    while (std::getline(m_scenefile, ln)){
         m_lines.push_back(ln);
 
         std::string pos = GetLineBetween(ln, "[POSITION(", ")]");
-        
-        m_posX.push_back(std::stof(pos.substr(0, pos.find(",")).c_str()));
-        m_posY.push_back(std::stof(pos.substr(pos.find(",") + 1, pos.length() - pos.find(",")).c_str()));
 
-        m_name.push_back( GetLineBetween(ln, "[NAME=", "]") );
+        Nodes.push_back(Node(std::stof(pos.substr(0, pos.find(",")).c_str()),
+                            std::stof(pos.substr(pos.find(",") + 1, pos.length() - pos.find(",")).c_str()),
+                            GetLineBetween(ln, "[NAME=", "]")));
+        
+        if(GetLineBetween(ln, "[CHILD=", "]") == "TRUE"){
+            Nodes[Nodes.size() - 1].ChildNodes.push_back(Nodes[Nodes.size() - 2]);
+            Nodes.erase(Nodes.begin() + (Nodes.size() - 2));
+        }
     }
+    m_name = (char*)Nodes[Nodes.size() - 1].Name.c_str();
+    m_x = Nodes[Nodes.size() - 1].posX;
+    m_y = Nodes[Nodes.size() - 1].posY;
 }
 
 void App::RunApp()
@@ -101,20 +108,66 @@ void App::RunApp()
 
         ImGui::End();
     }
+
+    bool* showdemo = new bool(true); ImGui::ShowDemoWindow(showdemo);
     // Inspector
     {
         ImGui::Begin("Inspector");
 
-        ImGui::InputText("Name", (char*)m_name[m_scenefileindex].c_str(), m_name[m_scenefileindex].length() + 1);
-
-        std::cout << m_name[m_scenefileindex].length() << '\n' << m_name[m_scenefileindex] << '\n'; 
-        
+        ImGui::InputText("Name", m_name, 1000);
 
         ImGui::Text("Transform");
         ImGui::Text("Position");
-        ImGui::InputFloat("X", &m_posX[m_scenefileindex]);
-        ImGui::InputFloat("Y", &m_posY[m_scenefileindex]);
+        ImGui::InputFloat("X", &m_x);
+        ImGui::InputFloat("Y", &m_y);
 
         ImGui::End();
+    }
+    // Scene Hierarchy
+    {
+        ImGui::Begin("Hierarchy");
+        
+        Scene(Nodes);
+
+        ImGui::End();
+    }
+}
+
+void App::Scene(std::vector<Node> n){
+    static int selection_mask = (1 << 2);
+    static bool test_drag_and_drop = false;
+    
+    int node_clicked = -1;
+
+    static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+    ImGuiTreeNodeFlags node_flags = base_flags;
+
+    for (int i = 0; i < n.size(); i++)
+    {
+        const bool is_selected = (selection_mask & (1 << i)) != 0;
+        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, n[i].Name.c_str());
+        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()){
+            node_clicked = i;
+            m_scenefileindex = i;
+
+            //Idk why but this brokes the fucking child nodes
+            m_name = (char*)n[i].Name.c_str();
+            m_x = n[i].posX;
+            m_y = n[i].posY;
+        }
+        if (test_drag_and_drop && ImGui::BeginDragDropSource()){
+            ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
+            ImGui::Text("This is a drag and drop source");
+            ImGui::EndDragDropSource();
+        }
+        if (node_open)
+        {
+            for (int j = 0; j < n[i].ChildNodes.size(); j++)
+            {
+                Scene(n[i].ChildNodes);
+            }
+
+            ImGui::TreePop();
+        }
     }
 }

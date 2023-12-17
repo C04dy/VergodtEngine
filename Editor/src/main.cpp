@@ -126,7 +126,6 @@ int main(int, char**)
 
 
         app.RunApp();
-        ImGui::ShowDemoWindow(&show_demo_window);
         
 
         // Rendering

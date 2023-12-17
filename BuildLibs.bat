@@ -18,7 +18,10 @@ mkdir include
 mkdir lib
 cd include
 mkdir box2d
-cd ../../..
+
+cd %½dir%\Editor
+mkdir build
+cd %½dir%
 
 cd vendor/SDL
 mkdir build
@@ -30,6 +33,7 @@ mingw32-make install
 copy libSDL3.a %dir%\libs\SDL\lib
 copy libSDL3.dll.a %dir%\libs\SDL\lib
 copy SDL3.dll %dir%\build
+copy SDL3.dll %dir%\Editor\build
 cd ../include
 robocopy SDL3 %dir%\libs\SDL\include\SDL3
 
@@ -46,6 +50,7 @@ mingw32-make
 copy libSDL3_image.a %dir%\libs\SDL\lib
 copy libSDL3_image.dll.a %dir%\libs\SDL\lib
 copy SDL3_image.dll %dir%\build
+copy SDL3_image.dll %dir%\Editor\build
 cd ../include
 robocopy SDL3_image %dir%\libs\SDL\include\SDL3
 
