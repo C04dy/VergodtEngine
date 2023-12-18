@@ -16,7 +16,6 @@ App::~App()
 
 void App::InitApp(){
     m_scenefile.open("../../Assets/testFORGUI.vscene");
-    bool Child = false;
     std::string ln;
     while (std::getline(m_scenefile, ln)){
         m_lines.push_back(ln);
@@ -95,7 +94,7 @@ void App::RunApp()
                 if (ImGui::MenuItem("Flag: PassthruCentralNode",    "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0, opt_fullscreen)) { dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode; }
                 ImGui::Separator();
 
-                if (ImGui::MenuItem("Close", NULL, false, p_open != NULL))
+                if (ImGui::MenuItem("Close", NULL))
                     p_open = false;
                 ImGui::EndMenu();
             }
@@ -106,7 +105,7 @@ void App::RunApp()
         ImGui::End();
     }
 
-    bool* showdemo = new bool(true); ImGui::ShowDemoWindow(showdemo);
+    ImGui::ShowDemoWindow(new bool(true));
     // Inspector
     {
         ImGui::Begin("Inspector");
@@ -133,7 +132,7 @@ void App::RunApp()
 }
 
 void App::AddChildNodes(std::vector<Node> n, int offset){
-    for (int i = 0; i < n.size(); i++)
+    for (int i = 0; i < (int)n.size(); i++)
     {
         if(ImGui::TreeNode((void*)(intptr_t)i, n[i].Name.c_str())){
             m_nodeindex = (offset - 1) - i;
@@ -146,7 +145,7 @@ void App::AddChildNodes(std::vector<Node> n, int offset){
 }
 
 void App::Scene(std::vector<Node> n){
-    for (int i = 0; i < n.size(); i++)
+    for (int i = 0; i < (int)n.size(); i++)
     {
         if(!n[i].IsChild){
             if(ImGui::TreeNode((void*)(intptr_t)i, n[i].Name.c_str())){
