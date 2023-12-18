@@ -21,6 +21,8 @@ public:
     std::string Name = "";
 
     std::vector<Node> ChildNodes;
+    
+    bool IsChild = false;
 };
 
 class App
@@ -35,14 +37,12 @@ private:
     std::vector<std::string> m_lines;
     std::ifstream m_scenefile;
 
-    int m_scenefileindex = 0;
+    int m_nodeindex = 0;
 
     std::vector<Node> Nodes;
 
-    char* m_name = nullptr;
-    float m_x = 0, m_y = 0; 
-
     void Scene(std::vector<Node> n);
+    void AddChildNodes(std::vector<Node> n, int offset);
 };
 
 #endif

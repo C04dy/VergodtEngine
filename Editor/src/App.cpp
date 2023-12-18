@@ -28,13 +28,10 @@ void App::InitApp(){
                             GetLineBetween(ln, "[NAME=", "]")));
         
         if(GetLineBetween(ln, "[CHILD=", "]") == "TRUE"){
+            Nodes[Nodes.size() - 2].IsChild = true;
             Nodes[Nodes.size() - 1].ChildNodes.push_back(Nodes[Nodes.size() - 2]);
-            Nodes.erase(Nodes.begin() + (Nodes.size() - 2));
         }
     }
-    m_name = (char*)Nodes[Nodes.size() - 1].Name.c_str();
-    m_x = Nodes[Nodes.size() - 1].posX;
-    m_y = Nodes[Nodes.size() - 1].posY;
 }
 
 void App::RunApp()
@@ -114,12 +111,14 @@ void App::RunApp()
     {
         ImGui::Begin("Inspector");
 
-        ImGui::InputText("Name", m_name, 1000);
+        char* n = (char*)Nodes[m_nodeindex].Name.c_str();
+        ImGui::InputText("Name", n, 1000);
+        Nodes[m_nodeindex].Name = n;
 
         ImGui::Text("Transform");
         ImGui::Text("Position");
-        ImGui::InputFloat("X", &m_x);
-        ImGui::InputFloat("Y", &m_y);
+        ImGui::InputFloat("X", &Nodes[m_nodeindex].posX);
+        ImGui::InputFloat("Y", &Nodes[m_nodeindex].posY);
 
         ImGui::End();
     }
@@ -133,41 +132,29 @@ void App::RunApp()
     }
 }
 
-void App::Scene(std::vector<Node> n){
-    static int selection_mask = (1 << 2);
-    static bool test_drag_and_drop = false;
-    
-    int node_clicked = -1;
-
-    static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
-    ImGuiTreeNodeFlags node_flags = base_flags;
-
+void App::AddChildNodes(std::vector<Node> n, int offset){
     for (int i = 0; i < n.size(); i++)
     {
-        const bool is_selected = (selection_mask & (1 << i)) != 0;
-        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, n[i].Name.c_str());
-        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()){
-            node_clicked = i;
-            m_scenefileindex = i;
+        if(ImGui::TreeNode((void*)(intptr_t)i, n[i].Name.c_str())){
+            m_nodeindex = (offset - 1) - i;
 
-            //Idk why but this brokes the fucking child nodes
-            m_name = (char*)n[i].Name.c_str();
-            m_x = n[i].posX;
-            m_y = n[i].posY;
-        }
-        if (test_drag_and_drop && ImGui::BeginDragDropSource()){
-            ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
-            ImGui::Text("This is a drag and drop source");
-            ImGui::EndDragDropSource();
-        }
-        if (node_open)
-        {
-            for (int j = 0; j < n[i].ChildNodes.size(); j++)
-            {
-                Scene(n[i].ChildNodes);
-            }
-
+            AddChildNodes(n[i].ChildNodes, (offset - 1) - i);
+            
             ImGui::TreePop();
+        }
+    }
+}
+
+void App::Scene(std::vector<Node> n){
+    for (int i = 0; i < n.size(); i++)
+    {
+        if(!n[i].IsChild){
+            if(ImGui::TreeNode((void*)(intptr_t)i, n[i].Name.c_str())){
+                m_nodeindex = i;
+                AddChildNodes(n[i].ChildNodes, i);
+                
+                ImGui::TreePop();
+            }
         }
     }
 }
