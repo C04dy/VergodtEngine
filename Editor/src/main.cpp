@@ -23,6 +23,11 @@
 
 #include "App.h"
 
+
+ImVec4 CreateColorWithRGBA(float R = 255.0f, float G = 255.0f, float B = 255.0f, float A = 255.0f){
+    return ImVec4(R / 255.0f, G / 255.0f, B / 255.0f, A / 255.0f);
+}
+
 // Main code
 int main(int, char**)
 {
@@ -53,7 +58,7 @@ int main(int, char**)
     {
         SDL_Log("Error: SDL_CreateRenderer(): %s\n", SDL_GetError());
         return -1;
-}
+    }
     SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     SDL_ShowWindow(window);
 
@@ -95,6 +100,15 @@ int main(int, char**)
     
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
 
+    ImGui::PushStyleColor(ImGuiCol_Tab, CreateColorWithRGBA(43, 43, 43, 220));
+    ImGui::PushStyleColor(ImGuiCol_TabActive, CreateColorWithRGBA(70, 70, 70));
+    ImGui::PushStyleColor(ImGuiCol_TabUnfocusedActive, CreateColorWithRGBA(32, 32, 32));
+    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, CreateColorWithRGBA(45, 45, 45));
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, CreateColorWithRGBA(80, 80, 80, 130));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, CreateColorWithRGBA(70, 80, 90, 100));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, CreateColorWithRGBA(40, 65, 90, 100));
+
+    ImGui::LoadIniSettingsFromDisk("../../Assets/VergodtEngine.ini");
     // Main loop
     bool done = false;
 #ifdef __EMSCRIPTEN__

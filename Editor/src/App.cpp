@@ -26,9 +26,12 @@ void App::InitApp(){
                             std::stof(pos.substr(pos.find(",") + 1, pos.length() - pos.find(",")).c_str()),
                             GetLineBetween(ln, "[NAME=", "]")));
         
-        if(GetLineBetween(ln, "[CHILD=", "]") == "TRUE"){
-            Nodes[Nodes.size() - 2].IsChild = true;
-            Nodes[Nodes.size() - 1].ChildNodes.push_back(Nodes[Nodes.size() - 2]);
+        if(GetLineBetween(ln, "[CHILD=", "]") != "0"){
+            for (int i = 0; i < std::stoi(GetLineBetween(ln, "[CHILD=", "]")); i++)
+            {   
+                Nodes[Nodes.size() - (i + 2)].IsChild = true;
+                Nodes[Nodes.size() - 1].ChildNodes.push_back(Nodes[Nodes.size() - (i + 2)]);
+            }
         }
     }
 }
