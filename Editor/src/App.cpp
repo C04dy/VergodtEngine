@@ -32,6 +32,7 @@ void App::InitApp(){
                 Nodes[Nodes.size() - (i + 2)].IsChild = true;
                 Nodes[Nodes.size() - 1].ChildNodes.push_back(Nodes[Nodes.size() - (i + 2)]);
             }
+            Nodes[Nodes.size() - 1].HaveChild = true;
         }
     }
 }
@@ -135,27 +136,78 @@ void App::RunApp()
 }
 
 void App::AddChildNodes(std::vector<Node> n, int offset){
+    static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+    static int selection_mask = (1 << 2);
     for (int i = 0; i < (int)n.size(); i++)
     {
-        if(ImGui::TreeNode((void*)(intptr_t)i, n[i].Name.c_str())){
-            m_nodeindex = (offset - 1) - i;
+        ImGuiTreeNodeFlags node_flags = base_flags;
+        const bool is_selected = (selection_mask & (1 << i)) != 0;
+        if (is_selected)
+            node_flags |= ImGuiTreeNodeFlags_Selected;
+        if(n[i].HaveChild){
+            bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, n[i].Name.c_str());
+            if(ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+                m_nodeindex = (offset - 1) - i;
+            if(ImGui::BeginDragDropSource()){
+                ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
+                ImGui::Text("This is a drag and drop source");
+                ImGui::EndDragDropSource();
+            }
+            if(node_open){
+                
+                AddChildNodes(n[i].ChildNodes, (offset - 1) - i);
 
-            AddChildNodes(n[i].ChildNodes, (offset - 1) - i);
-            
-            ImGui::TreePop();
+                ImGui::TreePop();
+            }
+        }
+        else if(!n[i].HaveChild){
+            node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, n[i].Name.c_str());
+            if(ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+                m_nodeindex = (offset - 1) - i;
+            if(ImGui::BeginDragDropSource()){
+                ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
+                ImGui::Text("This is a drag and drop source");
+                ImGui::EndDragDropSource();
+            }
         }
     }
 }
 
 void App::Scene(std::vector<Node> n){
+    static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+    static int selection_mask = (1 << 2);
     for (int i = 0; i < (int)n.size(); i++)
     {
-        if(!n[i].IsChild){
-            if(ImGui::TreeNode((void*)(intptr_t)i, n[i].Name.c_str())){
+        ImGuiTreeNodeFlags node_flags = base_flags;
+        const bool is_selected = (selection_mask & (1 << i)) != 0;
+        if (is_selected)
+            node_flags |= ImGuiTreeNodeFlags_Selected;
+        if(!n[i].IsChild && n[i].HaveChild){
+            bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, n[i].Name.c_str());
+            if(ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
                 m_nodeindex = i;
-                AddChildNodes(n[i].ChildNodes, i);
+            if(ImGui::BeginDragDropSource()){
+                ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
+                ImGui::Text("This is a drag and drop source");
+                ImGui::EndDragDropSource();
+            }
+            if(node_open){
                 
+                AddChildNodes(n[i].ChildNodes, i);
+
                 ImGui::TreePop();
+            }
+        }
+        else if(!n[i].IsChild && !n[i].HaveChild){
+            node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, n[i].Name.c_str());
+            if(ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+                m_nodeindex = i;
+            if(ImGui::BeginDragDropSource()){
+                ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
+                ImGui::Text("This is a drag and drop source");
+                ImGui::EndDragDropSource();
             }
         }
     }

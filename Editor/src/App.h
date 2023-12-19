@@ -23,6 +23,7 @@ public:
     std::vector<Node> ChildNodes;
     
     bool IsChild = false;
+    bool HaveChild = false;
 };
 
 class App
