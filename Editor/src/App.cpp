@@ -4,124 +4,105 @@
 #include "imgui_impl_sdlrenderer3.h"
 #include "SceneFileFunctions.h"
 
-App::App()
-{
-
-}
-
-App::~App()
-{
-
-}
+#include <nfd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void App::InitApp(){
     m_scenefile.open("../../Assets/testFORGUI.vscene");
     std::string ln;
     while (std::getline(m_scenefile, ln)){
         m_lines.push_back(ln);
+        std::string pose = GetLineBetween(ln, "[POSITION(", ")]");
+        std::string size = GetLineBetween(ln, "[SIZE(", ")]");
+        std::string angle = GetLineBetween(ln, "[ANGLE(", ")]");
 
-        std::string pos = GetLineBetween(ln, "[POSITION(", ")]");
-
-        Nodes.push_back(Node(std::stof(pos.substr(0, pos.find(",")).c_str()),
-                            std::stof(pos.substr(pos.find(",") + 1, pos.length() - pos.find(",")).c_str()),
-                            GetLineBetween(ln, "[NAME=", "]")));
+        Nodes.push_back(Node(
+            std::stof(pose.substr(0, pose.find(",")).c_str()),
+            std::stof(pose.substr(pose.find(",") + 1, pose.length() - pose.find(",")).c_str()),
+            std::stof(size.substr(0, size.find(",")).c_str()),
+            std::stof(size.substr(size.find(",") + 1, size.length() - size.find(",")).c_str()),   
+            std::stof(angle.c_str()),
+            GetLineBetween(ln, "[NAME=", "]"))
+            );
         
         if(GetLineBetween(ln, "[CHILD=", "]") != "0"){
             for (int i = 0; i < std::stoi(GetLineBetween(ln, "[CHILD=", "]")); i++)
             {   
                 Nodes[Nodes.size() - (i + 2)].IsChild = true;
-                Nodes[Nodes.size() - 1].ChildNodes.push_back(Nodes[Nodes.size() - (i + 2)]);
+                Nodes[Nodes.size() - 1].ChildNodes++;
             }
             Nodes[Nodes.size() - 1].HaveChild = true;
         }
+
+        if(GetLineBetween(ln, "[NODETYPE=", "]") == "SPRITE"){
+            Nodes[Nodes.size() - 1].NodesType = Node::NodeType::SPRITE;
+            Nodes[Nodes.size() - 1].SpritePath = GetLineBetween(ln, "[ASSET=", "]");
+        }
+    }
+
+    NFD_Init();
+}
+
+void InspectorNodeBase(Node& n){
+    char* na = (char*)n.Name.c_str();
+    ImGui::InputText("Name", na, 1000);
+    n.Name = na;
+
+    if(ImGui::TreeNode((void*)(intptr_t)0, "Transform")){
+        if(ImGui::TreeNode((void*)(intptr_t)0, "Position")){
+            ImGui::InputFloat("X", &n.posX);
+            ImGui::InputFloat("Y", &n.posY);
+            ImGui::TreePop();
+        }
+        if(ImGui::TreeNode((void*)(intptr_t)1, "Size")){
+            ImGui::InputFloat("X", &n.sizeX);
+            ImGui::InputFloat("Y", &n.sizeY);
+            ImGui::TreePop();
+        }
+        if(ImGui::TreeNode((void*)(intptr_t)2, "Angle")){
+            ImGui::InputFloat(" ", &n.Angle);
+            ImGui::TreePop();
+        }
+        ImGui::TreePop();
+    }
+}
+
+void InspectorNodeSprite(Node& n){
+    if(ImGui::TreeNode((void*)(intptr_t)1, "Sprite")){
+        if(ImGui::Button(n.SpritePath.c_str())){
+            nfdchar_t* outPath;
+            nfdfilteritem_t filterItem[1] = { "Image Files", "png,jpg,jpeg,avif,jxl,tif,webp" };
+            nfdresult_t result = NFD_OpenDialog(&outPath, filterItem, 2, NULL);
+            if(result == NFD_OKAY){
+                puts(outPath);
+                n.SpritePath = outPath;
+                NFD_FreePath(outPath);
+            }
+            else if(result == NFD_ERROR){
+                printf("Error: %s\n", NFD_GetError());
+            }
+        }
+
+        ImGui::TreePop();
     }
 }
 
 void App::RunApp()
 {
-    // Docking
-    {
-        static bool opt_fullscreen = true;
-        static bool opt_padding = false;
-        bool p_open = true;
-        static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        if (opt_fullscreen)
-        {
-            const ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->WorkPos);
-            ImGui::SetNextWindowSize(viewport->WorkSize);
-            ImGui::SetNextWindowViewport(viewport->ID);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-            window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-        }
-        else
-        {
-            dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
-        }
-
-        if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-            window_flags |= ImGuiWindowFlags_NoBackground;
-
-        if (!opt_padding)
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("DockSpace Demo", &p_open, window_flags);
-        if (!opt_padding)
-            ImGui::PopStyleVar();
-
-        if (opt_fullscreen)
-            ImGui::PopStyleVar(2);
-
-        ImGuiIO& io = ImGui::GetIO();
-        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-        {
-            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-        }
-
-        if (ImGui::BeginMenuBar())
-        {
-            if (ImGui::BeginMenu("Options"))
-            {
-                ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
-                ImGui::MenuItem("Padding", NULL, &opt_padding);
-                ImGui::Separator();
-
-                if (ImGui::MenuItem("Flag: NoDockingOverCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingOverCentralNode) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoDockingOverCentralNode; }
-                if (ImGui::MenuItem("Flag: NoDockingSplit",         "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingSplit) != 0))             { dockspace_flags ^= ImGuiDockNodeFlags_NoDockingSplit; }
-                if (ImGui::MenuItem("Flag: NoUndocking",            "", (dockspace_flags & ImGuiDockNodeFlags_NoUndocking) != 0))                { dockspace_flags ^= ImGuiDockNodeFlags_NoUndocking; }
-                if (ImGui::MenuItem("Flag: NoResize",               "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                   { dockspace_flags ^= ImGuiDockNodeFlags_NoResize; }
-                if (ImGui::MenuItem("Flag: AutoHideTabBar",         "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))             { dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar; }
-                if (ImGui::MenuItem("Flag: PassthruCentralNode",    "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0, opt_fullscreen)) { dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode; }
-                ImGui::Separator();
-
-                if (ImGui::MenuItem("Close", NULL))
-                    p_open = false;
-                ImGui::EndMenu();
-            }
-
-            ImGui::EndMenuBar();
-        }
-
-        ImGui::End();
-    }
-
-    ImGui::ShowDemoWindow(new bool(true));
+    //ImGui::ShowDemoWindow(new bool(true));
     // Inspector
     {
         ImGui::Begin("Inspector");
 
-        char* n = (char*)Nodes[m_nodeindex].Name.c_str();
-        ImGui::InputText("Name", n, 1000);
-        Nodes[m_nodeindex].Name = n;
+        InspectorNodeBase(Nodes[m_nodeindex]);
 
-        ImGui::Text("Transform");
-        ImGui::Text("Position");
-        ImGui::InputFloat("X", &Nodes[m_nodeindex].posX);
-        ImGui::InputFloat("Y", &Nodes[m_nodeindex].posY);
+        switch (Nodes[m_nodeindex].NodesType)
+        {
+        case Node::NodeType::SPRITE:
+            InspectorNodeSprite(Nodes[m_nodeindex]);
+            break;
+        }
 
         ImGui::End();
     }
@@ -129,23 +110,39 @@ void App::RunApp()
     {
         ImGui::Begin("Hierarchy");
         
-        Scene(Nodes);
+        Scene();
+
+        ImGui::End();
+    }
+    // Filesystem
+    {
+        ImGui::Begin("Filesystem");
+
+        ImGui::End();
+    }
+    // Viewport
+    {
+        ImGui::Begin("Viewport");
 
         ImGui::End();
     }
 }
 
-void App::AddChildNodes(std::vector<Node> n, int offset){
+void App::EndApp(){
+    NFD_Quit();
+}
+
+void App::AddChildNodes(int ChildSize, int offset){
     static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     static int selection_mask = (1 << 2);
-    for (int i = 0; i < (int)n.size(); i++)
+    for (int i = 0; i < ChildSize; i++)
     {
         ImGuiTreeNodeFlags node_flags = base_flags;
         const bool is_selected = (selection_mask & (1 << i)) != 0;
-        if (is_selected)
+        if(is_selected)
             node_flags |= ImGuiTreeNodeFlags_Selected;
-        if(n[i].HaveChild){
-            bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, n[i].Name.c_str());
+        if(Nodes[(offset - 1) - i].HaveChild){
+            bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, Nodes[(offset - 1) - i].Name.c_str());
             if(ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
                 m_nodeindex = (offset - 1) - i;
             if(ImGui::BeginDragDropSource()){
@@ -155,14 +152,14 @@ void App::AddChildNodes(std::vector<Node> n, int offset){
             }
             if(node_open){
                 
-                AddChildNodes(n[i].ChildNodes, (offset - 1) - i);
+                AddChildNodes(Nodes[(offset - 1) - i].ChildNodes, (offset - 1) - i);
 
                 ImGui::TreePop();
             }
         }
-        else if(!n[i].HaveChild){
+        else if(!Nodes[(offset - 1) - i].HaveChild){
             node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-            ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, n[i].Name.c_str());
+            ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, Nodes[(offset - 1) - i].Name.c_str());
             if(ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
                 m_nodeindex = (offset - 1) - i;
             if(ImGui::BeginDragDropSource()){
@@ -174,17 +171,17 @@ void App::AddChildNodes(std::vector<Node> n, int offset){
     }
 }
 
-void App::Scene(std::vector<Node> n){
+void App::Scene(){
     static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     static int selection_mask = (1 << 2);
-    for (int i = 0; i < (int)n.size(); i++)
+    for (int i = 0; i < (int)Nodes.size(); i++)
     {
         ImGuiTreeNodeFlags node_flags = base_flags;
         const bool is_selected = (selection_mask & (1 << i)) != 0;
         if (is_selected)
             node_flags |= ImGuiTreeNodeFlags_Selected;
-        if(!n[i].IsChild && n[i].HaveChild){
-            bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, n[i].Name.c_str());
+        if(!Nodes[i].IsChild && Nodes[i].HaveChild){
+            bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, Nodes[i].Name.c_str());
             if(ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
                 m_nodeindex = i;
             if(ImGui::BeginDragDropSource()){
@@ -194,14 +191,14 @@ void App::Scene(std::vector<Node> n){
             }
             if(node_open){
                 
-                AddChildNodes(n[i].ChildNodes, i);
+                AddChildNodes(Nodes[i].ChildNodes, i);
 
                 ImGui::TreePop();
             }
         }
-        else if(!n[i].IsChild && !n[i].HaveChild){
+        else if(!Nodes[i].IsChild && !Nodes[i].HaveChild){
             node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-            ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, n[i].Name.c_str());
+            ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, Nodes[i].Name.c_str());
             if(ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
                 m_nodeindex = i;
             if(ImGui::BeginDragDropSource()){

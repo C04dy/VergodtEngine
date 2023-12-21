@@ -27,4 +27,6 @@ add_executable(${PROJECT_NAME} ${SRCS})
 
 include_directories(${PROJECT_NAME} src ImGui/Include ../src/util)
 
-target_link_libraries(${PROJECT_NAME} SDL)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/nativefiledialog-extended)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL nfd)
