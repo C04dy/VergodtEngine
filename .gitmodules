@@ -7,3 +7,9 @@
 [submodule "vendor/box2d"]
 	path = vendor/box2d
 	url = https://github.com/erincatto/box2d.git
+[submodule "Editor/--recursive"]
+	path = Editor/--recursive
+	url = https://github.com/btzy/nativefiledialog-extended.git
+[submodule "Editor/nativefiledialog-extended"]
+	path = Editor/nativefiledialog-extended
+	url = https://github.com/btzy/nativefiledialog-extended.git
