@@ -45,22 +45,13 @@ private:
 
 	int m_windowwidth = 1280, m_windowheight = 720;
 private:
-	Camera* Cam = nullptr;
+	bool Hi = false;
 
-	PhysicsBody* Test1p = nullptr;
-	Sprite* Test1s = nullptr;
+	Camera Cam;
 
-	PhysicsBody* Test2p = nullptr;
-	Sprite* Test2s = nullptr;
-
-	PhysicsBody* Test3p = nullptr;
-	Sprite* Test3s = nullptr;
-
-	PhysicsBody* Test4p = nullptr;
-	Sprite* Test4s = nullptr;
-
-	PhysicsBody* Test5p = nullptr;
-	Sprite* Test5s = nullptr;
+	std::vector<Node*> Nodes;
+	std::vector<Sprite*> Sprites;
+	std::vector<PhysicsBody*> PhysicsBodys;
 
 	VisualScript* script = nullptr;
 };

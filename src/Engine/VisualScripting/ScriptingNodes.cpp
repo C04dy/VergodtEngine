@@ -96,6 +96,32 @@ void MouseInputNode::SendSignal(){
     }
 }
 
+// CONDITION NODE
+
+ConditionNode::ConditionNode(bool* Condition){
+    m_condition = Condition;
+}
+
+void ConditionNode::SendSignal(){
+    if(m_condition != nullptr){
+        if(*m_condition == true){
+            for (int i = 0; i < (int)ConnectedNodesToTrue.size(); i++)
+            {
+                ConnectedNodesToTrue[i]->ReciveSignal();
+            }
+        }else{
+            for (int i = 0; i < (int)ConnectedNodesToFalse.size(); i++)
+            {
+                ConnectedNodesToFalse[i]->ReciveSignal();
+            }
+        }
+    }
+    for (int i = 0; i < (int)ConnectedNodes.size(); i++)
+    {
+        ConnectedNodes[i]->ReciveSignal();
+    }
+}
+
 // VISUAL SCRIPT
 
 VisualScript::VisualScript(StartNode* StartNode, UpdateNode* UpdateNode){

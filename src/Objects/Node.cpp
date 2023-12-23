@@ -5,7 +5,7 @@ void Node::AddChild(Node* Child){
 }
 
 void Node::UpdateChild(){
-	for(int i = 0; i < (int)m_childNode.size(); i++){
+	for(int i = 0; i < (int)m_childNode.size(); i++){	
 		m_childNode[i]->Transform.Position = Transform.Position;
 		m_childNode[i]->Transform.Size = Transform.Size;
 		m_childNode[i]->Transform.Angle = Transform.Angle;

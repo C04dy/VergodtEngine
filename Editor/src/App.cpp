@@ -9,9 +9,9 @@
 #include <stdlib.h>
 
 void App::InitApp(){
-    m_scenefile.open("../../Assets/testFORGUI.vscene");
+    std::ifstream SceneFile("../../Assets/testFORGUI.vscene");
     std::string ln;
-    while (std::getline(m_scenefile, ln)){
+    while (std::getline(SceneFile, ln)){
         m_lines.push_back(ln);
         std::string pose = GetLineBetween(ln, "[POSITION(", ")]");
         std::string size = GetLineBetween(ln, "[SIZE(", ")]");
@@ -40,6 +40,8 @@ void App::InitApp(){
             Nodes[Nodes.size() - 1].SpritePath = GetLineBetween(ln, "[ASSET=", "]");
         }
     }
+
+    SceneFile.close();
 
     NFD_Init();
 }
@@ -77,11 +79,11 @@ void InspectorNodeSprite(Node& n){
             if(result == NFD_OKAY){
                 puts(outPath);
                 n.SpritePath = outPath;
-                NFD_FreePath(outPath);
             }
             else if(result == NFD_ERROR){
                 printf("Error: %s\n", NFD_GetError());
             }
+            NFD_FreePath(outPath);
         }
 
         ImGui::TreePop();

@@ -1,5 +1,6 @@
 #include "Scene.h"
-#include <string>
+#include <fstream>
+#include "Util/SceneFileFunctions.h"
 
 template <typename T>
 void Log(T log)
@@ -7,71 +8,111 @@ void Log(T log)
     std::cout << log << "\n";
 }
 
-/* Scene file stuff
-enum NodeType{
-    Null,
-    NODE,
-    SPRITE,
-    CAM,
-    PHYSICSBODY
-};
+void SetNode(Node* n, const std::string& Line){
+    std::string pose = GetLineBetween(Line, "[POSITION(", ")]");
+    std::string size = GetLineBetween(Line, "[SIZE(", ")]");
+    std::string angle = GetLineBetween(Line, "[ANGLE(", ")]");
+    
+    n->Transform.Position = Vector2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
+    n->Transform.Size = Vector2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
+    n->Transform.Angle = std::stof(angle);
+    n->Name = GetLineBetween(Line, "[NAME=", "]");
+}
 
-NodeType GetNodeType(std::string const& inString){
-    if (inString == "NODE") return NODE;
-    if (inString == "SPRITE") return SPRITE;
-    if (inString == "CAMERA") return CAM;
-    if (inString == "PHYSICSBODY") return PHYSICSBODY;
-    return Null;
-}*/
+void SetChild(Node* n, std::vector<Node*> AN, const std::string& Line){
+    int ChildSize = std::stoi(GetLineBetween(Line, "[CHILD=", "]"));
+    for (int i = 0; i < ChildSize; i++)
+    {
+        n->AddChild(AN[(AN.size() - 1) - i]);
+    }
+    
+}
 
 void Scene::Start(){
-    /* TODO: Implement the scene file Load
     std::string Line;
-
     std::ifstream SceneFile("../Assets/test.vscene");
 
-    SceneFile.close();*/
-    Cam = new Camera;
+    std::vector<Node*> ALLNODES;
 
-    Test1s = new Sprite("../Assets/Test1.png", Cam, Renderer);
-    Test1p = new PhysicsBody;
-    Test1p->Transform.Position = Vector2(250, 400);
-    Test1p->Transform.Angle = 44;
-    Test1p->InitPhysicsBodyBox(PhysicsWorld, b2BodyType::b2_dynamicBody, Vector2( 100, 100 ));
-    Test1p->AddChild(Test1s);
+    while (std::getline(SceneFile, Line)){
+        std::string CurNodeType = GetLineBetween(Line, "[NODETYPE=", "]");
+        if(CurNodeType == "NODE"){
+            Node* n = new Node;
 
-    Test2s = new Sprite("../Assets/Test2.png", Cam, Renderer);
-    Test2p = new PhysicsBody;
-    Test2p->Transform.Position = Vector2(250, 250);
-    Test2p->InitPhysicsBodyCircle(PhysicsWorld, b2BodyType::b2_dynamicBody, 50);
-    Test2p->AddChild(Test2s);
+            SetNode(n, Line);
 
-    Test3s = new Sprite("../Assets/Test1.png", Cam, Renderer);
-    Test3p = new PhysicsBody;
-    Test3p->Transform.Position = Vector2(250, 550);
-    Test3p->Transform.Size = Vector2(3, 1);
-    Test3p->InitPhysicsBodyBox(PhysicsWorld, b2BodyType::b2_staticBody, Vector2( 100, 100 ));
-    Test3p->AddChild(Test3s);
+            SetChild(n, ALLNODES, Line);
 
-    Test4s = new Sprite("../Assets/Test1.png", Cam, Renderer);
-    Test4p = new PhysicsBody;
-    Test4p->Transform.Position = Vector2(550, 650);
-    Test4p->Transform.Size = Vector2(3, 1);
-    Test4p->InitPhysicsBodyBox(PhysicsWorld, b2BodyType::b2_staticBody, Vector2( 100, 100 ));
-    Test4p->AddChild(Test4s);
+            Nodes.push_back(n);
+            ALLNODES.push_back(Nodes[Nodes.size() - 1]);
+        }else if(CurNodeType == "CAMERA"){
+            SetNode(&Cam, Line);
+        }else if(CurNodeType == "SPRITE"){
+            std::string AssetFilePath = GetLineBetween(Line, "[ASSET=", "]");
 
-    Test5s = new Sprite("../Assets/Test3.png", Cam, Renderer);
-    Test5p = new PhysicsBody;
-    Test5p->Transform.Position = Vector2(250, 100);
-    Test5p->Transform.Angle = 20;
+            Sprite* s = new Sprite(AssetFilePath, &Cam, Renderer);
 
-    Vector2 polygons[3];
-    polygons[0] = Vector2(0, -50);
-    polygons[1] = Vector2(50, 50);
-    polygons[2] = Vector2(-50, 50);
+            SetNode(s, Line);
 
-    Test5p->InitPhysicsBodyPolygon(PhysicsWorld, b2BodyType::b2_dynamicBody, polygons, 3);
-    Test5p->AddChild(Test5s);
+            SetChild(s, ALLNODES, Line);
+
+            Sprites.push_back(s);
+            ALLNODES.push_back(Sprites[Sprites.size() - 1]);
+        }else if(CurNodeType == "PHYSICSBODY"){        
+            PhysicsBody* p = new PhysicsBody;
+
+            SetNode(p, Line);
+
+            SetChild(p, ALLNODES, Line);
+
+            b2BodyType t = b2BodyType::b2_staticBody;
+            
+            std::string type = GetLineBetween(Line, "[PHYSICSTYPE=", "]");
+
+            if(type == "DYNAMIC"){
+                t = b2BodyType::b2_dynamicBody;
+            }else if(type == "STATIC"){
+                t = b2BodyType::b2_staticBody;
+            }else if(type == "KINEMATIC"){
+                t = b2BodyType::b2_kinematicBody;
+            }
+
+            float fr = std::stof(GetLineBetween(Line, "[FRICTION=", "]"));
+            float dn = std::stof(GetLineBetween(Line, "[DENSITY=", "]"));
+
+            std::string colllidertype = GetLineBetween(Line ,"[COLLIDER=", "]");
+
+            if(colllidertype == "BOX"){
+                std::string sz = GetLineBetween(Line, "[COLLIDERSIZE(", ")");
+
+                p->InitPhysicsBodyBox(PhysicsWorld, t, Vector2(std::stof(GetLineBetween(sz, 0, ",")), std::stof(GetLineBetween(sz, ","))), fr, dn);
+            }else if(colllidertype == "CIRCLE"){
+                float rad = std::stof(GetLineBetween(Line, "[RADIUS=", "]"));
+
+                p->InitPhysicsBodyCircle(PhysicsWorld, t, rad, fr, dn);
+            }else if(colllidertype == "POLYGON"){
+                int32 polycount = std::stoi(GetLineBetween(Line, "[POLYGONCOUNT=", "]"));
+
+                Vector2 poly[polycount];
+
+                std::string polys = GetLineBetween(Line, "[POLYGONS=", "]");
+
+                for (int i = 0; i < polycount; i++)
+                {
+                    std::string curpoly = GetLineBetween(polys, std::to_string(i + 1) + "=(", ")");
+
+                    poly[i].x = std::stof(GetLineBetween(curpoly, 0, ","));
+                    poly[i].y = std::stof(GetLineBetween(curpoly, ","));
+                }
+                
+                p->InitPhysicsBodyPolygon(PhysicsWorld, t, poly, polycount, fr, dn);
+            }
+
+            PhysicsBodys.push_back(p); 
+            ALLNODES.push_back(PhysicsBodys[PhysicsBodys.size() - 1]);        
+        }
+    }
+    SceneFile.close();    
 
     // Visual Scripting stuff that im gonna totaly implement obviously lol
 
@@ -79,12 +120,14 @@ void Scene::Start(){
 
     UpdateNode* u = new UpdateNode;
 
-    //MouseInputNode* input = new MouseInputNode(Input, 1, MouseInputNode::MouseInputType::IsMouseKeyPressed);
-    KeyboardInputNode* input = new KeyboardInputNode(Input, SDLK_SPACE, KeyboardInputNode::KeyboardInputType::IsKeyNotPressed);
     PrintNode* printn1 = new PrintNode;
     printn1->Message = "Start";
 
-    input->ConnectedNodes.push_back(printn1);
+    ConditionNode* cn = new ConditionNode(&Hi);
+
+    cn->ConnectedNodesToFalse.push_back(printn1);
+
+    u->ConnectedNodes.push_back(cn);
 
     script = new VisualScript(s, u);
     
@@ -92,57 +135,51 @@ void Scene::Start(){
 }
 
 void Scene::Update(double dt){
-    Test1p->UpdatePhysicsNode();
-    Test2p->UpdatePhysicsNode();
-    Test3p->UpdatePhysicsNode();
-    Test4p->UpdatePhysicsNode();
-    Test5p->UpdatePhysicsNode();
-    
-    Test1p->UpdateChild();
-    Test2p->UpdateChild();
-    Test3p->UpdateChild();
-    Test4p->UpdateChild();
-    Test5p->UpdateChild();
-
     script->UpdateScript();
+
+    if(Input->IsKeyDown(SDLK_a)){
+        Hi = !Hi;
+    }
+    
+    for(int i = 0; i < (int)PhysicsBodys.size(); i++){
+        PhysicsBodys[i]->UpdatePhysicsNode();
+        PhysicsBodys[i]->UpdateChild();
+    }
+    for(int i = 0; i < (int)Sprites.size(); i++){
+        Sprites[i]->UpdateChild();
+    }
+    for(int i = 0; i < (int)Nodes.size(); i++){
+        Nodes[i]->UpdateChild();
+    }
 }
 
 void Scene::Draw(){
-    Test1s->DrawImage();
-    Test2s->DrawImage();
-    Test3s->DrawImage();
-    Test4s->DrawImage();
-    Test5s->DrawImage();
+    for(int i = 0; i < (int)Sprites.size(); i++){
+        Sprites[i]->DrawImage();
+    }
 }
 
 void Scene::Clean(){
-    delete Test1s;
-    Test1s = nullptr;
-    delete Test1p;
-    Test1p = nullptr;
+    for(int i = 0; i < (int)Sprites.size(); i++){
+        Sprites[i]->DeleteSprite();
+        delete Sprites[i];
+        Sprites[i] = nullptr;
+    }
+    for(int i = 0; i < (int)PhysicsBodys.size(); i++){
+        PhysicsBodys[i]->DeletePhysicsBody();
+        delete PhysicsBodys[i];
+        PhysicsBodys[i] = nullptr;
+    }
+    for (int i = 0; i < (int)Nodes.size(); i++)
+    {
+        delete Nodes[i];
+        Nodes[i] = nullptr;
+    }
     
-    delete Test2s;
-    Test2s = nullptr;
-    delete Test2p;
-    Test2p = nullptr;
 
-    delete Test3s;
-    Test3s = nullptr;
-    delete Test3p;
-    Test3p = nullptr;
-
-    delete Test4s;
-    Test4s = nullptr;
-    delete Test4p;
-    Test4p = nullptr;
-
-    delete Test5s;
-    Test5s = nullptr;
-    delete Test5p;
-    Test5p = nullptr;
-
-    delete Cam;
-    Cam = nullptr;
+    Nodes.clear();
+    Sprites.clear();
+    PhysicsBodys.clear();
 
     delete script;
     script = nullptr;

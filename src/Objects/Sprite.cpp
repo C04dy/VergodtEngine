@@ -1,16 +1,16 @@
 #include "Sprite.h"
 
-Sprite::Sprite(std::string FilePath, Camera* Cam, SDL_Renderer* Renderer){
+Sprite::Sprite(const std::string& FilePath, Camera* Cam, SDL_Renderer* Renderer){
     m_renderer = Renderer;
     SetCam(Cam);
     LoadImage(FilePath);
 }
 
-Sprite::~Sprite(){
+void Sprite::DeleteSprite(){
     SDL_DestroyTexture(m_texture);
 }
 
-void Sprite::LoadImage(std::string FilePath){
+void Sprite::LoadImage(const std::string& FilePath){
     SDL_Surface* surface = IMG_Load(FilePath.c_str());
 
     if(surface == nullptr){

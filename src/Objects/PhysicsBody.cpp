@@ -21,7 +21,6 @@ void PhysicsBody::InitPhysicsBodyBox(b2World* PhysicsWorld, b2BodyType BodyType,
 	fixturedef.friction = Friction;
 
 	m_physicsbody->CreateFixture(&fixturedef);
-
 }
 
 void PhysicsBody::InitPhysicsBodyCircle(b2World* PhysicsWorld, b2BodyType BodyType, float Radius, float Friction, float Density){
@@ -75,7 +74,7 @@ void PhysicsBody::UpdatePhysicsNode(){
 	Transform.Angle = m_physicsbody->GetAngle() * RADIAN_IN_DEGREES;
 }
 
-PhysicsBody::~PhysicsBody(){
+void PhysicsBody::DeletePhysicsBody(){
 	m_physicsbody->GetWorld()->DestroyBody(m_physicsbody);
 	m_physicsbody = nullptr;
 }

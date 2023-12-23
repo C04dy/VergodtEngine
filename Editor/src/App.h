@@ -51,7 +51,6 @@ public:
     void EndApp();
 private:
     std::vector<std::string> m_lines;
-    std::ifstream m_scenefile;
 
     int m_nodeindex = 0;
 

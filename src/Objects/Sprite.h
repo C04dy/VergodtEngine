@@ -8,15 +8,13 @@
 class Sprite : public Node
 {
 public:
-	Sprite(std::string FilePath, Camera* Cam, SDL_Renderer* Renderer);
+	Sprite(const std::string& FilePath, Camera* Cam, SDL_Renderer* Renderer);
 	
-	~Sprite();
+	void DeleteSprite();
 
-	void LoadImage(std::string FilePath);
+	void LoadImage(const std::string& FilePath);
 
 	void DrawImage(); 
-
-	void CleanImage();
 
 	void SetCam(Camera* Cam);
 private:

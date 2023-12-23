@@ -76,6 +76,19 @@ private:
     MouseInputType m_inputtype = MouseInputType::NONE;
 };
 
+class ConditionNode : public ScriptingNode
+{
+public:
+    ConditionNode(bool* Condition);
+
+    void SendSignal() override;
+
+    std::vector<ScriptingNode*> ConnectedNodesToTrue;
+    std::vector<ScriptingNode*> ConnectedNodesToFalse;
+private:
+    bool* m_condition = nullptr;
+};
+
 class VisualScript
 {
 public:

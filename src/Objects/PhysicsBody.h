@@ -9,7 +9,7 @@ public:
 	void InitPhysicsBodyCircle(b2World* PhysicsWorld, b2BodyType BodyType, float Radius, float Friction = 0.3f, float Density = 1.0f);
 	void InitPhysicsBodyPolygon(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 Polygons[], int32 PolygonCount, float Friction = 0.3f, float Density = 1.0f);
 
-	~PhysicsBody();
+	void DeletePhysicsBody();
 
 	b2Body* GetBody() { return m_physicsbody; }
 
