@@ -1,5 +1,10 @@
 #include "Node.h"
 
+Node::~Node(){
+	delete Script;
+	Script = nullptr;
+}
+
 void Node::AddChild(Node* Child){
 	m_childNode.push_back(Child);
 }

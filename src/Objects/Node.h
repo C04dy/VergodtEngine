@@ -4,6 +4,8 @@
 #include <vector>
 #include "Vector2.h"
 
+#include "../Engine/VisualScripting/ScriptingNodes.h"
+
 class TransformClass{
 public:
 	Vector2 Position = Vector2(0, 0);
@@ -14,6 +16,8 @@ public:
 class Node
 {
 public:
+	~Node();
+
 	TransformClass Transform;
 
 	void AddChild(Node* Child);
@@ -22,7 +26,7 @@ public:
 
 	std::string Name;
 
-	std::string Script;
+	VisualScript* Script = nullptr;
 protected:
 	std::vector<Node*> m_childNode;
 };

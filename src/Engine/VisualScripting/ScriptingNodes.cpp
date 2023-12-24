@@ -102,6 +102,25 @@ ConditionNode::ConditionNode(bool* Condition){
     m_condition = Condition;
 }
 
+ConditionNode::~ConditionNode(){
+    for (int i = 0; i < (int)ConnectedNodes.size(); i++)
+    {
+        delete ConnectedNodes[i];
+        ConnectedNodes[i] = nullptr;
+    }
+    for (int i = 0; i < (int)ConnectedNodesToFalse.size(); i++)
+    {
+        delete ConnectedNodesToFalse[i];
+        ConnectedNodesToFalse[i] = nullptr;
+    }
+    for (int i = 0; i < (int)ConnectedNodesToTrue.size(); i++)
+    {
+        delete ConnectedNodesToTrue[i];
+        ConnectedNodesToTrue[i] = nullptr;
+    }
+    m_condition = nullptr;
+}
+
 void ConditionNode::SendSignal(){
     if(m_condition != nullptr){
         if(*m_condition == true){
@@ -124,7 +143,7 @@ void ConditionNode::SendSignal(){
 
 // VISUAL SCRIPT
 
-VisualScript::VisualScript(StartNode* StartNode, UpdateNode* UpdateNode){
+void VisualScript::InitVisualScript(StartNode* StartNode, UpdateNode* UpdateNode){
     m_startnode = StartNode;
     m_updatenode = UpdateNode;
 }

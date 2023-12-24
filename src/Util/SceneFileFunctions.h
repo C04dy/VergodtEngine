@@ -9,6 +9,10 @@ std::string GetLineBetween(const std::string& Text, int Start, const std::string
     return Text.substr( Start , Text.find( Finish ) - Start );
 }
 
+std::string GetLineBetween(const std::string& Text, int Size){
+    return Text.substr(0 ,Size);
+}
+
 std::string GetLineBetween(const std::string& Text, const std::string& Start){
     return Text.substr( Text.find( Start ) + ( Start.length() ) , Text.length() - Text.find( Start ) );
 }

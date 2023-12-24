@@ -28,6 +28,44 @@ void SetChild(Node* n, std::vector<Node*> AN, const std::string& Line){
     
 }
 
+enum class ScriptState{
+    START,
+    UPDATE
+};
+
+void SetScript(Node* n, const std::string& Line){
+    if(GetLineBetween(Line, "[SCRIPT=", "]") != "NULL"){
+        std::string ln;
+        std::ifstream ScriptFile(GetLineBetween(Line, "[SCRIPT=", "]"));
+
+        StartNode* s = new StartNode;
+        UpdateNode* u = new UpdateNode;
+        n->Script = new VisualScript;
+
+        n->Script->InitVisualScript(s, u);
+
+        ScriptState State = ScriptState::START;
+
+        while (std::getline(ScriptFile, ln)){
+            if(GetLineBetween(ln, "[", "]") == "START"){
+                State = ScriptState::START;
+            }else if(GetLineBetween(ln, "[", "]") == "UPDATE"){
+                State = ScriptState::UPDATE;
+            }else if(GetLineBetween(ln, "[", "]") == "PRINT"){
+                PrintNode* p = new PrintNode;
+
+                p->Message = GetLineBetween(ln, "(", ")");
+
+                if(State == ScriptState::START){
+                    s->ConnectedNodes.push_back(p);
+                }
+            }
+        }
+
+        ScriptFile.close();
+    }
+}
+
 void Scene::Start(){
     std::string Line;
     std::ifstream SceneFile("../Assets/test.vscene");
@@ -42,6 +80,8 @@ void Scene::Start(){
             SetNode(n, Line);
 
             SetChild(n, ALLNODES, Line);
+
+            SetScript(n, Line);
 
             Nodes.push_back(n);
             ALLNODES.push_back(Nodes[Nodes.size() - 1]);
@@ -112,35 +152,19 @@ void Scene::Start(){
             ALLNODES.push_back(PhysicsBodys[PhysicsBodys.size() - 1]);        
         }
     }
-    SceneFile.close();    
+    SceneFile.close();
 
-    // Visual Scripting stuff that im gonna totaly implement obviously lol
 
-    StartNode* s = new StartNode;
-
-    UpdateNode* u = new UpdateNode;
-
-    PrintNode* printn1 = new PrintNode;
-    printn1->Message = "Start";
-
-    ConditionNode* cn = new ConditionNode(&Hi);
-
-    cn->ConnectedNodesToFalse.push_back(printn1);
-
-    u->ConnectedNodes.push_back(cn);
-
-    script = new VisualScript(s, u);
+    for (int i = 0; i < (int)ALLNODES.size(); i++)
+    {
+        if(ALLNODES[i]->Script != nullptr){
+            ALLNODES[i]->Script->StartScript();
+        }
+    }
     
-    script->StartScript();
 }
 
 void Scene::Update(double dt){
-    script->UpdateScript();
-
-    if(Input->IsKeyDown(SDLK_a)){
-        Hi = !Hi;
-    }
-    
     for(int i = 0; i < (int)PhysicsBodys.size(); i++){
         PhysicsBodys[i]->UpdatePhysicsNode();
         PhysicsBodys[i]->UpdateChild();
@@ -176,11 +200,7 @@ void Scene::Clean(){
         Nodes[i] = nullptr;
     }
     
-
     Nodes.clear();
     Sprites.clear();
     PhysicsBodys.clear();
-
-    delete script;
-    script = nullptr;
 }

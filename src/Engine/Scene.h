@@ -52,6 +52,4 @@ private:
 	std::vector<Node*> Nodes;
 	std::vector<Sprite*> Sprites;
 	std::vector<PhysicsBody*> PhysicsBodys;
-
-	VisualScript* script = nullptr;
 };

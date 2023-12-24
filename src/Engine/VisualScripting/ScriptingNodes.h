@@ -1,4 +1,7 @@
 #pragma once
+#ifndef SCRIPTINGNODES_H
+#define SCRIPTINGNODES_H
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -79,6 +82,8 @@ private:
 class ConditionNode : public ScriptingNode
 {
 public:
+    ~ConditionNode();
+
     ConditionNode(bool* Condition);
 
     void SendSignal() override;
@@ -92,7 +97,7 @@ private:
 class VisualScript
 {
 public:
-    VisualScript(StartNode* StartNode, UpdateNode* UpdateNode);
+    void InitVisualScript(StartNode* StartNode, UpdateNode* UpdateNode);
 
     ~VisualScript();
 
@@ -104,3 +109,5 @@ private:
 
     UpdateNode* m_updatenode = nullptr;
 };
+
+#endif
