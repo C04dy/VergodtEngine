@@ -108,7 +108,9 @@
 			"queue": "cpp",
 			"typeindex": "cpp",
 			"xhash": "cpp",
-			"xtree": "cpp"
+			"xtree": "cpp",
+			"sdl_dynapi_overrides.h": "c",
+			"sdl_build_config.h": "c"
 		}
 	}
 }

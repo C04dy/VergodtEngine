@@ -28,12 +28,34 @@ void SetChild(Node* n, std::vector<Node*> AN, const std::string& Line){
     
 }
 
-enum class ScriptState{
-    START,
-    UPDATE
-};
+SDL_Keycode GetKeyCode(const std::string& Type){
+    if(Type == "A")
+        return SDLK_a;
+}
 
-void SetScript(Node* n, const std::string& Line){
+KeyboardInputNode::KeyboardInputType GetKeyboardInputType(const std::string& Type){
+    if(Type == "ISKEYDOWN")
+        return KeyboardInputNode::KeyboardInputType::IsKeyDown;
+    if(Type == "ISKEYNOTPRESSED")
+        return KeyboardInputNode::KeyboardInputType::IsKeyNotPressed;
+    if(Type == "ISKEYPRESSED")
+        return KeyboardInputNode::KeyboardInputType::IsKeyPressed;
+    if(Type == "ISKEYUP")
+        return KeyboardInputNode::KeyboardInputType::IsKeyUp;
+}
+
+MouseInputNode::MouseInputType GetMouseInputType(const std::string& Type){
+    if(Type == "ISMOUSEKEYDOWN")
+        return MouseInputNode::MouseInputType::IsMouseKeyDown;
+    if(Type == "ISMOUSEKEYNOTPRESSED")
+        return MouseInputNode::MouseInputType::IsMouseKeyNotPressed;
+    if(Type == "ISMOUSEKEYPRESSED")
+        return MouseInputNode::MouseInputType::IsMouseKeyPressed;
+    if(Type == "ISMOUSEKEYUP")
+        return MouseInputNode::MouseInputType::IsMouseKeyUp;
+}
+
+void Scene::SetScript(Node* n, const std::string& Line){
     if(GetLineBetween(Line, "[SCRIPT=", "]") != "NULL"){
         std::string ln;
         std::ifstream ScriptFile(GetLineBetween(Line, "[SCRIPT=", "]"));
@@ -44,21 +66,36 @@ void SetScript(Node* n, const std::string& Line){
 
         n->Script->InitVisualScript(s, u);
 
-        ScriptState State = ScriptState::START;
+        std::vector<ScriptingNode*> ALLSCRIPNODES;
 
         while (std::getline(ScriptFile, ln)){
-            if(GetLineBetween(ln, "[", "]") == "START"){
-                State = ScriptState::START;
-            }else if(GetLineBetween(ln, "[", "]") == "UPDATE"){
-                State = ScriptState::UPDATE;
-            }else if(GetLineBetween(ln, "[", "]") == "PRINT"){
+            std::string NodeType = GetLineBetween(ln, "[TYPE=", "]");
+
+            if(NodeType == "START"){
+                ALLSCRIPNODES.push_back(s);
+            }else if(NodeType == "UPDATE"){
+                ALLSCRIPNODES.push_back(u);
+            }else if(NodeType == "PRINT"){
                 PrintNode* p = new PrintNode;
 
                 p->Message = GetLineBetween(ln, "(", ")");
 
-                if(State == ScriptState::START){
-                    s->ConnectedNodes.push_back(p);
-                }
+                ALLSCRIPNODES.push_back(p);
+
+                if(GetLineBetween(ln, "[CONNECTEDID=", "]") != "NULL")
+                    ALLSCRIPNODES[std::stoi(GetLineBetween(ln, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(p); 
+            }else if(NodeType == "KEYBOARDINPUT"){
+                KeyboardInputNode* k = new KeyboardInputNode(Input, 
+                                                            GetKeyCode(GetLineBetween(ln, "[KEY=", "]")),
+                                                            GetKeyboardInputType(GetLineBetween(ln, "[INPUTTYPE=", "]")));
+
+                ALLSCRIPNODES.push_back(k);
+            }else if(NodeType == "MOUSEINPUT"){
+                MouseInputNode* k = new MouseInputNode(Input, 
+                                                        std::stoi(GetLineBetween(ln, "[KEY=", "]")),
+                                                        GetMouseInputType(GetLineBetween(ln, "[INPUTTYPE=", "]")));
+
+                ALLSCRIPNODES.push_back(k);
             }
         }
 
@@ -153,7 +190,6 @@ void Scene::Start(){
         }
     }
     SceneFile.close();
-
 
     for (int i = 0; i < (int)ALLNODES.size(); i++)
     {

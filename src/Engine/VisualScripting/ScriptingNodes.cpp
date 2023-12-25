@@ -40,6 +40,7 @@ void KeyboardInputNode::SendSignal(){
         switch (m_inputtype)
         {
         case KeyboardInputType::NONE:
+            std::cout << "ERROR: INVALID KEYBOARDINPUT TYPE" << '\n';
             break;
         case KeyboardInputType::IsKeyDown:
             if(m_input->IsKeyDown(m_keycode))
@@ -75,6 +76,7 @@ void MouseInputNode::SendSignal(){
         switch (m_inputtype)
         {
         case MouseInputType::NONE:
+            std::cout << "ERROR: INVALID MOUSEINPUT TYPE" << '\n';
             break;
         case MouseInputType::IsMouseKeyDown:
             if(m_input->IsMouseKeyDown(m_mousekey))

@@ -45,6 +45,8 @@ private:
 
 	int m_windowwidth = 1280, m_windowheight = 720;
 private:
+	void SetScript(Node* n, const std::string& Line);
+private:
 	bool Hi = false;
 
 	Camera Cam;
