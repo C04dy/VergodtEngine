@@ -1,5 +1,84 @@
 #include "ScriptingNodes.h"
 
+/* old stuff
+
+SDL_Keycode GetKeyCode(const std::string& Type){
+    if(Type == "A")
+        return SDLK_a;
+}
+
+KeyboardInputNode::KeyboardInputType GetKeyboardInputType(const std::string& Type){
+    if(Type == "ISKEYDOWN")
+        return KeyboardInputNode::KeyboardInputType::IsKeyDown;
+    if(Type == "ISKEYNOTPRESSED")
+        return KeyboardInputNode::KeyboardInputType::IsKeyNotPressed;
+    if(Type == "ISKEYPRESSED")
+        return KeyboardInputNode::KeyboardInputType::IsKeyPressed;
+    if(Type == "ISKEYUP")
+        return KeyboardInputNode::KeyboardInputType::IsKeyUp;
+}
+
+MouseInputNode::MouseInputType GetMouseInputType(const std::string& Type){
+    if(Type == "ISMOUSEKEYDOWN")
+        return MouseInputNode::MouseInputType::IsMouseKeyDown;
+    if(Type == "ISMOUSEKEYNOTPRESSED")
+        return MouseInputNode::MouseInputType::IsMouseKeyNotPressed;
+    if(Type == "ISMOUSEKEYPRESSED")
+        return MouseInputNode::MouseInputType::IsMouseKeyPressed;
+    if(Type == "ISMOUSEKEYUP")
+        return MouseInputNode::MouseInputType::IsMouseKeyUp;
+}
+
+void Scene::SetScript(Node* n, const std::string& Line){
+    if(GetLineBetween(Line, "[SCRIPT=", "]") != "NULL"){
+        std::string ln;
+        std::ifstream ScriptFile(GetLineBetween(Line, "[SCRIPT=", "]"));
+
+        StartNode* s = new StartNode;
+        UpdateNode* u = new UpdateNode;
+        n->Script = new VisualScript;
+
+        n->Script->InitVisualScript(s, u);
+
+        std::vector<ScriptingNode*> ALLSCRIPNODES;
+
+        while (std::getline(ScriptFile, ln)){
+            std::string NodeType = GetLineBetween(ln, "[TYPE=", "]");
+
+            if(NodeType == "START"){
+                ALLSCRIPNODES.push_back(s);
+            }else if(NodeType == "UPDATE"){
+                ALLSCRIPNODES.push_back(u);
+            }else if(NodeType == "PRINT"){
+                PrintNode* p = new PrintNode;
+
+                p->Message = GetLineBetween(ln, "(", ")");
+
+                ALLSCRIPNODES.push_back(p);
+
+                if(GetLineBetween(ln, "[CONNECTEDID=", "]") != "NULL")
+                    ALLSCRIPNODES[std::stoi(GetLineBetween(ln, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(p); 
+            }else if(NodeType == "KEYBOARDINPUT"){
+                KeyboardInputNode* k = new KeyboardInputNode(Input, 
+                                                            GetKeyCode(GetLineBetween(ln, "[KEY=", "]")),
+                                                            GetKeyboardInputType(GetLineBetween(ln, "[INPUTTYPE=", "]")));
+
+                ALLSCRIPNODES.push_back(k);
+            }else if(NodeType == "MOUSEINPUT"){
+                MouseInputNode* k = new MouseInputNode(Input, 
+                                                        std::stoi(GetLineBetween(ln, "[KEY=", "]")),
+                                                        GetMouseInputType(GetLineBetween(ln, "[INPUTTYPE=", "]")));
+
+                ALLSCRIPNODES.push_back(k);
+            }
+        }
+
+        ScriptFile.close();
+    }
+}
+
+*/
+
 // SCRIPTING NODE
 
 ScriptingNode::~ScriptingNode(){
@@ -28,7 +107,7 @@ void PrintNode::NodesFunction(){
 
 // KEYBOARD INPUT NODE
 
-KeyboardInputNode::KeyboardInputNode(Input* Input, SDL_Keycode KeyCode, KeyboardInputType InputType){
+KeyboardInputNode::KeyboardInputNode(InputManager* Input, SDL_Keycode KeyCode, KeyboardInputType InputType){
     m_input = Input;
     m_input->SetInputNode(this);
     m_keycode = KeyCode;
@@ -64,7 +143,7 @@ void KeyboardInputNode::SendSignal(){
 
 // MOUSE INPUT NODE
 
-MouseInputNode::MouseInputNode(Input* Input, Uint8 MouseKey, MouseInputType InputType){
+MouseInputNode::MouseInputNode(InputManager* Input, Uint8 MouseKey, MouseInputType InputType){
     m_input = Input;
     m_input->SetInputNode(this);
     m_mousekey = MouseKey;

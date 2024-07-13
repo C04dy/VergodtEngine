@@ -1,7 +1,7 @@
 #pragma once
 #define SDL_MAIN_HANDLED
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 #include <iostream>
 #include <string>
 
@@ -10,7 +10,7 @@ class b2World;
 class Engine
 {
 public:
-	int EngineStart();
+	void EngineStart();
 
 	bool IsRunning() { return m_running; }
 

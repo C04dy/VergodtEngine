@@ -1,8 +1,8 @@
 #include "Node.h"
 
 Node::~Node(){
-	delete Script;
-	Script = nullptr;
+	/*delete Script;
+	Script = nullptr;*/
 }
 
 void Node::AddChild(Node* Child){

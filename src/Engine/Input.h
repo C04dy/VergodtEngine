@@ -10,7 +10,7 @@
 class KeyboardInputNode;
 class MouseInputNode;
 
-class Input
+class InputManager
 {
 public:
     void SetKeyDown(SDL_Keycode KeyCode);

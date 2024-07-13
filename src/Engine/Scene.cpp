@@ -1,107 +1,9 @@
 #include "Scene.h"
 #include <fstream>
+#include <sstream>
 #include "Util/SceneFileFunctions.h"
-
-template <typename T>
-void Log(T log)
-{
-    std::cout << log << "\n";
-}
-
-void SetNode(Node* n, const std::string& Line){
-    std::string pose = GetLineBetween(Line, "[POSITION(", ")]");
-    std::string size = GetLineBetween(Line, "[SIZE(", ")]");
-    std::string angle = GetLineBetween(Line, "[ANGLE(", ")]");
-    
-    n->Transform.Position = Vector2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
-    n->Transform.Size = Vector2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
-    n->Transform.Angle = std::stof(angle);
-    n->Name = GetLineBetween(Line, "[NAME=", "]");
-}
-
-void SetChild(Node* n, std::vector<Node*> AN, const std::string& Line){
-    int ChildSize = std::stoi(GetLineBetween(Line, "[CHILD=", "]"));
-    for (int i = 0; i < ChildSize; i++)
-    {
-        n->AddChild(AN[(AN.size() - 1) - i]);
-    }
-    
-}
-
-SDL_Keycode GetKeyCode(const std::string& Type){
-    if(Type == "A")
-        return SDLK_a;
-}
-
-KeyboardInputNode::KeyboardInputType GetKeyboardInputType(const std::string& Type){
-    if(Type == "ISKEYDOWN")
-        return KeyboardInputNode::KeyboardInputType::IsKeyDown;
-    if(Type == "ISKEYNOTPRESSED")
-        return KeyboardInputNode::KeyboardInputType::IsKeyNotPressed;
-    if(Type == "ISKEYPRESSED")
-        return KeyboardInputNode::KeyboardInputType::IsKeyPressed;
-    if(Type == "ISKEYUP")
-        return KeyboardInputNode::KeyboardInputType::IsKeyUp;
-}
-
-MouseInputNode::MouseInputType GetMouseInputType(const std::string& Type){
-    if(Type == "ISMOUSEKEYDOWN")
-        return MouseInputNode::MouseInputType::IsMouseKeyDown;
-    if(Type == "ISMOUSEKEYNOTPRESSED")
-        return MouseInputNode::MouseInputType::IsMouseKeyNotPressed;
-    if(Type == "ISMOUSEKEYPRESSED")
-        return MouseInputNode::MouseInputType::IsMouseKeyPressed;
-    if(Type == "ISMOUSEKEYUP")
-        return MouseInputNode::MouseInputType::IsMouseKeyUp;
-}
-
-void Scene::SetScript(Node* n, const std::string& Line){
-    if(GetLineBetween(Line, "[SCRIPT=", "]") != "NULL"){
-        std::string ln;
-        std::ifstream ScriptFile(GetLineBetween(Line, "[SCRIPT=", "]"));
-
-        StartNode* s = new StartNode;
-        UpdateNode* u = new UpdateNode;
-        n->Script = new VisualScript;
-
-        n->Script->InitVisualScript(s, u);
-
-        std::vector<ScriptingNode*> ALLSCRIPNODES;
-
-        while (std::getline(ScriptFile, ln)){
-            std::string NodeType = GetLineBetween(ln, "[TYPE=", "]");
-
-            if(NodeType == "START"){
-                ALLSCRIPNODES.push_back(s);
-            }else if(NodeType == "UPDATE"){
-                ALLSCRIPNODES.push_back(u);
-            }else if(NodeType == "PRINT"){
-                PrintNode* p = new PrintNode;
-
-                p->Message = GetLineBetween(ln, "(", ")");
-
-                ALLSCRIPNODES.push_back(p);
-
-                if(GetLineBetween(ln, "[CONNECTEDID=", "]") != "NULL")
-                    ALLSCRIPNODES[std::stoi(GetLineBetween(ln, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(p); 
-            }else if(NodeType == "KEYBOARDINPUT"){
-                KeyboardInputNode* k = new KeyboardInputNode(Input, 
-                                                            GetKeyCode(GetLineBetween(ln, "[KEY=", "]")),
-                                                            GetKeyboardInputType(GetLineBetween(ln, "[INPUTTYPE=", "]")));
-
-                ALLSCRIPNODES.push_back(k);
-            }else if(NodeType == "MOUSEINPUT"){
-                MouseInputNode* k = new MouseInputNode(Input, 
-                                                        std::stoi(GetLineBetween(ln, "[KEY=", "]")),
-                                                        GetMouseInputType(GetLineBetween(ln, "[INPUTTYPE=", "]")));
-
-                ALLSCRIPNODES.push_back(k);
-            }
-        }
-
-        ScriptFile.close();
-    }
-}
+#include "squall/squall_vmstd.hpp"
+#include "squall/squall_klass.hpp"
 
 void Scene::Start(){
     std::string Line;
@@ -111,14 +13,13 @@ void Scene::Start(){
 
     while (std::getline(SceneFile, Line)){
         std::string CurNodeType = GetLineBetween(Line, "[NODETYPE=", "]");
+        
         if(CurNodeType == "NODE"){
             Node* n = new Node;
 
             SetNode(n, Line);
 
             SetChild(n, ALLNODES, Line);
-
-            SetScript(n, Line);
 
             Nodes.push_back(n);
             ALLNODES.push_back(Nodes[Nodes.size() - 1]);
@@ -191,13 +92,20 @@ void Scene::Start(){
     }
     SceneFile.close();
 
-    for (int i = 0; i < (int)ALLNODES.size(); i++)
+    /*for (int i = 0; i < (int)ALLNODES.size(); i++)
     {
         if(ALLNODES[i]->Script != nullptr){
             ALLNODES[i]->Script->StartScript();
         }
-    }
+    }*/
     
+    squall::VMStd vm;
+    vm.dofile("../Assets/test.nut");
+
+    squall::Klass<Node> k(vm, "Node");
+    k.var("Name", &Node::Name);  
+
+    vm.call<void>("foo", Nodes[0]);
 }
 
 void Scene::Update(double dt){

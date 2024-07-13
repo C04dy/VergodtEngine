@@ -14,8 +14,8 @@ void Sprite::LoadImage(const std::string& FilePath){
     SDL_Surface* surface = IMG_Load(FilePath.c_str());
 
     if(surface == nullptr){
-        SDL_Log("Failed to load texture: %s, %s", FilePath.c_str(), SDL_GetError());
-        return;
+        std::cout << "Failed to load texture: " << FilePath.c_str() << ",";
+        throw std::runtime_error(SDL_GetError());
     }
 
     m_w = surface->w;
@@ -23,8 +23,8 @@ void Sprite::LoadImage(const std::string& FilePath){
     
     m_texture = SDL_CreateTextureFromSurface(m_renderer, surface);
     if(m_texture == nullptr){
-        SDL_Log("Failed to create texture from surface: %s", SDL_GetError());
-        return;
+        std::cout << "Failed to create texture from surface: ";
+        throw std::runtime_error(SDL_GetError());
     }
 
     SDL_DestroySurface(surface);

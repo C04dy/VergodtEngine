@@ -4,7 +4,7 @@
 #include <vector>
 #include "Vector2.h"
 
-#include "../Engine/VisualScripting/ScriptingNodes.h"
+//#include "../Engine/VisualScripting/ScriptingNodes.h"
 
 class TransformClass{
 public:
@@ -21,12 +21,14 @@ public:
 	TransformClass Transform;
 
 	void AddChild(Node* Child);
-	
+
+	std::string GetName() { return Name; }
+
 	void UpdateChild();
 
 	std::string Name;
 
-	VisualScript* Script = nullptr;
+	//VisualScript* Script = nullptr;
 protected:
 	std::vector<Node*> m_childNode;
 };

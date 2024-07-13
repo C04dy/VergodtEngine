@@ -4,19 +4,19 @@
 #include "Window.h"
 #include <box2d/b2_world.h>
 
-int Engine::EngineStart(){
+void Engine::EngineStart(){
     Scene Scene;
 
-    Input Input; 
+    InputManager Input; 
 
     if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
-        SDL_Log("SDL_Init failed (%s)", SDL_GetError());
-        return 1;
+        std::cout << "SDL_Init failed";
+        throw std::runtime_error(SDL_GetError());
     }
 
     if(IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_AVIF | IMG_INIT_JXL | IMG_INIT_TIF | IMG_INIT_WEBP) < 0){
-        SDL_Log("IMG_Init failed (%s)", SDL_GetError());
-        return 1;
+        std::cout << "IMG_Init failed";
+        throw std::runtime_error(SDL_GetError());
     }
 
     Window* Windowptr = new Window(Scene.GetGameName(), Scene.GetWindowWidth(), Scene.GetWindowHeight());
@@ -94,6 +94,4 @@ Quit:
 
     SDL_Quit();
     IMG_Quit();
-    
-    return 0;
 }

@@ -33,19 +33,17 @@ public:
 	void SetWindowsWidth(int Width) { m_windowwidth = Width; }
 	void SetWindowsHeight(int Height) { m_windowheight = Height; }
 
-	void SetInput(Input* _Input) { Input = _Input; }
+	void SetInput(InputManager* _Input) { Input = _Input; }
 protected:
 	SDL_Renderer* Renderer;
 
 	b2World* PhysicsWorld;
 
-	Input* Input;
+	InputManager* Input;
 private:
 	std::string m_gamename = "VergodtEngineGame";
 
 	int m_windowwidth = 1280, m_windowheight = 720;
-private:
-	void SetScript(Node* n, const std::string& Line);
 private:
 	bool Hi = false;
 

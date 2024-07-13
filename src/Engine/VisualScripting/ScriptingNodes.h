@@ -44,13 +44,13 @@ public:
         IsKeyNotPressed
     };
 public:
-    KeyboardInputNode(Input* Input, SDL_Keycode KeyCode, KeyboardInputType InputType);
+    KeyboardInputNode(InputManager* Input, SDL_Keycode KeyCode, KeyboardInputType InputType);
 
     void SendSignal() override;
 private:
     SDL_Keycode m_keycode;
 
-    Input* m_input = nullptr;
+    InputManager* m_input = nullptr;
 
     KeyboardInputType m_inputtype = KeyboardInputType::NONE;
 };
@@ -66,7 +66,7 @@ public:
         IsMouseKeyNotPressed
     };
 public:
-    MouseInputNode(Input* Input, Uint8 MouseKey, MouseInputType InputType);
+    MouseInputNode(InputManager* Input, Uint8 MouseKey, MouseInputType InputType);
 
     void SendSignal() override;
 
@@ -74,7 +74,7 @@ public:
 private:
     Uint8 m_mousekey;
 
-    Input* m_input = nullptr;
+    InputManager* m_input = nullptr;
 
     MouseInputType m_inputtype = MouseInputType::NONE;
 };
