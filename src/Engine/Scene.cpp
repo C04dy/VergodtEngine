@@ -7,7 +7,7 @@
 
 void Scene::Start(){
     std::string Line;
-    std::ifstream SceneFile("../Assets/test.vscene");
+    std::ifstream SceneFile("Assets/test.vscene");
 
     std::vector<Node*> ALLNODES;
 
@@ -100,7 +100,7 @@ void Scene::Start(){
     }*/
     
     squall::VMStd vm;
-    vm.dofile("../Assets/test.nut");
+    vm.dofile("Assets/test.nut");
 
     squall::Klass<Node> k(vm, "Node");
     k.var("Name", &Node::Name);  
