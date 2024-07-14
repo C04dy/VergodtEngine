@@ -7,9 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_options(-O3 -Wall -static-libgcc -static-libstdc++)
 
+if (WIN32)
 set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ -lwsock32 -lws2_32 ${CMAKE_CXX_STANDARD_LIBRARIES}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
-
+endif(WIN32)
 
 set(BOX2D_BUILD_UNIT_TESTS OFF)
 set(BOX2D_BUILD_TESTBED OFF)
@@ -33,7 +34,7 @@ endif(WIN32)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Assets DESTINATION ${CMAKE_BINARY_DIR})
 
-file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Objects/*.cpp) #src/Engine/VisualScripting/*.cpp)
+file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Engine/VisualScripting/*.cpp src/Objects/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
 
@@ -41,8 +42,4 @@ include_directories(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL_image
                     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/squirrel/include ${CMAKE_CURRENT_SOURCE_DIR}/vendor/squall 
                     ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/Math) #${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/VisualScripting)
 
-if (WIN32)
-target_link_libraries(${PROJECT_NAME} SDL3::SDL3-static squirrel sqstdlib SDL3_image-static box2d)
-else()
-target_link_libraries(${PROJECT_NAME} SDL3::SDL3-static squirrel SDL3_image-static box2d)
-endif(WIN32)
+target_link_libraries(${PROJECT_NAME} SDL3::SDL3 squirrel sqstdlib SDL3_image-static box2d)
