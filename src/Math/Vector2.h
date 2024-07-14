@@ -4,13 +4,14 @@
 #pragma once
 
 #include <box2d/b2_math.h>
+#include "iostream"
 
-class Vector2 : public b2Vec2
+class Vector2
 {
 public:
     Vector2() = default;
 
-    Vector2(float xIn, float yIn) : b2Vec2(xIn, yIn) {};
+    Vector2(float xIn, float yIn)  { x = xIn; y = yIn; }
 
 	void SetX(float sx){
 		x = sx;
@@ -32,6 +33,10 @@ public:
 		x = other.x;
 		y = other.y;
 	}
+
+	operator b2Vec2() const { return b2Vec2(x, y); }
+
+	float x = 0.0f, y = 0.0f;
 };
 
 #endif

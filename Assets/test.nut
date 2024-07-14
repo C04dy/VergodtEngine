@@ -1,5 +1,8 @@
 function foo(n)
 {
-    print("==== foo0 called\n");
-    print(n.Name);
+    print(n.Position.x);
+    print("\n");
+    n.Position.x = 40.0;
+    print(n.Position.x);
+    print("\n");
 }

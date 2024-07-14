@@ -6,23 +6,21 @@
 
 //#include "../Engine/VisualScripting/ScriptingNodes.h"
 
-class TransformClass{
-public:
-	Vector2 Position = Vector2(0, 0);
-	Vector2 Size = Vector2(1, 1);
-	float Angle = 0;
-};
-
 class Node
 {
 public:
 	~Node();
 
-	TransformClass Transform;
+	Vector2 Position = Vector2(0, 0);
+	Vector2 Size = Vector2(1, 1);
+	float Angle = 0;
 
 	void AddChild(Node* Child);
 
-	std::string GetName() { return Name; }
+	std::string GetName() const { return Name; }
+	Vector2 GetPosition() const { return Position; }
+
+	void SetName(std::string NewName) { Name = NewName; }
 
 	void UpdateChild();
 

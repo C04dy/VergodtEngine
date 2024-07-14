@@ -91,21 +91,25 @@ void Scene::Start(){
         }
     }
     SceneFile.close();
-
-    /*for (int i = 0; i < (int)ALLNODES.size(); i++)
-    {
-        if(ALLNODES[i]->Script != nullptr){
-            ALLNODES[i]->Script->StartScript();
-        }
-    }*/
     
     squall::VMStd vm;
-    vm.dofile("Assets/test.nut");
+    vm.dofile("../Assets/test.nut");
+
+    squall::Klass<Vector2> V(vm, "Vector2");
+    V.var("x", &Vector2::x);
+    V.var("y", &Vector2::y);
+    V.prop("x", &Vector2::GetX, &Vector2::SetX);
+    V.prop("y", &Vector2::GetY, &Vector2::SetY);
 
     squall::Klass<Node> k(vm, "Node");
-    k.var("Name", &Node::Name);  
+    k.prop("Name", &Node::GetName, &Node::SetName);
+    k.var("Position", &Node::Position);
 
-    vm.call<void>("foo", Nodes[0]);
+    Node test;
+
+    vm.call<void>("foo", &test);
+
+    std::cout << test.Position.x;
 }
 
 void Scene::Update(double dt){

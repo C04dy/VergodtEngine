@@ -22,9 +22,9 @@ void SetNode(Node* n, const std::string& Line){
     std::string size = GetLineBetween(Line, "[SIZE(", ")]");
     std::string angle = GetLineBetween(Line, "[ANGLE(", ")]");
     
-    n->Transform.Position = Vector2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
-    n->Transform.Size = Vector2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
-    n->Transform.Angle = std::stof(angle);
+    n->Position = Vector2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
+    n->Size = Vector2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
+    n->Angle = std::stof(angle);
     n->Name = GetLineBetween(Line, "[NAME=", "]");
 }
 
