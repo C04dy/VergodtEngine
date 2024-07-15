@@ -93,23 +93,43 @@ void Scene::Start(){
     SceneFile.close();
     
     squall::VMStd vm;
+    
+    squall::Klass<Vector2>(vm, "Vector2")
+        .var("x", &Vector2::x)
+        .var("y", &Vector2::y);
+
+    squall::Klass<Node>(vm, "Node")
+        .var("Name", &Node::Name)
+        .var("Position", &Node::Position);
+
+    std::fstream stream("../Assets/VergodtEngine.nut");
+
+    std::string line;
+    std::string s;
+    bool ChangeLine = false;
+    while (getline(stream, line)) {
+        if (!ChangeLine) {
+            s += line + "\n";
+        } else {
+            s += "Ns.push(test); \n";
+            ChangeLine = false;
+        }
+        if (line.find("function SetNodes() {") != std::string::npos) {
+            ChangeLine = true;
+        }
+    }
+    stream.close();
+
+    //vm.dofile("../Assets/VergodtEngine.nut");
+    vm.dostring(s.c_str());
     vm.dofile("../Assets/test.nut");
 
-    squall::Klass<Vector2> V(vm, "Vector2");
-    V.var("x", &Vector2::x);
-    V.var("y", &Vector2::y);
-    V.prop("x", &Vector2::GetX, &Vector2::SetX);
-    V.prop("y", &Vector2::GetY, &Vector2::SetY);
+    vm.call<void>("SetNodes");
+    vm.call<void>("SetNodeVal", (Node*)Sprites[0]);
+    vm.call<void>("StartFunc");
+    vm.call<void>("GetNodeVal", (Node*)Sprites[0], &Sprites[0]->Position);
 
-    squall::Klass<Node> k(vm, "Node");
-    k.prop("Name", &Node::GetName, &Node::SetName);
-    k.var("Position", &Node::Position);
-
-    Node test;
-
-    vm.call<void>("foo", &test);
-
-    std::cout << test.Position.x;
+    std::cout << Sprites[0]->Position.x;
 }
 
 void Scene::Update(double dt){

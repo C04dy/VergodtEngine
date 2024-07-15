@@ -1,8 +1,8 @@
-function foo(n)
+class test extends Node
 {
-    print(n.Position.x);
-    print("\n");
-    n.Position.x = 40.0;
-    print(n.Position.x);
-    print("\n");
+    function Start() {
+        Position.x += 400;
+
+        print(Position.x);
+    }
 }
