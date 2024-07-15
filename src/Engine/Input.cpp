@@ -1,5 +1,5 @@
 #include "Input.h"
-#include "VisualScripting/ScriptingNodes.h"
+//#include "VisualScripting/ScriptingNodes.h"
 #include <iostream>
 
 void InputManager::SetKeyDown(SDL_Keycode KeyCode){
@@ -97,15 +97,15 @@ bool InputManager::IsMouseKeyNotPressed(int Key){
 
 void InputManager::UpdateKeyboardInputNodes(){
     for (int i = 0; i < (int)KeyboardInputNodes.size(); i++){
-        KeyboardInputNodes[i]->SendSignal();
+        //KeyboardInputNodes[i]->SendSignal();
     }   
 }
 
 void InputManager::UpdateMouseInputNodes(){
     for (int i = 0; i < (int)MouseInputNodes.size(); i++){
-        MouseInputNodes[i]->SendSignal();
-        MouseInputNodes[i]->X = m_mousepos.x;
-        MouseInputNodes[i]->Y = m_mousepos.y;
+        //MouseInputNodes[i]->SendSignal();
+        //MouseInputNodes[i]->X = m_mousepos.x;
+        //MouseInputNodes[i]->Y = m_mousepos.y;
     }   
 }
 

@@ -34,7 +34,7 @@ endif(WIN32)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Assets DESTINATION ${CMAKE_BINARY_DIR})
 
-file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Engine/VisualScripting/*.cpp src/Objects/*.cpp)
+file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Objects/*.cpp) #src/Engine/VisualScripting/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
 

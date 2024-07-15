@@ -9,7 +9,7 @@
 #include "Objects/PhysicsBody.h"
 #include "Objects/Node.h"
 
-#include "VisualScripting/ScriptingNodes.h"
+#include "squall/squall_vmstd.hpp"
 
 class b2World;
 
@@ -34,12 +34,16 @@ public:
 	void SetWindowsHeight(int Height) { m_windowheight = Height; }
 
 	void SetInput(InputManager* _Input) { Input = _Input; }
+
+	void SetSquirrelVM(squall::VMStd* vm) { SquirrelVirtualMachine = vm; }
 protected:
 	SDL_Renderer* Renderer;
 
 	b2World* PhysicsWorld;
 
 	InputManager* Input;
+
+	squall::VMStd* SquirrelVirtualMachine;
 private:
 	std::string m_gamename = "VergodtEngineGame";
 
@@ -49,6 +53,7 @@ private:
 
 	Camera Cam;
 
+	std::vector<Node*> ScriptableNodes;
 	std::vector<Node*> Nodes;
 	std::vector<Sprite*> Sprites;
 	std::vector<PhysicsBody*> PhysicsBodys;

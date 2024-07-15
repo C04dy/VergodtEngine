@@ -25,12 +25,12 @@ function SetNodes() {
 
 }
 
-function SetNodeVal(node) {
-    Ns[Ns.len() - 1].Position.x = node.Position.x;
-    Ns[Ns.len() - 1].Position.y = node.Position.y;
+function SetNodeVal(id, node) {
+    Ns[id].Position.x = node.Position.x;
+    Ns[id].Position.y = node.Position.y;
 }
 
-function GetNodeVal(node, pos) {
-    pos.x = Ns[Ns.len() - 1].Position.x;
-    pos.y = Ns[Ns.len() - 1].Position.y;
+function GetNodeVal(id, node, pos) {
+    pos.x = Ns[id].Position.x;
+    pos.y = Ns[id].Position.y;
 }

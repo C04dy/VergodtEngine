@@ -1,9 +1,6 @@
 #include "Scene.h"
+#include "Scripting/Squirrel/SquirrelBindings.hpp"
 #include <fstream>
-#include <sstream>
-#include "Util/SceneFileFunctions.h"
-#include "squall/squall_vmstd.hpp"
-#include "squall/squall_klass.hpp"
 
 void Scene::Start(){
     std::string Line;
@@ -33,6 +30,10 @@ void Scene::Start(){
             SetNode(s, Line);
 
             SetChild(s, ALLNODES, Line);
+
+            if (SetNodesScript(Line, (Node*)s) == true) {
+                ScriptableNodes.push_back(s);
+            }
 
             Sprites.push_back(s);
             ALLNODES.push_back(Sprites[Sprites.size() - 1]);
@@ -91,45 +92,15 @@ void Scene::Start(){
         }
     }
     SceneFile.close();
-    
-    squall::VMStd vm;
-    
-    squall::Klass<Vector2>(vm, "Vector2")
-        .var("x", &Vector2::x)
-        .var("y", &Vector2::y);
 
-    squall::Klass<Node>(vm, "Node")
-        .var("Name", &Node::Name)
-        .var("Position", &Node::Position);
+    BindObjects(SquirrelVirtualMachine);
 
-    std::fstream stream("../Assets/VergodtEngine.nut");
+    EditEngineFile(SquirrelVirtualMachine, ScriptableNodes);
 
-    std::string line;
-    std::string s;
-    bool ChangeLine = false;
-    while (getline(stream, line)) {
-        if (!ChangeLine) {
-            s += line + "\n";
-        } else {
-            s += "Ns.push(test); \n";
-            ChangeLine = false;
-        }
-        if (line.find("function SetNodes() {") != std::string::npos) {
-            ChangeLine = true;
-        }
-    }
-    stream.close();
+    LoadNodeScripts(SquirrelVirtualMachine, ScriptableNodes);
 
-    //vm.dofile("../Assets/VergodtEngine.nut");
-    vm.dostring(s.c_str());
-    vm.dofile("../Assets/test.nut");
-
-    vm.call<void>("SetNodes");
-    vm.call<void>("SetNodeVal", (Node*)Sprites[0]);
-    vm.call<void>("StartFunc");
-    vm.call<void>("GetNodeVal", (Node*)Sprites[0], &Sprites[0]->Position);
-
-    std::cout << Sprites[0]->Position.x;
+    SetNodes(SquirrelVirtualMachine);
+    StartFunction(SquirrelVirtualMachine, ScriptableNodes);
 }
 
 void Scene::Update(double dt){

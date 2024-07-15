@@ -34,9 +34,12 @@ void Engine::EngineStart(){
     double EndTime = 0;
     double Delta = 0;
 
+    squall::VMStd vm;
+
     Scene.SetRenderer(Windowptr->GetRenderer());
     Scene.SetPhysicsWorld(m_physicsworld);
     Scene.SetInput(&Input);
+    Scene.SetSquirrelVM(&vm);
     Scene.Start();
 
     while(IsRunning()){

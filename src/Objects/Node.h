@@ -26,6 +26,10 @@ public:
 
 	std::string Name;
 
+	std::string ScriptClassName = "null";
+	std::string ScriptLocation = "null";
+	int ScriptIndex = -1;
+
 	//VisualScript* Script = nullptr;
 protected:
 	std::vector<Node*> m_childNode;
