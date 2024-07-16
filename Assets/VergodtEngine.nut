@@ -18,6 +18,16 @@ class Node
     Name = "";
 }
 
+class Sprite extends Node
+{
+    Texture = null;
+}
+
+class PhysicsBody extends Node
+{
+    Velocity = Vector2(0, 0);
+}
+
 local Ns = []
 
 function StartFunc() {
@@ -46,6 +56,15 @@ function SetNodeVal(id, node) {
     Ns[id].Name = node.Name;
 }
 
+function SetSpriteTexture(id, n) {
+    Ns[id].Texture = n;
+}
+
+function SetPhysicsBodyVelocity(id, vel) {
+    Ns[id].Velocity.x = vel.x;
+    Ns[id].Velocity.y = vel.y;
+}
+
 function GetNodeVal(id, node, pos, size) {
     pos.x = Ns[id].Position.x;
     pos.y = Ns[id].Position.y;
@@ -54,4 +73,9 @@ function GetNodeVal(id, node, pos, size) {
     size.y = Ns[id].Size.y;
 
     node.Name = Ns[id].Name;
+}
+
+function GetPhysicsBodyVelocity(id, vel) {
+    vel.x = Ns[id].Velocity.x;
+    vel.y = Ns[id].Velocity.y;
 }

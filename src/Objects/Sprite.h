@@ -10,13 +10,16 @@ class Sprite : public Node
 public:
 	Sprite(const std::string& FilePath, Camera* Cam, SDL_Renderer* Renderer);
 	
-	void DeleteSprite();
+	void DeleteTexture();
 
 	void LoadImage(const std::string& FilePath);
 
 	void DrawImage(); 
 
 	void SetCam(Camera* Cam);
+
+	void ChangeTexture(const std::string& FilePath);
+
 private:
 	SDL_Texture* m_texture = nullptr;
 	

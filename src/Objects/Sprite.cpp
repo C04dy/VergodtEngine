@@ -2,11 +2,12 @@
 
 Sprite::Sprite(const std::string& FilePath, Camera* Cam, SDL_Renderer* Renderer){
     m_renderer = Renderer;
+    Type = NodeType::SPRITE;
     SetCam(Cam);
     LoadImage(FilePath);
 }
 
-void Sprite::DeleteSprite(){
+void Sprite::DeleteTexture(){
     SDL_DestroyTexture(m_texture);
 }
 
@@ -41,4 +42,9 @@ void Sprite::DrawImage(){
 
 void Sprite::SetCam(Camera* Cam){
 	m_cam = Cam;
+}
+
+void Sprite::ChangeTexture(const std::string& FilePath) {
+    DeleteTexture();
+    LoadImage(FilePath);
 }

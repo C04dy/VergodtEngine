@@ -4,7 +4,7 @@
 
 void Scene::Start(){
     std::string Line;
-    std::ifstream SceneFile("Assets/test.vscene");
+    std::ifstream SceneFile("../Assets/test.vscene");
 
     std::vector<Node*> ALLNODES;
 
@@ -18,10 +18,18 @@ void Scene::Start(){
 
             SetChild(n, ALLNODES, Line);
  
+            if (SetNodesScript(Line, n) == true) {
+                ScriptableNodes.push_back(n);
+            }
+    
             Nodes.push_back(n);
             ALLNODES.push_back(Nodes[Nodes.size() - 1]);
         }else if(CurNodeType == "CAMERA"){
             SetNode(&Cam, Line);
+
+            if (SetNodesScript(Line, (Node*)&Cam) == true) {
+                ScriptableNodes.push_back(&Cam);
+            }
         }else if(CurNodeType == "SPRITE"){
             std::string AssetFilePath = GetLineBetween(Line, "[ASSET=", "]");
 
@@ -43,6 +51,10 @@ void Scene::Start(){
             SetNode(p, Line);
 
             SetChild(p, ALLNODES, Line);
+
+            if (SetNodesScript(Line, (Node*)p) == true) {
+                ScriptableNodes.push_back(p);
+            }
 
             b2BodyType t = b2BodyType::b2_staticBody;
             
@@ -103,7 +115,6 @@ void Scene::Start(){
 
 void Scene::Update(double dt){
     UpdateFunction(SquirrelVirtualMachine, ScriptableNodes, dt);
-    
     for(int i = 0; i < (int)PhysicsBodys.size(); i++){
         PhysicsBodys[i]->UpdatePhysicsNode();
         PhysicsBodys[i]->UpdateChild();
@@ -124,7 +135,7 @@ void Scene::Draw(){
 
 void Scene::Clean(){
     for(int i = 0; i < (int)Sprites.size(); i++){
-        Sprites[i]->DeleteSprite();
+        Sprites[i]->DeleteTexture();
         delete Sprites[i];
         Sprites[i] = nullptr;
     }

@@ -6,6 +6,13 @@
 
 //#include "../Engine/VisualScripting/ScriptingNodes.h"
 
+enum class NodeType {
+	NODE,
+	SPRITE,
+	PHYSICSBODY,
+	CAM
+};
+
 class Node
 {
 public:
@@ -29,6 +36,8 @@ public:
 	std::string ScriptClassName = "null";
 	std::string ScriptLocation = "null";
 	int ScriptIndex = -1;
+
+	NodeType Type = NodeType::NODE;
 
 	//VisualScript* Script = nullptr;
 protected:

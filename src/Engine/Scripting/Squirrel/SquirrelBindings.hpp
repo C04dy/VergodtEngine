@@ -16,7 +16,7 @@ bool SetNodesScript(const std::string& Line, Node* n) {
         std::string ln;
         while (getline(stream, ln)) {
             if (ln.find("class") != std::string::npos) {
-                n->ScriptClassName = GetLineBetween(ln, "class ", " extends Node");
+                n->ScriptClassName = GetLineBetween(ln, "class ", " extends");
                 break;
             }
         }
@@ -33,6 +33,15 @@ void BindFunctions(squall::VMStd* vm, InputManager* im) {
     vm->defun("IsMouseKeyJustReleased", [=](int x)->bool {
                 return im->IsMouseKeyJustReleased(x);
             });
+    vm->defun("IsMouseKeyPressed", [=](int x)->bool {
+                return im->IsMouseKeyPressed(x);
+            });
+    vm->defun("IsKeyJustPressed", [=](int x)->bool {
+                return im->IsKeyJustPressed(x);
+            });
+    vm->defun("IsKeyPressed", [=](int x)->bool {
+                return im->IsKeyPressed(x);
+            });
 }
 
 void BindNodes(squall::VMStd* vm) {
@@ -40,10 +49,17 @@ void BindNodes(squall::VMStd* vm) {
         .var("x", &Vector2::x)
         .var("y", &Vector2::y);
 
+    //squall::Klass<b2Vec2>(*vm, "b2Vec2")
+    //    .var("x", &b2Vec2::x)
+    //    .var("y", &b2Vec2::y);
+
     squall::Klass<Node>(*vm, "Node")
         .var("Name", &Node::Name)
         .var("Position", &Node::Position)
         .var("Size", &Node::Size);
+
+    squall::Klass<Sprite>(*vm, "Sprite")
+        .func("ChangeTexture", &Sprite::ChangeTexture);
 }
 
 void EditEngineFile(squall::VMStd* vm, std::vector<Node*> nodes) {
@@ -83,19 +99,55 @@ void LoadNodeScripts(squall::VMStd* vm, std::vector<Node*> nodes) {
 void StartFunction(squall::VMStd* vm, std::vector<Node*> nodes) {
     for (int i = 0; i < (int)nodes.size(); i++) {
         vm->call<void>("SetNodeVal", nodes[i]->ScriptIndex, nodes[i]);
+        switch (nodes[i]->Type) {
+            case NodeType::SPRITE:
+            vm->call<void>("SetSpriteTexture", nodes[i]->ScriptIndex, (Sprite*)nodes[i]);            
+                break;
+            case NodeType::PHYSICSBODY:
+            Vector2 v;
+            v.x = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().x;
+            v.y = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().y;
+            vm->call<void>("SetPhysicsBodyVelocity", nodes[i]->ScriptIndex, v);            
+                break;
+        }
     }
     vm->call<void>("StartFunc");
     for (int i = 0; i < (int)nodes.size(); i++) {
         vm->call<void>("GetNodeVal", nodes[i]->ScriptIndex, nodes[i], &nodes[i]->Position, &nodes[i]->Size);
+
+        switch (nodes[i]->Type) {
+            case NodeType::PHYSICSBODY:
+            Vector2 v;
+            vm->call<void>("GetPhysicsBodyVelocity", nodes[i]->ScriptIndex, &v);
+            ((PhysicsBody *)nodes[i])->GetBody()->SetLinearVelocity(v);
+            break;
+        }
     }
 }
 
 void UpdateFunction(squall::VMStd* vm, std::vector<Node*> nodes, float dt) {
     for (int i = 0; i < (int)nodes.size(); i++) {
         vm->call<void>("SetNodeVal", nodes[i]->ScriptIndex, nodes[i]);
+
+        switch (nodes[i]->Type) {
+            case NodeType::PHYSICSBODY:
+            Vector2 v;
+            v.x = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().x;
+            v.y = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().y;
+            vm->call<void>("SetPhysicsBodyVelocity", nodes[i]->ScriptIndex, v);                
+                break;
+        }
     }
     vm->call<void>("UpdateFunc", dt);
     for (int i = 0; i < (int)nodes.size(); i++) {
         vm->call<void>("GetNodeVal", nodes[i]->ScriptIndex, nodes[i], &nodes[i]->Position, &nodes[i]->Size);
+   
+        switch (nodes[i]->Type) {
+            case NodeType::PHYSICSBODY:
+            Vector2 v;
+            vm->call<void>("GetPhysicsBodyVelocity", nodes[i]->ScriptIndex, &v);
+            ((PhysicsBody *)nodes[i])->GetBody()->SetLinearVelocity(v);        
+                break;
+        }
     }
 }

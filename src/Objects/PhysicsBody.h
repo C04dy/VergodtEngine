@@ -13,6 +13,8 @@ public:
 
 	b2Body* GetBody() { return m_physicsbody; }
 
+	Vector2 Velocity;
+
 	void UpdatePhysicsNode();
 private:
 	b2Body* m_physicsbody;

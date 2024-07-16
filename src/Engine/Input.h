@@ -21,8 +21,8 @@ public:
     void SetMouseKeyDown(int Button);
     void SetMouseKeyUp(int Button);
 
-    bool IsKeyDown(SDL_Keycode Key);
-    bool IsKeyUp(SDL_Keycode Key);
+    bool IsKeyJustPressed(SDL_Keycode Key);
+    bool IsKeyJustReleased(SDL_Keycode Key);
 
     bool IsKeyPressed(SDL_Keycode Key);
     bool IsKeyNotPressed(SDL_Keycode Key);

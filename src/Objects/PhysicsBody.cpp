@@ -21,6 +21,9 @@ void PhysicsBody::InitPhysicsBodyBox(b2World* PhysicsWorld, b2BodyType BodyType,
 	fixturedef.friction = Friction;
 
 	m_physicsbody->CreateFixture(&fixturedef);
+
+	Type = NodeType::PHYSICSBODY;
+	Velocity = m_physicsbody->GetLinearVelocity();
 }
 
 void PhysicsBody::InitPhysicsBodyCircle(b2World* PhysicsWorld, b2BodyType BodyType, float Radius, float Friction, float Density){
@@ -40,6 +43,9 @@ void PhysicsBody::InitPhysicsBodyCircle(b2World* PhysicsWorld, b2BodyType BodyTy
 	fixturedef.friction = Friction;
 
 	m_physicsbody->CreateFixture(&fixturedef);
+
+	Type = NodeType::PHYSICSBODY;
+	Velocity = m_physicsbody->GetLinearVelocity();
 }
 
 void PhysicsBody::InitPhysicsBodyPolygon(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 Polygons[], int32 PolygonCount, float Friction, float Density){
@@ -66,12 +72,20 @@ void PhysicsBody::InitPhysicsBodyPolygon(b2World* PhysicsWorld, b2BodyType BodyT
 	fixturedef.friction = Friction;
 
 	m_physicsbody->CreateFixture(&fixturedef);
+
+	Type = NodeType::PHYSICSBODY;
+	Velocity = m_physicsbody->GetLinearVelocity();
 }
 
 void PhysicsBody::UpdatePhysicsNode(){
+	//if (Velocity != m_physicsbody->GetLinearVelocity())
+	//	m_physicsbody->SetLinearVelocity(Velocity);
+
 	Position.x = m_physicsbody->GetPosition().x * PIXEL_TO_METER;
 	Position.y = m_physicsbody->GetPosition().y * PIXEL_TO_METER;
-	
+
+	Velocity = m_physicsbody->GetLinearVelocity();
+
 	Angle = m_physicsbody->GetAngle() * RADIAN_IN_DEGREES;
 }
 

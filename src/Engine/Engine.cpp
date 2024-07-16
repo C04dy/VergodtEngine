@@ -64,6 +64,7 @@ void Engine::EngineStart(){
                 Input.SetMouseKeyDown(e.button.button);
                 break;
             case SDL_EVENT_KEY_DOWN:
+            if (e.key.repeat == 0)
                 Input.SetKeyDown(e.key.keysym.sym);
                 break;
             case SDL_EVENT_KEY_UP:

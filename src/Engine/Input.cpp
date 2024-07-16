@@ -4,8 +4,8 @@
 
 void InputManager::SetKeyDown(SDL_Keycode KeyCode){
     m_key = KeyCode;
-    m_iskeydown = true;
     m_iskeyup = false;
+    m_iskeydown = true;
     m_keypressed = true;
 }
 
@@ -22,8 +22,8 @@ void InputManager::SetMousePos(Vector2 MousePos){
 
 void InputManager::SetMouseKeyDown(int Button){
     m_mousekey = Button;
-    m_ismousekeydown = true;
     m_ismousekeyup = false;
+    m_ismousekeydown = true;
     m_mousekeypressed = true;
 }
 
@@ -34,7 +34,7 @@ void InputManager::SetMouseKeyUp(int Button){
     m_mousekeypressed = false;
 }
 
-bool InputManager::IsKeyDown(SDL_Keycode Key){
+bool InputManager::IsKeyJustPressed(SDL_Keycode Key){
     if(m_iskeydown && Key == m_key){
         m_iskeydown = false;
         return true;
@@ -42,7 +42,7 @@ bool InputManager::IsKeyDown(SDL_Keycode Key){
     return false;
 }
 
-bool InputManager::IsKeyUp(SDL_Keycode Key){
+bool InputManager::IsKeyJustReleased(SDL_Keycode Key){
     if(m_iskeyup && Key == m_key){
         m_iskeyup = false;
         return true;
