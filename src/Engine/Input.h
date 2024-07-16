@@ -27,8 +27,8 @@ public:
     bool IsKeyPressed(SDL_Keycode Key);
     bool IsKeyNotPressed(SDL_Keycode Key);
 
-    bool IsMouseKeyDown(int Key);
-    bool IsMouseKeyUp(int Key);
+    bool IsMouseKeyJustPressed(int Key);
+    bool IsMouseKeyJustReleased(int Key);
 
     bool IsMouseKeyPressed(int Key);
     bool IsMouseKeyNotPressed(int Key);

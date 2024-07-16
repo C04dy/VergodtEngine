@@ -5,8 +5,8 @@
 #include <fstream>
 #include <iostream>
 
-std::string GetScriptClassLine(const std::string& ClassName) {
-    return "Ns.push(" + ClassName + "); \n";
+std::string GetScriptClassLine(const std::string& ClassName, const std::string& NodeName) {
+    return "Ns.push(" + ClassName + "(" + '"' + NodeName + '"' + ")" + "); \n";
 }
 
 bool SetNodesScript(const std::string& Line, Node* n) {
@@ -15,8 +15,10 @@ bool SetNodesScript(const std::string& Line, Node* n) {
         std::fstream stream(sc);
         std::string ln;
         while (getline(stream, ln)) {
-            n->ScriptClassName = GetLineBetween(ln, "class ", " extends Node");
-            break;
+            if (ln.find("class") != std::string::npos) {
+                n->ScriptClassName = GetLineBetween(ln, "class ", " extends Node");
+                break;
+            }
         }
         n->ScriptLocation = sc;
         return true;
@@ -24,14 +26,24 @@ bool SetNodesScript(const std::string& Line, Node* n) {
     return false;
 }
 
-void BindObjects(squall::VMStd* vm) {
+void BindFunctions(squall::VMStd* vm, InputManager* im) {
+    vm->defun("IsMouseKeyJustPressed", [=](int x)->bool {
+                return im->IsMouseKeyJustPressed(x);
+            });
+    vm->defun("IsMouseKeyJustReleased", [=](int x)->bool {
+                return im->IsMouseKeyJustReleased(x);
+            });
+}
+
+void BindNodes(squall::VMStd* vm) {
     squall::Klass<Vector2>(*vm, "Vector2")
         .var("x", &Vector2::x)
         .var("y", &Vector2::y);
 
     squall::Klass<Node>(*vm, "Node")
         .var("Name", &Node::Name)
-        .var("Position", &Node::Position);
+        .var("Position", &Node::Position)
+        .var("Size", &Node::Size);
 }
 
 void EditEngineFile(squall::VMStd* vm, std::vector<Node*> nodes) {
@@ -44,7 +56,8 @@ void EditEngineFile(squall::VMStd* vm, std::vector<Node*> nodes) {
             s += line + "\n";
         } else {
             for (int i = 0; i < (int)nodes.size(); i++) {
-                s += GetScriptClassLine(nodes[i]->ScriptClassName);
+                s += GetScriptClassLine(nodes[i]->ScriptClassName, nodes[i]->Name);
+                std::cout << GetScriptClassLine(nodes[i]->ScriptClassName, nodes[i]->Name);
                 nodes[i]->ScriptIndex = i;
             }
             ChangeLine = false;
@@ -69,12 +82,21 @@ void LoadNodeScripts(squall::VMStd* vm, std::vector<Node*> nodes) {
 }
 
 void StartFunction(squall::VMStd* vm, std::vector<Node*> nodes) {
-
     for (int i = 0; i < (int)nodes.size(); i++) {
         vm->call<void>("SetNodeVal", nodes[i]->ScriptIndex, nodes[i]);
     }
     vm->call<void>("StartFunc");
     for (int i = 0; i < (int)nodes.size(); i++) {
-        vm->call<void>("GetNodeVal", nodes[i]->ScriptIndex, nodes[i], &nodes[i]->Position);
+        vm->call<void>("GetNodeVal", nodes[i]->ScriptIndex, nodes[i], &nodes[i]->Position, &nodes[i]->Size);
+    }
+}
+
+void UpdateFunction(squall::VMStd* vm, std::vector<Node*> nodes, float dt) {
+    for (int i = 0; i < (int)nodes.size(); i++) {
+        vm->call<void>("SetNodeVal", nodes[i]->ScriptIndex, nodes[i]);
+    }
+    vm->call<void>("UpdateFunc", dt);
+    for (int i = 0; i < (int)nodes.size(); i++) {
+        vm->call<void>("GetNodeVal", nodes[i]->ScriptIndex, nodes[i], &nodes[i]->Position, &nodes[i]->Size);
     }
 }

@@ -64,7 +64,7 @@ bool InputManager::IsKeyNotPressed(SDL_Keycode Key){
     return false;
 }
 
-bool InputManager::IsMouseKeyDown(int Key){
+bool InputManager::IsMouseKeyJustPressed(int Key){
     if(m_ismousekeydown && Key == m_mousekey){
         m_ismousekeydown = false;
         return true;
@@ -72,7 +72,7 @@ bool InputManager::IsMouseKeyDown(int Key){
     return false;
 }
 
-bool InputManager::IsMouseKeyUp(int Key){
+bool InputManager::IsMouseKeyJustReleased(int Key){
     if(m_ismousekeyup && Key == m_mousekey){
         m_ismousekeyup = false;
         return true;

@@ -93,17 +93,17 @@ void Scene::Start(){
     }
     SceneFile.close();
 
-    BindObjects(SquirrelVirtualMachine);
-
+    BindNodes(SquirrelVirtualMachine);
+    BindFunctions(SquirrelVirtualMachine, Input);
     EditEngineFile(SquirrelVirtualMachine, ScriptableNodes);
-
     LoadNodeScripts(SquirrelVirtualMachine, ScriptableNodes);
-
     SetNodes(SquirrelVirtualMachine);
     StartFunction(SquirrelVirtualMachine, ScriptableNodes);
 }
 
 void Scene::Update(double dt){
+    UpdateFunction(SquirrelVirtualMachine, ScriptableNodes, dt);
+    
     for(int i = 0; i < (int)PhysicsBodys.size(); i++){
         PhysicsBodys[i]->UpdatePhysicsNode();
         PhysicsBodys[i]->UpdateChild();
