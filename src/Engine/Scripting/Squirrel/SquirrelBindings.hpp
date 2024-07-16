@@ -57,7 +57,6 @@ void EditEngineFile(squall::VMStd* vm, std::vector<Node*> nodes) {
         } else {
             for (int i = 0; i < (int)nodes.size(); i++) {
                 s += GetScriptClassLine(nodes[i]->ScriptClassName, nodes[i]->Name);
-                std::cout << GetScriptClassLine(nodes[i]->ScriptClassName, nodes[i]->Name);
                 nodes[i]->ScriptIndex = i;
             }
             ChangeLine = false;

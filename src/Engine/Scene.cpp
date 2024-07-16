@@ -17,7 +17,7 @@ void Scene::Start(){
             SetNode(n, Line);
 
             SetChild(n, ALLNODES, Line);
-
+ 
             Nodes.push_back(n);
             ALLNODES.push_back(Nodes[Nodes.size() - 1]);
         }else if(CurNodeType == "CAMERA"){
