@@ -56,10 +56,14 @@ void BindNodes(squall::VMStd* vm) {
     squall::Klass<Node>(*vm, "Node")
         .var("Name", &Node::Name)
         .var("Position", &Node::Position)
+        .var("Angle", &Node::Angle)
         .var("Size", &Node::Size);
 
     squall::Klass<Sprite>(*vm, "Sprite")
         .func("ChangeTexture", &Sprite::ChangeTexture);
+
+    squall::Klass<PhysicsBody>(*vm, "PhysicsBody")
+        .func("SetFixedRotation", &PhysicsBody::SetFixedRotation);
 }
 
 void EditEngineFile(squall::VMStd* vm, std::vector<Node*> nodes) {
@@ -107,7 +111,8 @@ void StartFunction(squall::VMStd* vm, std::vector<Node*> nodes) {
             Vector2 v;
             v.x = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().x;
             v.y = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().y;
-            vm->call<void>("SetPhysicsBodyVelocity", nodes[i]->ScriptIndex, v);            
+            vm->call<void>("SetPhysicsBodyVelocity", nodes[i]->ScriptIndex, v);
+            vm->call<void>("SetPhysicsBody", nodes[i]->ScriptIndex, (PhysicsBody*)nodes[i]);           
                 break;
         }
     }
@@ -120,6 +125,7 @@ void StartFunction(squall::VMStd* vm, std::vector<Node*> nodes) {
             Vector2 v;
             vm->call<void>("GetPhysicsBodyVelocity", nodes[i]->ScriptIndex, &v);
             ((PhysicsBody *)nodes[i])->GetBody()->SetLinearVelocity(v);
+            ((PhysicsBody *)nodes[i])->GetBody()->SetTransform(nodes[i]->Position / 100, nodes[i]->Angle);
             break;
         }
     }
@@ -137,17 +143,20 @@ void UpdateFunction(squall::VMStd* vm, std::vector<Node*> nodes, float dt) {
             vm->call<void>("SetPhysicsBodyVelocity", nodes[i]->ScriptIndex, v);                
                 break;
         }
-    }
-    vm->call<void>("UpdateFunc", dt);
-    for (int i = 0; i < (int)nodes.size(); i++) {
+        
+        vm->call<void>("UpdateFunc", nodes[i]->ScriptIndex, dt);
+        
         vm->call<void>("GetNodeVal", nodes[i]->ScriptIndex, nodes[i], &nodes[i]->Position, &nodes[i]->Size);
    
         switch (nodes[i]->Type) {
             case NodeType::PHYSICSBODY:
             Vector2 v;
             vm->call<void>("GetPhysicsBodyVelocity", nodes[i]->ScriptIndex, &v);
-            ((PhysicsBody *)nodes[i])->GetBody()->SetLinearVelocity(v);        
+            ((PhysicsBody *)nodes[i])->GetBody()->SetLinearVelocity(v);
+            ((PhysicsBody *)nodes[i])->GetBody()->SetTransform(((PhysicsBody *)nodes[i])->GetBody()->GetPosition(), nodes[i]->Angle);
                 break;
         }
+
+        //std::cout << ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().y << "\n";
     }
 }

@@ -91,6 +91,7 @@
         "locale": "cpp",
         "queue": "cpp",
         "stack": "cpp",
-        "execution": "cpp"
+        "execution": "cpp",
+        "complex": "cpp"
     }
 }

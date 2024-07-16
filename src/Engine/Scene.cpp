@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include "Scripting/Squirrel/SquirrelBindings.hpp"
 #include <fstream>
+#include <ctime>
 
 void Scene::Start(){
     std::string Line;
@@ -113,8 +114,9 @@ void Scene::Start(){
     StartFunction(SquirrelVirtualMachine, ScriptableNodes);
 }
 
-void Scene::Update(double dt){
+void Scene::Update(double dt){    
     UpdateFunction(SquirrelVirtualMachine, ScriptableNodes, dt);
+    
     for(int i = 0; i < (int)PhysicsBodys.size(); i++){
         PhysicsBodys[i]->UpdatePhysicsNode();
         PhysicsBodys[i]->UpdateChild();

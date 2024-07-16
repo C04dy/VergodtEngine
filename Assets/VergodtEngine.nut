@@ -15,6 +15,7 @@ class Node
     }
     Position = Vector2(0, 0);
     Size = Vector2(0, 0);
+    Angle = 0.0;
     Name = "";
 }
 
@@ -26,20 +27,20 @@ class Sprite extends Node
 class PhysicsBody extends Node
 {
     Velocity = Vector2(0, 0);
+
+    Body = null;
 }
 
 local Ns = []
 
 function StartFunc() {
-    for (local i = 0; i < Ns.len(); i++) {
-        Ns[i].Start();
+    foreach (val in Ns) {
+        val.Start();
     }
 }
 
-function UpdateFunc(dt) {
-    for (local i = 0; i < Ns.len(); i++) {
-        Ns[i].Update(dt);
-    }
+function UpdateFunc(id, dt) {
+    Ns[id].Update(dt);
 }
 
 function SetNodes() {
@@ -53,11 +54,17 @@ function SetNodeVal(id, node) {
     Ns[id].Size.x = node.Size.x;
     Ns[id].Size.y = node.Size.y;
 
+    Ns[id].Angle = node.Angle;
+
     Ns[id].Name = node.Name;
 }
 
 function SetSpriteTexture(id, n) {
     Ns[id].Texture = n;
+}
+
+function SetPhysicsBody(id, n) {
+    Ns[id].Body = n;
 }
 
 function SetPhysicsBodyVelocity(id, vel) {
@@ -71,6 +78,8 @@ function GetNodeVal(id, node, pos, size) {
 
     size.x = Ns[id].Size.x;
     size.y = Ns[id].Size.y;
+
+    node.Angle = Ns[id].Angle;
 
     node.Name = Ns[id].Name;
 }

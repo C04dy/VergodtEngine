@@ -34,6 +34,10 @@ public:
 		y = other.y;
 	}
 
+	Vector2 operator/(float d) {
+		return Vector2(x / d, y / d);
+	}
+
 	operator b2Vec2() const { return b2Vec2(x, y); }
 
 	float x = 0.0f, y = 0.0f;

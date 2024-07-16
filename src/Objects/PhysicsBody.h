@@ -13,7 +13,7 @@ public:
 
 	b2Body* GetBody() { return m_physicsbody; }
 
-	Vector2 Velocity;
+	void SetFixedRotation(bool flag) { m_physicsbody->SetFixedRotation(flag); }
 
 	void UpdatePhysicsNode();
 private:
