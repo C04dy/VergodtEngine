@@ -39,6 +39,9 @@ void BindFunctions(squall::VMStd* vm, InputManager* im) {
     vm->defun("IsKeyJustPressed", [=](int x)->bool {
                 return im->IsKeyJustPressed(x);
             });
+    vm->defun("IsKeyJustReleased", [=](int x)->bool {
+                return im->IsKeyJustReleased(x);
+            });
     vm->defun("IsKeyPressed", [=](int x)->bool {
                 return im->IsKeyPressed(x);
             });
@@ -156,7 +159,5 @@ void UpdateFunction(squall::VMStd* vm, std::vector<Node*> nodes, float dt) {
             ((PhysicsBody *)nodes[i])->GetBody()->SetTransform(((PhysicsBody *)nodes[i])->GetBody()->GetPosition(), nodes[i]->Angle);
                 break;
         }
-
-        //std::cout << ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().y << "\n";
     }
 }

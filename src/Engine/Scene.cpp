@@ -5,7 +5,7 @@
 
 void Scene::Start(){
     std::string Line;
-    std::ifstream SceneFile("../Assets/test.vscene");
+    std::ifstream SceneFile("../Assets/FlappyBird.vscene");
 
     std::vector<Node*> ALLNODES;
 
@@ -13,7 +13,7 @@ void Scene::Start(){
         std::string CurNodeType = GetLineBetween(Line, "[NODETYPE=", "]");
         
         if(CurNodeType == "NODE"){
-            Node* n = new Node;
+            Node* n = new Node("");
 
             SetNode(n, Line);
 

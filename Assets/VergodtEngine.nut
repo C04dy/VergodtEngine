@@ -1,35 +1,35 @@
-class Vector2
-{
-    constructor(xIn, yIn) {
-        x = xIn;
-        y = yIn;
-    }
-    x = 0.0;
-    y = 0.0;
-}
-
-class Node
-{
-    constructor(name){
-        Name = name;
-    }
-    Position = Vector2(0, 0);
-    Size = Vector2(0, 0);
-    Angle = 0.0;
-    Name = "";
-}
-
-class Sprite extends Node
-{
-    Texture = null;
-}
-
-class PhysicsBody extends Node
-{
-    Velocity = Vector2(0, 0);
-
-    Body = null;
-}
+//class Vector2
+//{
+//    constructor(xIn, yIn) {
+//        x = xIn;
+//        y = yIn;
+//    }
+//    x = 0.0;
+//    y = 0.0;
+//}
+//
+//class Node
+//{
+//    constructor(name){
+//        Name = name;
+//    }
+//    Position = Vector2(0, 0);
+//    Size = Vector2(0, 0);
+//    Angle = 0.0;
+//    Name = "";
+//}
+//
+//class Sprite extends Node
+//{
+//    Texture = null;
+//}
+//
+//class PhysicsBody extends Node
+//{
+//    Velocity = Vector2(0, 0);
+//
+//    Body = null;
+//}
 
 local Ns = []
 
@@ -48,6 +48,7 @@ function SetNodes() {
 }
 
 function SetNodeVal(id, node) {
+    Ns[id] = node;
     Ns[id].Position.x = node.Position.x;
     Ns[id].Position.y = node.Position.y;
 

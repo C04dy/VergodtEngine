@@ -16,18 +16,13 @@ enum class NodeType {
 class Node
 {
 public:
-	~Node();
+	Node(const std::string& name);
 
 	Vector2 Position = Vector2(0, 0);
 	Vector2 Size = Vector2(1, 1);
 	float Angle = 0;
 
 	void AddChild(Node* Child);
-
-	std::string GetName() const { return Name; }
-	Vector2 GetPosition() const { return Position; }
-
-	void SetName(std::string NewName) { Name = NewName; }
 
 	void UpdateChild();
 

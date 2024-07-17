@@ -13,6 +13,8 @@ class MouseInputNode;
 class InputManager
 {
 public:
+    bool DoInput(SDL_Event *e);
+
     void SetKeyDown(SDL_Keycode KeyCode);
     void SetKeyUp(SDL_Keycode KeyCode);
     

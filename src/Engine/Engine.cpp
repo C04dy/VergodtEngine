@@ -47,35 +47,10 @@ void Engine::EngineStart(){
         Delta = Time - EndTime;
         EndTime = Time;
 
-        while(SDL_PollEvent(&e) > 0){
-            switch (e.type)
-            {
-            case SDL_EVENT_QUIT:
-                SetRunning(false);
-                goto Quit;
-                break;
-            case SDL_EVENT_MOUSE_MOTION:
-                Input.SetMousePos(Vector2(e.motion.x, e.motion.y));
-                break;
-            case SDL_EVENT_MOUSE_BUTTON_UP:
-                Input.SetMouseKeyUp(e.button.button);
-                break;
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                Input.SetMouseKeyDown(e.button.button);
-                break;
-            case SDL_EVENT_KEY_DOWN:
-            if (e.key.repeat == 0)
-                Input.SetKeyDown(e.key.keysym.sym);
-                break;
-            case SDL_EVENT_KEY_UP:
-                Input.SetKeyUp(e.key.keysym.sym);
-                break;
-            }
-
+        if (Input.DoInput(&e) == false) {
+            SetRunning(false);
+            goto Quit;
         }
-        Input.keystates = SDL_GetKeyboardState(NULL);
-        Input.UpdateMouseInputNodes();
-        Input.UpdateKeyboardInputNodes();
 
         Scene.Update(Delta);
 

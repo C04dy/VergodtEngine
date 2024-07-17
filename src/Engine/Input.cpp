@@ -2,6 +2,42 @@
 //#include "VisualScripting/ScriptingNodes.h"
 #include <iostream>
 
+bool InputManager::DoInput(SDL_Event *e) {
+    m_iskeydown = false;
+    m_iskeyup = false;
+    m_ismousekeydown = false;
+    m_ismousekeyup = false;
+    while(SDL_PollEvent(e) > 0){
+        switch (e->type)
+        {
+        case SDL_EVENT_QUIT:
+            return false;
+            break;
+        case SDL_EVENT_MOUSE_MOTION:
+            SetMousePos(Vector2(e->motion.x, e->motion.y));
+            break;
+        case SDL_EVENT_MOUSE_BUTTON_UP:
+            SetMouseKeyUp(e->button.button);
+            break;
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            SetMouseKeyDown(e->button.button);
+            break;
+        case SDL_EVENT_KEY_DOWN:
+        if (e->key.repeat == 0) {
+            SetKeyDown(e->key.keysym.sym);
+        }
+            break;
+        case SDL_EVENT_KEY_UP:
+            SetKeyUp(e->key.keysym.sym);
+            break;
+        }
+    }
+    keystates = SDL_GetKeyboardState(NULL);
+    //UpdateMouseInputNodes();
+    //UpdateKeyboardInputNodes();
+    return true;
+}
+
 void InputManager::SetKeyDown(SDL_Keycode KeyCode){
     m_key = KeyCode;
     m_iskeyup = false;
@@ -35,8 +71,7 @@ void InputManager::SetMouseKeyUp(int Button){
 }
 
 bool InputManager::IsKeyJustPressed(SDL_Keycode Key){
-    if(m_iskeydown && Key == m_key){
-        m_iskeydown = false;
+    if(m_iskeydown && m_key == Key){
         return true;
     }
     return false;
@@ -44,7 +79,6 @@ bool InputManager::IsKeyJustPressed(SDL_Keycode Key){
 
 bool InputManager::IsKeyJustReleased(SDL_Keycode Key){
     if(m_iskeyup && Key == m_key){
-        m_iskeyup = false;
         return true;
     }
     return false;
@@ -66,7 +100,6 @@ bool InputManager::IsKeyNotPressed(SDL_Keycode Key){
 
 bool InputManager::IsMouseKeyJustPressed(int Key){
     if(m_ismousekeydown && Key == m_mousekey){
-        m_ismousekeydown = false;
         return true;
     }
     return false;
@@ -74,7 +107,6 @@ bool InputManager::IsMouseKeyJustPressed(int Key){
 
 bool InputManager::IsMouseKeyJustReleased(int Key){
     if(m_ismousekeyup && Key == m_mousekey){
-        m_ismousekeyup = false;
         return true;
     }
     return false;
