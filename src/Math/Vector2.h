@@ -13,30 +13,13 @@ public:
 
     Vector2(float xIn, float yIn)  { x = xIn; y = yIn; }
 
-	void SetX(float sx){
-		x = sx;
-	}
+	void operator=(const b2Vec2 &other);
 
-	float GetX() const{
-		return x;
-	}
+	void operator+=(const Vector2 &other);
 
-	void SetY(float sy){
-		y = sy;
-	}
+	Vector2 operator/(float d);
 
-	float GetY() const{
-		return y;
-	}
-
-	void operator=(const b2Vec2& other){
-		x = other.x;
-		y = other.y;
-	}
-
-	Vector2 operator/(float d) {
-		return Vector2(x / d, y / d);
-	}
+	void AddToVec2(const Vector2 &other);
 
 	operator b2Vec2() const { return b2Vec2(x, y); }
 

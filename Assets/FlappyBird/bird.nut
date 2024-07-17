@@ -1,11 +1,15 @@
 class bird extends Node {
     function Start() {
-        //Body.SetFixedRotation(true);
+
     }
 
     function Update(dt) {
-        if (IsMouseKeyJustReleased(1)) {
-            Velocity.y = -5.0;
+        if (Input.IsMouseKeyJustPressed(1)) {
+            local test = ::Vector2(500.0, 400.0);
+            test.x += 500.0;
+            ::print(test.x);
+            Position.AddToVec2(::Vector2(500.0, 400.0));
+            ::print(Position.x.tostring());
         }
     }
 }

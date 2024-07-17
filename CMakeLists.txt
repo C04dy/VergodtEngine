@@ -12,8 +12,12 @@ set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ -lwsock32 -lw
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
 endif(WIN32)
 
-set(BOX2D_BUILD_UNIT_TESTS OFF)
-set(BOX2D_BUILD_TESTBED OFF)
+set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+set(BOX2D_BUILD_TESTBED OFF CACHE BOOL "" FORCE)
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(BUILD_INSTALL OFF CACHE BOOL "" FORCE)
+set(EXTERNAL_SQUIRREL_LIBS ON CACHE BOOL "" FORCE)
 
 add_subdirectory(vendor/box2d)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
@@ -32,14 +36,16 @@ else()
 add_subdirectory(vendor/squirrel)
 endif(WIN32)
 
+add_subdirectory(vendor/simplesquirrel)
+
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Assets DESTINATION ${CMAKE_BINARY_DIR})
 
-file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Objects/*.cpp) #src/Engine/VisualScripting/*.cpp)
+file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Objects/*.cpp src/Math/*.cpp) #src/Engine/VisualScripting/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
 
 include_directories(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL_image/include ${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL/include 
-                    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/squirrel/include ${CMAKE_CURRENT_SOURCE_DIR}/vendor/squall 
+                    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/squirrel/include ${CMAKE_CURRENT_SOURCE_DIR}/vendor/squall ${CMAKE_CURRENT_SOURCE_DIR}/vendor/simplesquirrel/include
                     ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/Math) #${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/VisualScripting)
 
-target_link_libraries(${PROJECT_NAME} SDL3::SDL3 squirrel sqstdlib SDL3_image-static box2d)
+target_link_libraries(${PROJECT_NAME} SDL3::SDL3 squirrel sqstdlib simplesquirrel SDL3_image-static box2d)

@@ -13,6 +13,8 @@ enum class NodeType {
 	CAM
 };
 
+class InputManager;
+
 class Node
 {
 public:
@@ -25,7 +27,7 @@ public:
 	void AddChild(Node* Child);
 
 	void UpdateChild();
-
+	
 	std::string Name;
 
 	std::string ScriptClassName = "null";
@@ -33,6 +35,8 @@ public:
 	int ScriptIndex = -1;
 
 	NodeType Type = NodeType::NODE;
+
+	InputManager* Input;
 
 	//VisualScript* Script = nullptr;
 protected:

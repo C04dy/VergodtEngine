@@ -1,12 +1,17 @@
-#include "squall/squall_vmstd.hpp"
-#include "squall/squall_klass.hpp"
+#include <simplesquirrel/simplesquirrel.hpp>
 #include "Objects/Node.h"
 #include "Util/SceneFileFunctions.h"
 #include <fstream>
 #include <iostream>
 
+InputManager* im;
+
+void AssignInput(InputManager* input) {
+    im = input;
+}
+
 std::string GetScriptClassLine(const std::string& ClassName, const std::string& NodeName) {
-    return "Ns.push(" + ClassName + "(" + '"' + NodeName + '"' + ")" + "); \n";
+    return "Ns.push(" + ClassName + "(" + '"' + NodeName + '"' + ")" + "); \n Ns[Ns.len() - 1].Input = input \n";
 }
 
 bool SetNodesScript(const std::string& Line, Node* n) {
@@ -26,50 +31,35 @@ bool SetNodesScript(const std::string& Line, Node* n) {
     return false;
 }
 
-void BindFunctions(squall::VMStd* vm, InputManager* im) {
-    vm->defun("IsMouseKeyJustPressed", [=](int x)->bool {
-                return im->IsMouseKeyJustPressed(x);
-            });
-    vm->defun("IsMouseKeyJustReleased", [=](int x)->bool {
-                return im->IsMouseKeyJustReleased(x);
-            });
-    vm->defun("IsMouseKeyPressed", [=](int x)->bool {
-                return im->IsMouseKeyPressed(x);
-            });
-    vm->defun("IsKeyJustPressed", [=](int x)->bool {
-                return im->IsKeyJustPressed(x);
-            });
-    vm->defun("IsKeyJustReleased", [=](int x)->bool {
-                return im->IsKeyJustReleased(x);
-            });
-    vm->defun("IsKeyPressed", [=](int x)->bool {
-                return im->IsKeyPressed(x);
-            });
+void BindFunctions(ssq::VM* vm) {
+    
 }
 
-void BindNodes(squall::VMStd* vm) {
-    squall::Klass<Vector2>(*vm, "Vector2")
-        .var("x", &Vector2::x)
-        .var("y", &Vector2::y);
+void BindNodes(ssq::VM* vm) {
+    ssq::Class vec2 = vm->addClass("Vector2", ssq::Class::Ctor<Vector2(float, float)>());
+    vec2.addVar("x", &Vector2::x);
+    vec2.addVar("y", &Vector2::y);
+    vec2.addFunc("AddToVec2", &Vector2::AddToVec2);
 
-    //squall::Klass<b2Vec2>(*vm, "b2Vec2")
-    //    .var("x", &b2Vec2::x)
-    //    .var("y", &b2Vec2::y);
+    ssq::Class input = vm->addClass("Input", ssq::Class::Ctor<InputManager()>());
+    input.addFunc("IsMouseKeyPressed", &InputManager::IsMouseKeyPressed);
+    input.addFunc("IsMouseKeyJustPressed", &InputManager::IsMouseKeyJustPressed);
 
-    squall::Klass<Node>(*vm, "Node")
-        .var("Name", &Node::Name)
-        .var("Position", &Node::Position)
-        .var("Angle", &Node::Angle)
-        .var("Size", &Node::Size);
+    ssq::Class node = vm->addClass("Node", ssq::Class::Ctor<Node(std::string)>());
+    node.addVar("Name", &Node::Name);
+    node.addVar("Position", &Node::Position);
+    node.addVar("Angle", &Node::Angle);
+    node.addVar("Size", &Node::Size);
+    node.addVar("Input", &Node::Input);
 
-    squall::Klass<Sprite>(*vm, "Sprite")
-        .func("ChangeTexture", &Sprite::ChangeTexture);
+    ssq::Class sprite = vm->addClass("Sprite", ssq::Class::Ctor<Sprite(std::string)>());
+    sprite.addFunc("ChangeTexture", &Sprite::ChangeTexture);
 
-    squall::Klass<PhysicsBody>(*vm, "PhysicsBody")
-        .func("SetFixedRotation", &PhysicsBody::SetFixedRotation);
+    //squall::Klass<PhysicsBody>(*vm, "PhysicsBody")
+    //    .func("SetFixedRotation", &PhysicsBody::SetFixedRotation);
 }
 
-void EditEngineFile(squall::VMStd* vm, std::vector<Node*> nodes) {
+void EditEngineFile(ssq::VM* vm, std::vector<Node*> nodes) {
     std::fstream stream("../Assets/VergodtEngine.nut");
     std::string line;
     std::string s;
@@ -84,79 +74,78 @@ void EditEngineFile(squall::VMStd* vm, std::vector<Node*> nodes) {
             }
             ChangeLine = false;
         }
-        if (line.find("function SetNodes() {") != std::string::npos) {
+        if (line.find("function SetNodes(input) {") != std::string::npos) {
             ChangeLine = true;
         }
     }
     stream.close();
     
-    vm->dostring(s.c_str());
+    vm->run(vm->compileSource(s.c_str()));
 }
 
-void SetNodes(squall::VMStd* vm) {
-    vm->call<void>("SetNodes");
+void SetNodes(ssq::VM* vm) {
+    vm->callFunc(vm->findFunc("SetNodes"), *vm, im);
 }
 
-void LoadNodeScripts(squall::VMStd* vm, std::vector<Node*> nodes) {
+void LoadNodeScripts(ssq::VM* vm, std::vector<Node*> nodes) {
     for (int i = 0; i < (int)nodes.size(); i++) {
-        vm->dofile(nodes[i]->ScriptLocation.c_str());
+        vm->run(vm->compileFile(nodes[i]->ScriptLocation.c_str()));
     }
 }
 
-void StartFunction(squall::VMStd* vm, std::vector<Node*> nodes) {
+void StartFunction(ssq::VM* vm, std::vector<Node*> nodes) {
     for (int i = 0; i < (int)nodes.size(); i++) {
-        vm->call<void>("SetNodeVal", nodes[i]->ScriptIndex, nodes[i]);
-        switch (nodes[i]->Type) {
-            case NodeType::SPRITE:
-            vm->call<void>("SetSpriteTexture", nodes[i]->ScriptIndex, (Sprite*)nodes[i]);            
-                break;
-            case NodeType::PHYSICSBODY:
-            Vector2 v;
-            v.x = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().x;
-            v.y = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().y;
-            vm->call<void>("SetPhysicsBodyVelocity", nodes[i]->ScriptIndex, v);
-            vm->call<void>("SetPhysicsBody", nodes[i]->ScriptIndex, (PhysicsBody*)nodes[i]);           
-                break;
-        }
-    }
-    vm->call<void>("StartFunc");
-    for (int i = 0; i < (int)nodes.size(); i++) {
-        vm->call<void>("GetNodeVal", nodes[i]->ScriptIndex, nodes[i], &nodes[i]->Position, &nodes[i]->Size);
-
-        switch (nodes[i]->Type) {
-            case NodeType::PHYSICSBODY:
-            Vector2 v;
-            vm->call<void>("GetPhysicsBodyVelocity", nodes[i]->ScriptIndex, &v);
-            ((PhysicsBody *)nodes[i])->GetBody()->SetLinearVelocity(v);
-            ((PhysicsBody *)nodes[i])->GetBody()->SetTransform(nodes[i]->Position / 100, nodes[i]->Angle);
-            break;
-        }
-    }
-}
-
-void UpdateFunction(squall::VMStd* vm, std::vector<Node*> nodes, float dt) {
-    for (int i = 0; i < (int)nodes.size(); i++) {
-        vm->call<void>("SetNodeVal", nodes[i]->ScriptIndex, nodes[i]);
-
+        vm->callFunc(vm->findFunc("SetNodeVal"), *vm, nodes[i]->ScriptIndex, nodes[i]);
         switch (nodes[i]->Type) {
             case NodeType::PHYSICSBODY:
             Vector2 v;
             v.x = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().x;
             v.y = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().y;
-            vm->call<void>("SetPhysicsBodyVelocity", nodes[i]->ScriptIndex, v);                
+            vm->callFunc(vm->findFunc("SetPhysicsBodyVelocity"), *vm, nodes[i]->ScriptIndex, v);
+            vm->callFunc(vm->findFunc("SetPhysicsBody"), *vm, nodes[i]->ScriptIndex, (PhysicsBody*)nodes[i]);  
                 break;
         }
-        
-        vm->call<void>("UpdateFunc", nodes[i]->ScriptIndex, dt);
-        
-        vm->call<void>("GetNodeVal", nodes[i]->ScriptIndex, nodes[i], &nodes[i]->Position, &nodes[i]->Size);
-   
+    }
+
+    vm->callFunc(vm->findFunc("StartFunc"), *vm);
+
+    for (int i = 0; i < (int)nodes.size(); i++) {
+        vm->callFunc(vm->findFunc("GetNodeVal"), *vm, nodes[i]->ScriptIndex, nodes[i]);
+    
         switch (nodes[i]->Type) {
             case NodeType::PHYSICSBODY:
             Vector2 v;
-            vm->call<void>("GetPhysicsBodyVelocity", nodes[i]->ScriptIndex, &v);
-            ((PhysicsBody *)nodes[i])->GetBody()->SetLinearVelocity(v);
-            ((PhysicsBody *)nodes[i])->GetBody()->SetTransform(((PhysicsBody *)nodes[i])->GetBody()->GetPosition(), nodes[i]->Angle);
+            v.x = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().x;
+            v.y = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().y;
+            vm->callFunc(vm->findFunc("GetPhysicsBodyVelocity"), *vm, nodes[i]->ScriptIndex, v);
+                break;
+        }
+    }
+}
+
+void UpdateFunction(ssq::VM* vm, std::vector<Node*> nodes, float dt) {
+    for (int i = 0; i < (int)nodes.size(); i++) {
+        vm->callFunc(vm->findFunc("SetNodeVal"), *vm, nodes[i]->ScriptIndex, nodes[i]);
+        
+        switch (nodes[i]->Type) {
+            case NodeType::PHYSICSBODY:
+            Vector2 v;
+            v.x = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().x;
+            v.y = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().y;
+            vm->callFunc(vm->findFunc("SetPhysicsBodyVelocity"), *vm, nodes[i]->ScriptIndex, v);
+            vm->callFunc(vm->findFunc("SetPhysicsBody"), *vm, nodes[i]->ScriptIndex, (PhysicsBody*)nodes[i]);                 
+                break;
+        }
+        
+        vm->callFunc(vm->findFunc("UpdateFunc"), *vm, nodes[i]->ScriptIndex, dt);
+
+        vm->callFunc(vm->findFunc("GetNodeVal"), *vm, nodes[i]->ScriptIndex, nodes[i]);
+        switch (nodes[i]->Type) {
+            case NodeType::PHYSICSBODY:
+            Vector2 v;
+            v.x = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().x;
+            v.y = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().y;
+            vm->callFunc(vm->findFunc("GetPhysicsBodyVelocity"), *vm, nodes[i]->ScriptIndex, v);
                 break;
         }
     }

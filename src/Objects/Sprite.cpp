@@ -1,6 +1,6 @@
 #include "Sprite.h"
 
-Sprite::Sprite(const std::string& FilePath, Camera* Cam, SDL_Renderer* Renderer) : Node::Node("") {
+void Sprite::InitSprite(const std::string& FilePath, Camera* Cam, SDL_Renderer* Renderer) {
     m_renderer = Renderer;
     Type = NodeType::SPRITE;
     SetCam(Cam);

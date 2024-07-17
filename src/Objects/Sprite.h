@@ -8,8 +8,10 @@
 class Sprite : public Node
 {
 public:
-	Sprite(const std::string& FilePath, Camera* Cam, SDL_Renderer* Renderer);
-	
+	Sprite(const std::string& name = "") : Node::Node(name) {};
+
+	void InitSprite(const std::string& FilePath, Camera* Cam, SDL_Renderer* Renderer);
+
 	void DeleteTexture();
 
 	void LoadImage(const std::string& FilePath);

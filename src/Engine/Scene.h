@@ -9,7 +9,7 @@
 #include "Objects/PhysicsBody.h"
 #include "Objects/Node.h"
 
-#include "squall/squall_vmstd.hpp"
+#include "simplesquirrel/simplesquirrel.hpp"
 
 class b2World;
 
@@ -35,7 +35,7 @@ public:
 
 	void SetInput(InputManager* _Input) { Input = _Input; }
 
-	void SetSquirrelVM(squall::VMStd* vm) { SquirrelVirtualMachine = vm; }
+	void SetSquirrelVM(ssq::VM* vm) { SquirrelVirtualMachine = vm; }
 protected:
 	SDL_Renderer* Renderer;
 
@@ -43,7 +43,7 @@ protected:
 
 	InputManager* Input;
 
-	squall::VMStd* SquirrelVirtualMachine;
+	ssq::VM* SquirrelVirtualMachine;
 private:
 	std::string m_gamename = "VergodtEngineGame";
 
