@@ -15,3 +15,7 @@
 	path = vendor/squirrel
 	url = https://github.com/albertodemichelis/squirrel.git
 	branch = master
+[submodule "vendor/simplesquirrel"]
+	path = vendor/simplesquirrel
+	url = https://github.com/C04dy/simplesquirrel.git
+	branch = master
