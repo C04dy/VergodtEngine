@@ -92,6 +92,7 @@
         "queue": "cpp",
         "stack": "cpp",
         "execution": "cpp",
-        "complex": "cpp"
+        "complex": "cpp",
+        "print": "cpp"
     }
 }

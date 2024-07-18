@@ -11,7 +11,7 @@ void AssignInput(InputManager* input) {
 }
 
 std::string GetScriptClassLine(const std::string& ClassName, const std::string& NodeName) {
-    return "Ns.push(" + ClassName + "(" + '"' + NodeName + '"' + ")" + "); \n Ns[Ns.len() - 1].Input = input \n";
+    return "Ns.push(" + ClassName + "(" + '"' + NodeName + '"' + ")" + "); \n";
 }
 
 bool SetNodesScript(const std::string& Line, Node* n) {
@@ -32,7 +32,24 @@ bool SetNodesScript(const std::string& Line, Node* n) {
 }
 
 void BindFunctions(ssq::VM* vm) {
-    
+    vm->addFunc("IsMouseKeyJustPressed", [=](int x)->bool {
+                return im->IsMouseKeyJustPressed(x);
+            });
+    vm->addFunc("IsMouseKeyJustReleased", [=](int x)->bool {
+                return im->IsMouseKeyJustReleased(x);
+            });
+    vm->addFunc("IsMouseKeyPressed", [=](int x)->bool {
+                return im->IsMouseKeyPressed(x);
+            });
+    vm->addFunc("IsKeyJustPressed", [=](int x)->bool {
+                return im->IsKeyJustPressed(x);
+            });
+    vm->addFunc("IsKeyJustReleased", [=](int x)->bool {
+                return im->IsKeyJustReleased(x);
+            });
+    vm->addFunc("IsKeyPressed", [=](int x)->bool {
+                return im->IsKeyPressed(x);
+            });
 }
 
 void BindNodes(ssq::VM* vm) {
@@ -48,12 +65,20 @@ void BindNodes(ssq::VM* vm) {
     ssq::Class node = vm->addClass("Node", ssq::Class::Ctor<Node(std::string)>());
     node.addVar("Name", &Node::Name);
     node.addVar("Position", &Node::Position);
+    node.addFunc("SetPosition", &Node::SetPosition);
     node.addVar("Angle", &Node::Angle);
     node.addVar("Size", &Node::Size);
-    node.addVar("Input", &Node::Input);
 
+    ssq::Class texture = vm->addClass("Texture", ssq::Class::Ctor<Texture()>());
+    texture.addFunc("ChangeTexture", &Texture::ChangeTexture);
+    
     ssq::Class sprite = vm->addClass("Sprite", ssq::Class::Ctor<Sprite(std::string)>());
-    sprite.addFunc("ChangeTexture", &Sprite::ChangeTexture);
+    sprite.addVar("Name", &Node::Name);
+    sprite.addVar("Position", &Node::Position);
+    sprite.addFunc("SetPosition", &Node::SetPosition);
+    sprite.addVar("Angle", &Node::Angle);
+    sprite.addVar("Size", &Node::Size);
+    sprite.addVar("Texture", &Sprite::texture);
 
     //squall::Klass<PhysicsBody>(*vm, "PhysicsBody")
     //    .func("SetFixedRotation", &PhysicsBody::SetFixedRotation);
@@ -74,7 +99,7 @@ void EditEngineFile(ssq::VM* vm, std::vector<Node*> nodes) {
             }
             ChangeLine = false;
         }
-        if (line.find("function SetNodes(input) {") != std::string::npos) {
+        if (line.find("function SetNodes") != std::string::npos) {
             ChangeLine = true;
         }
     }
@@ -84,7 +109,7 @@ void EditEngineFile(ssq::VM* vm, std::vector<Node*> nodes) {
 }
 
 void SetNodes(ssq::VM* vm) {
-    vm->callFunc(vm->findFunc("SetNodes"), *vm, im);
+    vm->callFunc(vm->findFunc("SetNodes"), *vm);
 }
 
 void LoadNodeScripts(ssq::VM* vm, std::vector<Node*> nodes) {
@@ -97,6 +122,9 @@ void StartFunction(ssq::VM* vm, std::vector<Node*> nodes) {
     for (int i = 0; i < (int)nodes.size(); i++) {
         vm->callFunc(vm->findFunc("SetNodeVal"), *vm, nodes[i]->ScriptIndex, nodes[i]);
         switch (nodes[i]->Type) {
+            case NodeType::SPRITE:
+            vm->callFunc(vm->findFunc("SetSpriteTexture"), *vm, nodes[i]->ScriptIndex, ((Sprite*)nodes[i])->texture);
+                break;
             case NodeType::PHYSICSBODY:
             Vector2 v;
             v.x = ((PhysicsBody *)nodes[i])->GetBody()->GetLinearVelocity().x;

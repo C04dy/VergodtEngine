@@ -26,6 +26,8 @@ public:
 
 	void AddChild(Node* Child);
 
+	void SetPosition(const Vector2 &p) { Position = p; }
+
 	void UpdateChild();
 	
 	std::string Name;
@@ -35,8 +37,6 @@ public:
 	int ScriptIndex = -1;
 
 	NodeType Type = NodeType::NODE;
-
-	InputManager* Input;
 
 	//VisualScript* Script = nullptr;
 protected:

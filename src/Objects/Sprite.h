@@ -1,6 +1,7 @@
 #pragma once
 #include "Node.h"
 #include "Camera.h"
+#include "Texture.h"
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <string>
@@ -22,6 +23,7 @@ public:
 
 	void ChangeTexture(const std::string& FilePath);
 
+	Texture
 private:
 	SDL_Texture* m_texture = nullptr;
 	

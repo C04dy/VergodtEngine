@@ -19,7 +19,7 @@ public:
 
 	Vector2 operator/(float d);
 
-	void AddToVec2(const Vector2 &other);
+	Vector2 AddToVec2(const Vector2 &other);
 
 	operator b2Vec2() const { return b2Vec2(x, y); }
 
