@@ -3,10 +3,6 @@
 #define RADIAN_IN_DEGREES	57.3f
 #define PIXEL_TO_METER      100.0f
 
-PhysicsBody::PhysicsBody() : Node::Node(""){
-
-}
-
 void PhysicsBody::InitPhysicsBodyBox(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 ColSize, float Friction, float Density){
 	b2BodyDef physicsbodydef;
 	physicsbodydef.type = BodyType;

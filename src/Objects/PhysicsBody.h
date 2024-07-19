@@ -5,7 +5,7 @@
 class PhysicsBody : public Node
 {
 public:
-	PhysicsBody();
+	PhysicsBody(const std::string& name = "") : Node::Node(name) {};
 
 	void InitPhysicsBodyBox(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 ColSize, float Friction = 0.3f, float Density = 1.0f);
 	void InitPhysicsBodyCircle(b2World* PhysicsWorld, b2BodyType BodyType, float Radius, float Friction = 0.3f, float Density = 1.0f);

@@ -15,11 +15,10 @@ function SetNodes() {
 }
 
 function SetNodeVal(id, node) {
-    node = Ns[id];
-    //Ns[id].Position = node.Position;
-    //Ns[id].Size = node.Size;
-    //Ns[id].Angle = node.Angle;
-    //Ns[id].Name = node.Name;
+    Ns[id].Position = node.Position;
+    Ns[id].Size = node.Size;
+    Ns[id].Angle = node.Angle;
+    Ns[id].Name = node.Name;
 }
 
 function SetPhysicsBodyVelocity(id, vel) {
@@ -31,10 +30,10 @@ function SetSpriteTexture(id, texture) {
 }
 
 function GetNodeVal(id, node) {
-    //node.Position = Ns[id].Position;
-    //node.Size = Ns[id].Size;
-    //node.Angle = Ns[id].Angle;
-    //node.Name = Ns[id].Name;
+    node.Position = Ns[id].Position;
+    node.Size = Ns[id].Size;
+    node.Angle = Ns[id].Angle;
+    node.Name = Ns[id].Name;
 }
 
 function GetPhysicsBodyVelocity(id, vel) {

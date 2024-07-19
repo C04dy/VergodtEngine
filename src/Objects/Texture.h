@@ -1,10 +1,10 @@
 #pragma once
-
-#include "Sprite.h"
+#include "Node.h"
 
 class Texture {
 public:
-	Sprite* s;
+	Node* s;
 
-	void ChangeTexture(const std::string &FilePath) { s->ChangeTexture(FilePath); }
+	void ChangeTexture(const std::string &FilePath);
+private:
 };

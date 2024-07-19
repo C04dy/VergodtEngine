@@ -52,6 +52,14 @@ void BindFunctions(ssq::VM* vm) {
             });
 }
 
+void DefaultNodeBindings(ssq::Class* node) {
+    node->addVar("Name", &Node::Name);
+    node->addVar("Position", &Node::Position);
+    node->addFunc("SetPosition", &Node::SetPosition);
+    node->addVar("Angle", &Node::Angle);
+    node->addVar("Size", &Node::Size);
+}
+
 void BindNodes(ssq::VM* vm) {
     ssq::Class vec2 = vm->addClass("Vector2", ssq::Class::Ctor<Vector2(float, float)>());
     vec2.addVar("x", &Vector2::x);
@@ -63,22 +71,17 @@ void BindNodes(ssq::VM* vm) {
     input.addFunc("IsMouseKeyJustPressed", &InputManager::IsMouseKeyJustPressed);
 
     ssq::Class node = vm->addClass("Node", ssq::Class::Ctor<Node(std::string)>());
-    node.addVar("Name", &Node::Name);
-    node.addVar("Position", &Node::Position);
-    node.addFunc("SetPosition", &Node::SetPosition);
-    node.addVar("Angle", &Node::Angle);
-    node.addVar("Size", &Node::Size);
+    DefaultNodeBindings(&node);
 
     ssq::Class texture = vm->addClass("Texture", ssq::Class::Ctor<Texture()>());
     texture.addFunc("ChangeTexture", &Texture::ChangeTexture);
     
     ssq::Class sprite = vm->addClass("Sprite", ssq::Class::Ctor<Sprite(std::string)>());
-    sprite.addVar("Name", &Node::Name);
-    sprite.addVar("Position", &Node::Position);
-    sprite.addFunc("SetPosition", &Node::SetPosition);
-    sprite.addVar("Angle", &Node::Angle);
-    sprite.addVar("Size", &Node::Size);
+    DefaultNodeBindings(&sprite);
     sprite.addVar("Texture", &Sprite::texture);
+
+    ssq::Class physicsbody = vm->addClass("PhysicsBody", ssq::Class::Ctor<PhysicsBody(std::string)>());
+    DefaultNodeBindings(&physicsbody);
 
     //squall::Klass<PhysicsBody>(*vm, "PhysicsBody")
     //    .func("SetFixedRotation", &PhysicsBody::SetFixedRotation);

@@ -93,6 +93,7 @@
         "stack": "cpp",
         "execution": "cpp",
         "complex": "cpp",
-        "print": "cpp"
+        "print": "cpp",
+        "cfenv": "cpp"
     }
 }

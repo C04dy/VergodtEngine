@@ -23,7 +23,7 @@ public:
 
 	void ChangeTexture(const std::string& FilePath);
 
-	Texture
+	Texture texture;
 private:
 	SDL_Texture* m_texture = nullptr;
 	
