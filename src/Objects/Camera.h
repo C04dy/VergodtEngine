@@ -3,6 +3,5 @@
 class Camera : public Node
 {
 public:
-    Camera() : Node::Node("") {};
     bool IsActive = false;
 };

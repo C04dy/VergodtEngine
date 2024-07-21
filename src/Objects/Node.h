@@ -18,8 +18,6 @@ class InputManager;
 class Node
 {
 public:
-	Node(const std::string& name);
-
 	Vector2 Position = Vector2(0, 0);
 	Vector2 Size = Vector2(1, 1);
 	float Angle = 0;
@@ -29,8 +27,9 @@ public:
 	void SetPosition(const Vector2 &p) { Position = p; }
 
 	void UpdateChild();
-	
+
 	std::string Name;
+	std::string Script;
 
 	std::string ScriptClassName = "null";
 	std::string ScriptLocation = "null";

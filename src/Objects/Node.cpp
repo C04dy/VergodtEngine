@@ -1,9 +1,5 @@
 #include "Node.h"
 
-Node::Node(const std::string& name) {
-	Name = name;
-}
-
 void Node::AddChild(Node* Child) {
 	m_childNode.push_back(Child);
 }

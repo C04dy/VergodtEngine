@@ -3,34 +3,35 @@
 #include <fstream>
 #include <ctime>
 
-void Scene::Start(){
+std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
     std::string Line;
-    std::ifstream SceneFile("../Assets/FlappyBird/FlappyBird.vscene");
+    std::ifstream SceneFile(SceneFilePath);
 
-    std::vector<Node*> ALLNODES;
+    std::vector<Node*> NODES;
 
     while (std::getline(SceneFile, Line)){
         if (Line.at(0) != '#') {
             std::string CurNodeType = GetLineBetween(Line, "[NODETYPE=", "]");
-
+            int ScriptableNodeSize = ScriptableNodes.size();
             if(CurNodeType == "NODE"){
-                Node* n = new Node("");
+                Node* n = new Node();
 
                 SetNode(n, Line);
 
-                SetChild(n, ALLNODES, Line);
+                SetChild(n, Nodes, Line);
     
                 if (SetNodesScript(Line, n) == true) {
                     ScriptableNodes.push_back(n);
+                    n->ScriptIndex = ScriptableNodes.size() - 1;
                 }
-        
+
                 Nodes.push_back(n);
-                ALLNODES.push_back(Nodes[Nodes.size() - 1]);
             }else if(CurNodeType == "CAMERA"){
                 SetNode(&Cam, Line);
 
                 if (SetNodesScript(Line, (Node*)&Cam) == true) {
                     ScriptableNodes.push_back(&Cam);
+                    Cam.ScriptIndex = ScriptableNodes.size() - 1;
                 }
             }else if(CurNodeType == "SPRITE"){
                 std::string AssetFilePath = GetLineBetween(Line, "[ASSET=", "]");
@@ -41,23 +42,24 @@ void Scene::Start(){
 
                 SetNode(s, Line);
 
-                SetChild(s, ALLNODES, Line);
+                SetChild(s, Nodes, Line);
 
                 if (SetNodesScript(Line, (Node*)s) == true) {
                     ScriptableNodes.push_back(s);
+                    s->ScriptIndex = ScriptableNodes.size() - 1;
                 }
 
-                Sprites.push_back(s);
-                ALLNODES.push_back(Sprites[Sprites.size() - 1]);
+                Nodes.push_back(s);
             }else if(CurNodeType == "PHYSICSBODY"){        
                 PhysicsBody* p = new PhysicsBody;
 
                 SetNode(p, Line);
 
-                SetChild(p, ALLNODES, Line);
+                SetChild(p, Nodes, Line);
 
                 if (SetNodesScript(Line, (Node*)p) == true) {
                     ScriptableNodes.push_back(p);
+                    p->ScriptIndex = ScriptableNodes.size() - 1;
                 }
 
                 b2BodyType t = b2BodyType::b2_staticBody;
@@ -103,61 +105,71 @@ void Scene::Start(){
                     p->InitPhysicsBodyPolygon(PhysicsWorld, t, poly, polycount, fr, dn);
                 }
 
-                PhysicsBodys.push_back(p); 
-                ALLNODES.push_back(PhysicsBodys[PhysicsBodys.size() - 1]);        
+                Nodes.push_back(p);
             }
+
+            if (ScriptableNodeSize < ScriptableNodes.size())
+                NODES.push_back(ScriptableNodes[ScriptableNodes.size() - 1]);
         }
     }
     SceneFile.close();
 
-    AssignInput(Input);
-    BindNodes(SquirrelVirtualMachine);
-    BindFunctions(SquirrelVirtualMachine);
-    EditEngineFile(SquirrelVirtualMachine, ScriptableNodes);
-    LoadNodeScripts(SquirrelVirtualMachine, ScriptableNodes);
-    SetNodes(SquirrelVirtualMachine);
-    StartFunction(SquirrelVirtualMachine, ScriptableNodes);
+    return NODES;
+}
+
+void Scene::Start(){
+    AddNodesToScene("../Assets/FlappyBird/FlappyBird.vscene");
+
+    AssignRoot(this);
+    BindNodes();
+    BindFunctions();
+    RunEngineFile();
+    LoadNodeScripts(ScriptableNodes);
+    SetNodes(ScriptableNodes);
+    StartFunction(ScriptableNodes);
 }
 
 void Scene::Update(double dt){    
-    UpdateFunction(SquirrelVirtualMachine, ScriptableNodes, dt);
+    UpdateFunction(ScriptableNodes, dt);
     
-    for(int i = 0; i < (int)PhysicsBodys.size(); i++){
-        PhysicsBodys[i]->UpdatePhysicsNode();
-        PhysicsBodys[i]->UpdateChild();
-    }
-    for(int i = 0; i < (int)Sprites.size(); i++){
-        Sprites[i]->UpdateChild();
-    }
-    for(int i = 0; i < (int)Nodes.size(); i++){
-        Nodes[i]->UpdateChild();
+    //Log(ScriptableNodes.size());
+    
+    for (Node* n : Nodes) {
+        switch (n->Type)
+        {
+        case NodeType::PHYSICSBODY:
+            ((PhysicsBody*)n)->UpdatePhysicsNode();
+            break;
+        }
+        n->UpdateChild();
     }
 }
 
 void Scene::Draw(){
-    for(int i = 0; i < (int)Sprites.size(); i++){
-        Sprites[i]->DrawImage();
+    for (Node* n : Nodes) {
+        switch (n->Type)
+        {
+        case NodeType::SPRITE:
+            ((Sprite*)n)->DrawImage();
+            break;
+        }
     }
 }
 
 void Scene::Clean(){
-    for(int i = 0; i < (int)Sprites.size(); i++){
-        Sprites[i]->DeleteTexture();
-        delete Sprites[i];
-        Sprites[i] = nullptr;
-    }
-    for(int i = 0; i < (int)PhysicsBodys.size(); i++){
-        PhysicsBodys[i]->DeletePhysicsBody();
-        delete PhysicsBodys[i];
-        PhysicsBodys[i] = nullptr;
-    }
-    for (int i = 0; i < (int)Nodes.size(); i++)
-    {
-        delete Nodes[i];
-        Nodes[i] = nullptr;
+    for (Node* n : Nodes) {
+        switch (n->Type)
+        {
+        case NodeType::SPRITE:
+        ((Sprite*)n)->DeleteTexture();
+            break;
+        case NodeType::PHYSICSBODY:
+        ((PhysicsBody*)n)->DeletePhysicsBody();
+            break;
+        }
+        delete n;
+        n = nullptr;
     }
     
     Nodes.clear();
-    Sprites.clear();
-    PhysicsBodys.clear();
 }

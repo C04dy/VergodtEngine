@@ -16,6 +16,8 @@ class b2World;
 class Scene
 {
 public:
+	std::vector<Node*> AddNodesToScene(const std::string& SceneFilePath);
+
 	void Start();
 	void Update(double dt);
 	void Draw();
@@ -25,7 +27,7 @@ public:
 	void SetPhysicsWorld(b2World* _PhysicsWorld) { PhysicsWorld = _PhysicsWorld; }
 
 	std::string GetGameName() { return m_gamename; }
-	void SetGameName(std::string GameName) { m_gamename = GameName; }
+	void SetGameName(const std::string& GameName) { m_gamename = GameName; }
 
 	int GetWindowWidth() { return m_windowwidth; }
 	int GetWindowHeight() { return m_windowheight; }
@@ -34,8 +36,10 @@ public:
 	void SetWindowsHeight(int Height) { m_windowheight = Height; }
 
 	void SetInput(InputManager* _Input) { Input = _Input; }
+	InputManager* GetInput() { return Input; }
 
 	void SetSquirrelVM(ssq::VM* vm) { SquirrelVirtualMachine = vm; }
+	ssq::VM* GetSquirrelVM() { return SquirrelVirtualMachine; }
 protected:
 	SDL_Renderer* Renderer;
 
@@ -55,6 +59,4 @@ private:
 
 	std::vector<Node*> ScriptableNodes;
 	std::vector<Node*> Nodes;
-	std::vector<Sprite*> Sprites;
-	std::vector<PhysicsBody*> PhysicsBodys;
 };
