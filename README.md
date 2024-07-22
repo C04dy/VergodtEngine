@@ -11,7 +11,8 @@
   Squirrel scripting,
   Visual Scripting(Not right now),
   Steam Audio,
-  Text Rendering
+  Text Rendering,
+  Source engine inspired console
 
 
 # HOW TO USE

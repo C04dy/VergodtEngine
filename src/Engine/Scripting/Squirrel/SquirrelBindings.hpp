@@ -6,7 +6,11 @@
 
 Scene* root;
 
-std::vector<std::string> InstantiatedNodeFilePaths;
+void FreeNode(Node* n) {
+    root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("RemoveNodeFromArray"), *root->GetSquirrelVM(), n);
+    std::string name = n->Name;
+    root->RemoveNodeFromScene(n->Name);
+}
 
 void LoadNodeScripts(std::vector<Node*> nodes) {
     for (int i = 0; i < (int)nodes.size(); i++) {
@@ -19,7 +23,6 @@ void SetNodes(std::vector<Node*> nodes) {
     ssq::Array nds = (ssq::Array)root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("GetNodesArray"), *root->GetSquirrelVM());
     for (int i = 0; i < (int)nodes.size(); i++) {
         root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc(("add" + nodes[i]->Name + "class").c_str()), *root->GetSquirrelVM(), nds);
-        //nodes[i]->ScriptIndex = i;
     }
 }
 
@@ -46,7 +49,11 @@ void StartFunction(std::vector<Node*> nodes) {
 }
 
 void InstantiateNodesFromFile(const std::string& NodeFilePath) {
-    InstantiatedNodeFilePaths.push_back(NodeFilePath); 
+    std::vector<Node*> NewNodes = root->AddNodesToScene(NodeFilePath);
+
+    LoadNodeScripts(NewNodes);
+    SetNodes(NewNodes);
+    StartFunction(NewNodes);
 }
 
 void AssignRoot(Scene* r) {
@@ -125,6 +132,7 @@ void BindFunctions() {
                 return root->GetInput()->IsKeyPressed(x);
             });
     root->GetSquirrelVM()->addFunc("InstantiateNodesFromFile", InstantiateNodesFromFile);
+    root->GetSquirrelVM()->addFunc("QueueFree", FreeNode);
 }
 
 void RunEngineFile() {
@@ -134,18 +142,9 @@ void RunEngineFile() {
 void UpdateFunction(std::vector<Node*> nodes, float dt) {
     for (std::size_t i = 0; i < nodes.size(); i++) {
         root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("SetNodeVal"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
-        
+
         root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("UpdateFunc"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, dt);
 
         root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("GetNodeVal"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
     }
-    for (std::size_t i = 0; i < InstantiatedNodeFilePaths.size(); i++)
-    {
-        std::vector<Node*> NewNodes = root->AddNodesToScene(InstantiatedNodeFilePaths[i]);
-
-        LoadNodeScripts(NewNodes);
-        SetNodes(NewNodes);
-        StartFunction(NewNodes);
-    }
-    InstantiatedNodeFilePaths.clear();
 }

@@ -16,12 +16,13 @@ class b2World;
 class Scene
 {
 public:
-	std::vector<Node*> AddNodesToScene(const std::string& SceneFilePath);
-
 	void Start();
 	void Update(double dt);
 	void Draw();
 	void Clean();
+
+	std::vector<Node*> AddNodesToScene(const std::string& SceneFilePath);
+	void RemoveNodeFromScene(const std::string& NodeName);
 
 	void SetRenderer(SDL_Renderer* _Renderer) { Renderer = _Renderer; }
 	void SetPhysicsWorld(b2World* _PhysicsWorld) { PhysicsWorld = _PhysicsWorld; }

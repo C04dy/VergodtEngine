@@ -25,6 +25,10 @@ void PhysicsBody::InitPhysicsBodyBox(b2World* PhysicsWorld, b2BodyType BodyType,
 	Type = NodeType::PHYSICSBODY;
 
 	body.SetBody(m_physicsbody);
+
+	//b2Filter f;
+	//f.maskBits = 
+	//m_physicsbody->GetFixtureList()[0].SetFilterData();
 }
 
 void PhysicsBody::InitPhysicsBodyCircle(b2World* PhysicsWorld, b2BodyType BodyType, float Radius, float Friction, float Density){

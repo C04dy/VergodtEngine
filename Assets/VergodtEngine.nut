@@ -8,6 +8,15 @@ function UpdateFunc(id, dt) {
     Ns[id].Update(dt);
 }
 
+function RemoveNodeFromArray(n) {
+    for (local i = 0; i < Ns.len(); i++) {
+        if (n == Ns[i]) {
+            Ns.remove(i);
+            break;
+        }
+    }
+}
+
 function GetNodesArray() {
     return Ns;
 }

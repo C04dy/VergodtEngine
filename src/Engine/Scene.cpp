@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include "Scripting/Squirrel/SquirrelBindings.hpp"
 #include <fstream>
+#include <algorithm> 
 #include <ctime>
 
 std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
@@ -12,7 +13,7 @@ std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
     while (std::getline(SceneFile, Line)){
         if (Line.at(0) != '#') {
             std::string CurNodeType = GetLineBetween(Line, "[NODETYPE=", "]");
-            int ScriptableNodeSize = ScriptableNodes.size();
+            std::size_t ScriptableNodeSize = ScriptableNodes.size();
             if(CurNodeType == "NODE"){
                 Node* n = new Node();
 
@@ -117,8 +118,28 @@ std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
     return NODES;
 }
 
+void Scene::RemoveNodeFromScene(const std::string& NodeName) {
+    for (size_t i = 0; i < Nodes.size(); i++) {
+        if (Nodes[i]->Name == NodeName) {
+            switch (Nodes[i]->Type)
+            {
+            case NodeType::SPRITE:
+            ((Sprite*)Nodes[i])->DeleteTexture();
+                break;
+            case NodeType::PHYSICSBODY:
+            ((PhysicsBody*)Nodes[i])->DeletePhysicsBody();
+                break;
+            }
+            ScriptableNodes.erase(ScriptableNodes.begin() + Nodes[i]->ScriptIndex);
+            Nodes.erase(Nodes.begin() + i);
+            break;
+        }
+    }
+}
+
 void Scene::Start(){
     AddNodesToScene("../Assets/FlappyBird/FlappyBird.vscene");
+    //AddNodesToScene("../Assets/test.vscene");
 
     AssignRoot(this);
     BindNodes();
@@ -131,8 +152,6 @@ void Scene::Start(){
 
 void Scene::Update(double dt){    
     UpdateFunction(ScriptableNodes, dt);
-    
-    //Log(ScriptableNodes.size());
     
     for (Node* n : Nodes) {
         switch (n->Type)
