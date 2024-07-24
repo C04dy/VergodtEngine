@@ -6,5 +6,6 @@ class Pipes extends PhysicsBody {
 
     function Update(dt) {
         Body.SetVelocity(::Vector2(-5.0, 0.0));
+        ::print(LocalPosition.y);
     }
 }

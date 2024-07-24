@@ -2,10 +2,10 @@
 #include "PhysicsBody.h"
 
 void Node::AddChild(Node* Child) {
-	m_childNode.push_back(Child);
+	ChildNodes.AddChildToList(Child);
 	Child->LocalPosition = Child->Position;
 
-	for (Node* n : m_childNode) {	
+	for (Node* n : ChildNodes.GetChilds()) {	
 		n->Position = Position + n->LocalPosition;
 		n->Size = Size;
 		n->Angle = Angle;
@@ -16,7 +16,11 @@ void Node::AddChild(Node* Child) {
 }
 
 void Node::UpdateChild() {
-	for (Node* n : m_childNode) {
+	for (Node* n : ChildNodes.GetChilds()) {
+		if (n->Type == NodeType::PHYSICSBODY) {
+			n->LocalPosition = Position - n->Position;
+			((PhysicsBody*)n)->GetBody()->SetTransform(Position + n->LocalPosition / 100, n->Angle);
+		}
 		n->Position = Position + n->LocalPosition;
 		n->Size = Size;
 		n->Angle = Angle;

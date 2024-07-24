@@ -1,3 +1,6 @@
+#ifndef NODE_H
+#define NODE_H
+
 #pragma once
 
 #include <iostream>
@@ -25,8 +28,6 @@ public:
 
 	void AddChild(Node* Child);
 
-	void SetPosition(const Vector2 &p) { Position = p; }
-
 	void UpdateChild();
 
 	std::string Name;
@@ -38,7 +39,18 @@ public:
 
 	NodeType Type = NodeType::NODE;
 
+	class Children {
+	public:
+		void AddChildToList(Node* n) { m_childNode.push_back(n); }
+		Node* GetChild(int id) { return m_childNode[id]; }
+		std::vector<Node*> GetChilds() { return m_childNode; }
+	private:
+		std::vector<Node*> m_childNode;
+	};
+
+	Children ChildNodes;
+
 	//VisualScript* Script = nullptr;
-protected:
-	std::vector<Node*> m_childNode;
 };
+
+#endif

@@ -29,8 +29,13 @@ function SetPhysicsbodyBody(id, body) {
     Ns[id].Body = body;
 }
 
+function SetChildren(id,n) {
+    Ns[id].Childs = n.Childs;
+}
+
 function SetNodeVal(id, node) {
     Ns[id].Position = node.Position;
+    Ns[id].LocalPosition = node.LocalPosition;
     Ns[id].Size = node.Size;
     Ns[id].Angle = node.Angle;
     Ns[id].Name = node.Name;
@@ -38,6 +43,7 @@ function SetNodeVal(id, node) {
 
 function GetNodeVal(id, node) {
     node.Position = Ns[id].Position;
+    node.LocalPosition = Ns[id].LocalPosition;
     node.Size = Ns[id].Size;
     node.Angle = Ns[id].Angle;
     node.Name = Ns[id].Name;

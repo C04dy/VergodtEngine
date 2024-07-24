@@ -3,8 +3,24 @@
 #include "Util/SceneFileFunctions.h"
 #include <fstream>
 #include <iostream>
+#include <random>
 
 Scene* root;
+
+int RandomRangeInt(int Min, int Max) {
+    int n = Max - Min + 1;
+    int i = rand() % n;
+    if (i < 0) i = -i;
+    return Min + i;
+}
+
+float RandomRangeFloat(float Min, float Max) {
+    float random = ((float) rand()) / (float) RAND_MAX;
+    float diff = Max - Min;
+    float r = random * diff;
+    return (float)(Min + r);
+}
+
 
 void FreeNode(Node* n) {
     root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("RemoveNodeFromArray"), *root->GetSquirrelVM(), n);
@@ -23,38 +39,6 @@ void SetNodes(std::vector<Node*> nodes) {
     for (int i = 0; i < (int)nodes.size(); i++) {
         root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc(("add" + nodes[i]->Name + "class").c_str()), *root->GetSquirrelVM(), nds);
     }
-}
-
-void StartFunction(std::vector<Node*> nodes) {
-    for (int i = 0; i < (int)nodes.size(); i++) {
-        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("SetNodeVal"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
-        switch (nodes[i]->Type) {
-            case NodeType::NODE:
-                break;
-            case NodeType::CAM:
-                break;
-            case NodeType::SPRITE:
-            root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("SetSpriteTexture"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, ((Sprite*)nodes[i])->texture);
-                break;
-            case NodeType::PHYSICSBODY:
-            root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("SetPhysicsbodyBody"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, ((PhysicsBody*)nodes[i])->body);
-                break;
-        }
-
-        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("StartFunc"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex);
-
-        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("GetNodeVal"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
-    }
-}
-
-void InstantiateNodesFromFile(const std::string& NodeFilePath) {
-    std::vector<Node*> NewNodes = root->AddNodesToScene(NodeFilePath);
-
-    root->UpdateChilds();
-
-    LoadNodeScripts(NewNodes);
-    SetNodes(NewNodes);
-    StartFunction(NewNodes);
 }
 
 void AssignRoot(Scene* r) {
@@ -82,9 +66,10 @@ bool SetNodesScript(const std::string& Line, Node* n) {
 void DefaultNodeBindings(ssq::Class* node) {
     node->addVar("Name", &Node::Name);
     node->addVar("Position", &Node::Position);
-    node->addFunc("SetPosition", &Node::SetPosition);
+    node->addVar("LocalPosition", &Node::LocalPosition);
     node->addVar("Angle", &Node::Angle);
     node->addVar("Size", &Node::Size);
+    node->addVar("Childs", &Node::ChildNodes);
 }
 
 void BindNodes() {
@@ -93,11 +78,15 @@ void BindNodes() {
     vec2.addVar("y", &Vector2::y);
     vec2.addFunc("AddToVec2", &Vector2::AddToVec2);
 
+    ssq::Class chn = root->GetSquirrelVM()->addClass("Children", ssq::Class::Ctor<Node::Children()>());
+    chn.addFunc("GetChild", &Node::Children::GetChild);
+    chn.addFunc("GetChilds", &Node::Children::GetChilds);
+
     ssq::Class node = root->GetSquirrelVM()->addClass("Node", ssq::Class::Ctor<Node()>());
     DefaultNodeBindings(&node);
 
-    ssq::Class texture = root->GetSquirrelVM()->addClass("Texture", ssq::Class::Ctor<Texture()>());
-    texture.addFunc("ChangeTexture", &Texture::ChangeTexture);
+    ssq::Class texture = root->GetSquirrelVM()->addClass("Texture", ssq::Class::Ctor<Sprite::Texture()>());
+    texture.addFunc("ChangeTexture", &Sprite::Texture::ChangeTexture);
     
     ssq::Class sprite = root->GetSquirrelVM()->addClass("Sprite", ssq::Class::Ctor<Sprite()>());
     DefaultNodeBindings(&sprite);
@@ -112,6 +101,53 @@ void BindNodes() {
     ssq::Class physicsbody = root->GetSquirrelVM()->addClass("PhysicsBody", ssq::Class::Ctor<PhysicsBody()>());
     DefaultNodeBindings(&physicsbody);
     physicsbody.addVar("Body", &PhysicsBody::body);
+}
+
+void RunEngineFile() {
+    root->GetSquirrelVM()->run(root->GetSquirrelVM()->compileFile("../Assets/VergodtEngine.nut"));
+}
+
+void StartFunction(std::vector<Node*> nodes) {
+    for (int i = 0; i < (int)nodes.size(); i++) {
+        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("SetNodeVal"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
+        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("SetChildren"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
+        switch (nodes[i]->Type) {
+            case NodeType::NODE:
+                break;
+            case NodeType::CAM:
+                break;
+            case NodeType::SPRITE:
+            root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("SetSpriteTexture"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, ((Sprite*)nodes[i])->texture);
+                break;
+            case NodeType::PHYSICSBODY:
+            root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("SetPhysicsbodyBody"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, ((PhysicsBody*)nodes[i])->body);
+                break;
+        }
+
+        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("StartFunc"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex);
+
+        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("GetNodeVal"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
+    }
+}
+
+void UpdateFunction(std::vector<Node*> nodes, float dt) {
+    for (std::size_t i = 0; i < nodes.size(); i++) {
+        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("SetNodeVal"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
+
+        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("UpdateFunc"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, dt);
+
+        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("GetNodeVal"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
+    }
+}
+
+void InstantiateNodesFromFile(const std::string& NodeFilePath) {
+    std::vector<Node*> NewNodes = root->AddNodesToScene(NodeFilePath);
+
+    root->UpdateChilds();
+
+    LoadNodeScripts(NewNodes);
+    SetNodes(NewNodes);
+    StartFunction(NewNodes);
 }
 
 void BindFunctions() {
@@ -135,18 +171,6 @@ void BindFunctions() {
             });
     root->GetSquirrelVM()->addFunc("InstantiateNodesFromFile", InstantiateNodesFromFile);
     root->GetSquirrelVM()->addFunc("QueueFree", FreeNode);
-}
-
-void RunEngineFile() {
-    root->GetSquirrelVM()->run(root->GetSquirrelVM()->compileFile("../Assets/VergodtEngine.nut"));
-}
-
-void UpdateFunction(std::vector<Node*> nodes, float dt) {
-    for (std::size_t i = 0; i < nodes.size(); i++) {
-        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("SetNodeVal"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
-
-        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("UpdateFunc"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, dt);
-
-        root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("GetNodeVal"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
-    }
+    root->GetSquirrelVM()->addFunc("RandomRangeInt", RandomRangeInt);
+    root->GetSquirrelVM()->addFunc("RandomRangeFloat", RandomRangeFloat);
 }

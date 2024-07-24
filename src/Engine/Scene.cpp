@@ -197,9 +197,7 @@ void Scene::Clean(){
         ((PhysicsBody*)n)->DeletePhysicsBody();
             break;
         }
-        delete n;
-        n = nullptr;
     }
-    
     Nodes.clear();
+    ScriptableNodes.clear();
 }
