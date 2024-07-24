@@ -1,6 +1,12 @@
 #include <string>
 #include <iostream>
 
+template <typename T>
+void Log(T log)
+{
+    std::cout << log << "\n";
+}
+
 std::string GetLineBetween(const std::string& Text, const std::string& Start, const std::string& Finish){
     return Text.substr( Text.find( Start ) + ( Start.length() ) , Text.find( Finish, Text.find(Start) ) - ( Text.find(Start) + (Start.length() ) ) );
 }
@@ -28,16 +34,29 @@ void SetNode(Node* n, const std::string& Line){
     n->Name = GetLineBetween(Line, "[NAME=", "]");
 }
 
-void SetChild(Node* n, std::vector<Node*> AN, const std::string& Line){
-    int ChildSize = std::stoi(GetLineBetween(Line, "[CHILD=", "]"));
-    for (int i = 0; i < ChildSize; i++)
-    {
-        n->AddChild(AN[(AN.size() - 1) - i]);
-    } 
+int HowMuchIsInsideString(const std::string& s, char c) {
+    int count = 0;
+ 
+    for (size_t i = 0; i < s.length();i++)
+        if (s[i] == c)
+            count++;
+
+    return count;
 }
 
-template <typename T>
-void Log(T log)
-{
-    std::cout << log << "\n";
+void SetChild(Node* n, std::vector<Node*> AN, const std::string& Line, int IndexOffset){
+    if (GetLineBetween(Line, "[CHILD=", "]") != "0") {
+        std::string ci = GetLineBetween(Line, "[CHILDINDEX=(", ")]");
+        if (ci.find(",") != std::string::npos) {
+            for (size_t i = 0; i < ci.size(); i++) {
+                if (ci[i] != ',') {
+                    int cti = ci[i] - '0';
+                    n->AddChild(AN[cti + IndexOffset]);
+                }
+            }
+        } else {
+            n->AddChild(AN[std::stoi(ci) + IndexOffset]);
+        }
+    }
+
 }

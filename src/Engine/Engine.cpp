@@ -19,7 +19,7 @@ void Engine::EngineStart(){
         throw std::runtime_error(SDL_GetError());
     }
 
-    Window* Windowptr = new Window(Scene.GetGameName(), Scene.GetWindowWidth(), Scene.GetWindowHeight());
+    Window* Windowptr = new Window(Scene.GetGameName(), Scene.GetWindowWidth(), Scene.GetWindowHeight(), true);
 
     SDL_Event e;
 

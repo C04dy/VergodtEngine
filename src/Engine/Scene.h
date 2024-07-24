@@ -21,8 +21,10 @@ public:
 	void Draw();
 	void Clean();
 
+	void UpdateChilds();
+
 	std::vector<Node*> AddNodesToScene(const std::string& SceneFilePath);
-	void RemoveNodeFromScene(const std::string& NodeName);
+	void RemoveNodeFromScene(Node* n);
 
 	void SetRenderer(SDL_Renderer* _Renderer) { Renderer = _Renderer; }
 	void SetPhysicsWorld(b2World* _PhysicsWorld) { PhysicsWorld = _PhysicsWorld; }

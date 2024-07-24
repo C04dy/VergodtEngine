@@ -7,8 +7,8 @@ class Spawner extends Node {
 
     function Update(dt) {
         timer += dt;
-        if (timer >= 2.0) {
-            ::
+        if (timer >= 2) {
+            ::InstantiateNodesFromFile("../Assets/FlappyBird/Pipes.vscene");
             timer = 0.0;
         }
     }

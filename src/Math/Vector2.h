@@ -21,6 +21,10 @@ public:
 
 	void operator+=(const Vector2 &other);
 
+	Vector2 operator+(const Vector2 &other);
+	
+	Vector2 operator-(const Vector2 &other);
+
 	Vector2 operator/(float d);
 
 	Vector2 AddToVec2(const Vector2 &other);

@@ -8,8 +8,7 @@ Scene* root;
 
 void FreeNode(Node* n) {
     root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("RemoveNodeFromArray"), *root->GetSquirrelVM(), n);
-    std::string name = n->Name;
-    root->RemoveNodeFromScene(n->Name);
+    root->RemoveNodeFromScene(n);
 }
 
 void LoadNodeScripts(std::vector<Node*> nodes) {
@@ -50,6 +49,8 @@ void StartFunction(std::vector<Node*> nodes) {
 
 void InstantiateNodesFromFile(const std::string& NodeFilePath) {
     std::vector<Node*> NewNodes = root->AddNodesToScene(NodeFilePath);
+
+    root->UpdateChilds();
 
     LoadNodeScripts(NewNodes);
     SetNodes(NewNodes);
@@ -106,6 +107,7 @@ void BindNodes() {
     body.addFunc("SetFixedRotation", &Body::SetFixedRotation);
     body.addFunc("SetVelocity", &Body::SetVelocity);
     body.addFunc("GetVelocity", &Body::GetVelocity);
+    body.addFunc("SetGravity", &Body::SetGravity);
 
     ssq::Class physicsbody = root->GetSquirrelVM()->addClass("PhysicsBody", ssq::Class::Ctor<PhysicsBody()>());
     DefaultNodeBindings(&physicsbody);

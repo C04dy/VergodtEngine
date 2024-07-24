@@ -11,7 +11,7 @@ class SDL_Renderer;
 class Window
 {
 public:
-    Window(const std::string& Title, int Width, int Height);
+    Window(const std::string& Title, int Width, int Height, bool UseVsync);
     ~Window();
 
     SDL_Window* GetWindow() { return m_window; }

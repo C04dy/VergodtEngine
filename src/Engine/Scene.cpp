@@ -8,7 +8,9 @@ std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
     std::string Line;
     std::ifstream SceneFile(SceneFilePath);
 
-    std::vector<Node*> NODES;
+    std::vector<Node*> SCRIPTABLENODES;
+
+    int IndexOffset = Nodes.size();
 
     while (std::getline(SceneFile, Line)){
         if (Line.at(0) != '#') {
@@ -18,8 +20,8 @@ std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
                 Node* n = new Node();
 
                 SetNode(n, Line);
-
-                SetChild(n, Nodes, Line);
+ 
+                SetChild(n, Nodes, Line, IndexOffset);
     
                 if (SetNodesScript(Line, n) == true) {
                     ScriptableNodes.push_back(n);
@@ -34,6 +36,8 @@ std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
                     ScriptableNodes.push_back(&Cam);
                     Cam.ScriptIndex = ScriptableNodes.size() - 1;
                 }
+
+                Nodes.push_back(&Cam);
             }else if(CurNodeType == "SPRITE"){
                 std::string AssetFilePath = GetLineBetween(Line, "[ASSET=", "]");
 
@@ -43,7 +47,7 @@ std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
 
                 SetNode(s, Line);
 
-                SetChild(s, Nodes, Line);
+                SetChild(s, Nodes, Line, IndexOffset);
 
                 if (SetNodesScript(Line, (Node*)s) == true) {
                     ScriptableNodes.push_back(s);
@@ -56,7 +60,7 @@ std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
 
                 SetNode(p, Line);
 
-                SetChild(p, Nodes, Line);
+                SetChild(p, Nodes, Line, IndexOffset);
 
                 if (SetNodesScript(Line, (Node*)p) == true) {
                     ScriptableNodes.push_back(p);
@@ -110,17 +114,17 @@ std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
             }
 
             if (ScriptableNodeSize < ScriptableNodes.size())
-                NODES.push_back(ScriptableNodes[ScriptableNodes.size() - 1]);
+                SCRIPTABLENODES.push_back(ScriptableNodes[ScriptableNodes.size() - 1]);
         }
     }
     SceneFile.close();
 
-    return NODES;
+    return SCRIPTABLENODES;
 }
 
-void Scene::RemoveNodeFromScene(const std::string& NodeName) {
+void Scene::RemoveNodeFromScene(Node* n) {
     for (size_t i = 0; i < Nodes.size(); i++) {
-        if (Nodes[i]->Name == NodeName) {
+        if (Nodes[i]->ScriptIndex == n->ScriptIndex) {
             switch (Nodes[i]->Type)
             {
             case NodeType::SPRITE:
@@ -137,9 +141,17 @@ void Scene::RemoveNodeFromScene(const std::string& NodeName) {
     }
 }
 
+void Scene::UpdateChilds() {
+    for (Node* n : Nodes) {
+        n->UpdateChild();
+    }
+}
+
 void Scene::Start(){
     AddNodesToScene("../Assets/FlappyBird/FlappyBird.vscene");
     //AddNodesToScene("../Assets/test.vscene");
+
+    UpdateChilds();
 
     AssignRoot(this);
     BindNodes();
@@ -151,8 +163,7 @@ void Scene::Start(){
 }
 
 void Scene::Update(double dt){    
-    UpdateFunction(ScriptableNodes, dt);
-    
+    UpdateChilds();
     for (Node* n : Nodes) {
         switch (n->Type)
         {
@@ -160,8 +171,8 @@ void Scene::Update(double dt){
             ((PhysicsBody*)n)->UpdatePhysicsNode();
             break;
         }
-        n->UpdateChild();
     }
+    UpdateFunction(ScriptableNodes, dt);
 }
 
 void Scene::Draw(){

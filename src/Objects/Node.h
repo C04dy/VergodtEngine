@@ -19,6 +19,7 @@ class Node
 {
 public:
 	Vector2 Position = Vector2(0, 0);
+	Vector2 LocalPosition = Vector2(0, 0);
 	Vector2 Size = Vector2(1, 1);
 	float Angle = 0;
 

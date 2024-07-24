@@ -85,8 +85,10 @@ void PhysicsBody::InitPhysicsBodyPolygon(b2World* PhysicsWorld, b2BodyType BodyT
 }
 
 void PhysicsBody::UpdatePhysicsNode(){
+	Vector2 curpos = Position;
 	Position.x = m_physicsbody->GetPosition().x * PIXEL_TO_METER;
 	Position.y = m_physicsbody->GetPosition().y * PIXEL_TO_METER;
+	LocalPosition = curpos - Position;
 
 	Angle = m_physicsbody->GetAngle() * RADIAN_IN_DEGREES;
 }
