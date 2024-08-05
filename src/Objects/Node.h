@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <vector>
+#include <simplesquirrel/simplesquirrel.hpp>
 #include "Vector2.h"
 
 //#include "../Engine/VisualScripting/ScriptingNodes.h"
@@ -42,8 +43,16 @@ public:
 	class Children {
 	public:
 		void AddChildToList(Node* n) { m_childNode.push_back(n); }
-		Node* GetChild(int id) { return m_childNode[id]; }
+		
+		ssq::Object GetChild(int id) { 
+			return vm->callFunc(vm->findFunc("GetNodeFromList"), *vm, m_childNode[id]->ScriptIndex);
+		}
+		
 		std::vector<Node*> GetChilds() { return m_childNode; }
+		
+		int GetChildCount() { return m_childNode.size(); }
+		
+		ssq::VM* vm;
 	private:
 		std::vector<Node*> m_childNode;
 	};

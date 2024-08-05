@@ -70,6 +70,7 @@ void DefaultNodeBindings(ssq::Class* node) {
     node->addVar("Angle", &Node::Angle);
     node->addVar("Size", &Node::Size);
     node->addVar("Childs", &Node::ChildNodes);
+    node->addVar("ScriptIndex", &Node::ScriptIndex);
 }
 
 void BindNodes() {
@@ -81,6 +82,8 @@ void BindNodes() {
     ssq::Class chn = root->GetSquirrelVM()->addClass("Children", ssq::Class::Ctor<Node::Children()>());
     chn.addFunc("GetChild", &Node::Children::GetChild);
     chn.addFunc("GetChilds", &Node::Children::GetChilds);
+    chn.addFunc("AddChild", &Node::Children::AddChildToList);
+    chn.addFunc("GetChildCount", &Node::Children::GetChildCount);
 
     ssq::Class node = root->GetSquirrelVM()->addClass("Node", ssq::Class::Ctor<Node()>());
     DefaultNodeBindings(&node);
@@ -112,7 +115,9 @@ void StartFunction(std::vector<Node*> nodes) {
         root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("SetNodeVal"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
         root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("SetChildren"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
         switch (nodes[i]->Type) {
-            case NodeType::NODE:
+            case NodeType::NODE:if (nodes[i]->Type == NodeType::PHYSICSBODY) {
+            ((PhysicsBody*)nodes[i])->GetBody()->SetTransform(nodes[i]->Position / 100, ((PhysicsBody *)nodes[i])->GetBody()->GetAngle());
+        }
                 break;
             case NodeType::CAM:
                 break;
@@ -137,6 +142,10 @@ void UpdateFunction(std::vector<Node*> nodes, float dt) {
         root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("UpdateFunc"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, dt);
 
         root->GetSquirrelVM()->callFunc(root->GetSquirrelVM()->findFunc("GetNodeVal"), *root->GetSquirrelVM(), nodes[i]->ScriptIndex, nodes[i]);
+
+        if (nodes[i]->Type == NodeType::PHYSICSBODY) {
+            ((PhysicsBody*)nodes[i])->GetBody()->SetTransform(nodes[i]->Position / 100, ((PhysicsBody*)nodes[i])->GetBody()->GetAngle());
+        }
     }
 }
 

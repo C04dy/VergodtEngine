@@ -2,6 +2,7 @@ local Ns = []
 
 function StartFunc(id) {
     Ns[id].Start();
+    ::print("Start" + id.tostring());
 }
 
 function UpdateFunc(id, dt) {
@@ -21,6 +22,10 @@ function GetNodesArray() {
     return Ns;
 }
 
+function GetNodeFromList(id) {
+    return Ns[id];
+}
+
 function SetSpriteTexture(id, texture) {
     Ns[id].Texture = texture;
 }
@@ -29,7 +34,7 @@ function SetPhysicsbodyBody(id, body) {
     Ns[id].Body = body;
 }
 
-function SetChildren(id,n) {
+function SetChildren(id, n) {
     Ns[id].Childs = n.Childs;
 }
 

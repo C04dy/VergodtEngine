@@ -17,10 +17,6 @@ void Node::AddChild(Node* Child) {
 
 void Node::UpdateChild() {
 	for (Node* n : ChildNodes.GetChilds()) {
-		if (n->Type == NodeType::PHYSICSBODY) {
-			n->LocalPosition = Position - n->Position;
-			((PhysicsBody*)n)->GetBody()->SetTransform(Position + n->LocalPosition / 100, n->Angle);
-		}
 		n->Position = Position + n->LocalPosition;
 		n->Size = Size;
 		n->Angle = Angle;
