@@ -24,6 +24,8 @@ add_subdirectory(vendor/box2d)
 add_subdirectory(vendor/SDL_image/external/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/SDL_image)
 
+add_subdirectory(Editor)
+
 file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Objects/*.cpp src/Math/*.cpp src/Engine/Scripting/VisualScripting/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
