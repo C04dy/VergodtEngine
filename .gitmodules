@@ -7,11 +7,3 @@
 [submodule "vendor/box2d"]
 	path = vendor/box2d
 	url = https://github.com/erincatto/box2d.git
-[submodule "vendor/squirrel"]
-	path = vendor/squirrel
-	url = https://github.com/albertodemichelis/squirrel.git
-	branch = master
-[submodule "vendor/simplesquirrel"]
-	path = vendor/simplesquirrel
-	url = https://github.com/C04dy/simplesquirrel.git
-	branch = master
