@@ -1,8 +1,8 @@
 #include "Scene.h"
-#include "Scripting/Squirrel/SquirrelBindings.hpp"
 #include <fstream>
 #include <algorithm> 
 #include <ctime>
+#include "Util/SceneFileFunctions.h"
 
 std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
     std::string Line;
@@ -19,23 +19,13 @@ std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
             if(CurNodeType == "NODE"){
                 Node* n = new Node();
 
-                SetNode(n, Line);
+                SetNode(n, Line, Input);
  
                 SetChild(n, Nodes, Line, IndexOffset);
-    
-                if (SetNodesScript(Line, n) == true) {
-                    ScriptableNodes.push_back(n);
-                    n->ScriptIndex = ScriptableNodes.size() - 1;
-                }
 
                 Nodes.push_back(n);
             }else if(CurNodeType == "CAMERA"){
-                SetNode(&Cam, Line);
-
-                if (SetNodesScript(Line, (Node*)&Cam) == true) {
-                    ScriptableNodes.push_back(&Cam);
-                    Cam.ScriptIndex = ScriptableNodes.size() - 1;
-                }
+                SetNode(&Cam, Line, Input);
 
                 Nodes.push_back(&Cam);
             }else if(CurNodeType == "SPRITE"){
@@ -45,27 +35,17 @@ std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
 
                 s->InitSprite(AssetFilePath, &Cam, Renderer);
 
-                SetNode(s, Line);
+                SetNode(s, Line, Input);
 
                 SetChild(s, Nodes, Line, IndexOffset);
-
-                if (SetNodesScript(Line, (Node*)s) == true) {
-                    ScriptableNodes.push_back(s);
-                    s->ScriptIndex = ScriptableNodes.size() - 1;
-                }
 
                 Nodes.push_back(s);
             }else if(CurNodeType == "PHYSICSBODY"){        
                 PhysicsBody* p = new PhysicsBody;
 
-                SetNode(p, Line);
+                SetNode(p, Line, Input);
 
                 SetChild(p, Nodes, Line, IndexOffset);
-
-                if (SetNodesScript(Line, (Node*)p) == true) {
-                    ScriptableNodes.push_back(p);
-                    p->ScriptIndex = ScriptableNodes.size() - 1;
-                }
 
                 b2BodyType t = b2BodyType::b2_staticBody;
                 
@@ -122,25 +102,6 @@ std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
     return SCRIPTABLENODES;
 }
 
-void Scene::RemoveNodeFromScene(Node* n) {
-    for (size_t i = 0; i < Nodes.size(); i++) {
-        if (Nodes[i]->ScriptIndex == n->ScriptIndex) {
-            switch (Nodes[i]->Type)
-            {
-            case NodeType::SPRITE:
-            ((Sprite*)Nodes[i])->DeleteTexture();
-                break;
-            case NodeType::PHYSICSBODY:
-            ((PhysicsBody*)Nodes[i])->DeletePhysicsBody();
-                break;
-            }
-            ScriptableNodes.erase(ScriptableNodes.begin() + Nodes[i]->ScriptIndex);
-            Nodes.erase(Nodes.begin() + i);
-            break;
-        }
-    }
-}
-
 void Scene::UpdateChilds() {
     for (Node* n : Nodes) {
         n->UpdateChild();
@@ -148,18 +109,16 @@ void Scene::UpdateChilds() {
 }
 
 void Scene::Start(){
-    AddNodesToScene("../Assets/FlappyBird/FlappyBird.vscene");
-    //AddNodesToScene("../Assets/test.vscene");
+    //AddNodesToScene("../Assets/FlappyBird/FlappyBird.vscene");
+    AddNodesToScene("../Assets/test.vscene");
 
     UpdateChilds();
 
-    AssignRoot(this);
-    BindNodes();
-    BindFunctions();
-    RunEngineFile();
-    LoadNodeScripts(ScriptableNodes);
-    SetNodes(ScriptableNodes);
-    StartFunction(ScriptableNodes);
+    for (Node* n : Nodes) {
+        if (n->Script != nullptr) {
+            n->Script->StartScript();
+        }
+    }
 }
 
 void Scene::Update(double dt){    
@@ -171,8 +130,10 @@ void Scene::Update(double dt){
             ((PhysicsBody*)n)->UpdatePhysicsNode();
             break;
         }
+        if (n->Script != nullptr) {
+            n->Script->UpdateScript();
+        }
     }
-    UpdateFunction(ScriptableNodes, dt);
 }
 
 void Scene::Draw(){

@@ -8,8 +8,7 @@
 
 # TODO:
   Editor,
-  Squirrel scripting,
-  Visual Scripting(Not right now),
+  Visual Scripting,
   Steam Audio,
   Text Rendering,
   Source engine inspired console

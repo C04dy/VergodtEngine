@@ -38,13 +38,13 @@ class KeyboardInputNode : public ScriptingNode
 public:
     enum class KeyboardInputType{
         NONE,
-        IsKeyDown,
-        IsKeyUp,
+        IsKeyJustPressed,
+        IsKeyJustReleased,
         IsKeyPressed,
         IsKeyNotPressed
     };
 public:
-    KeyboardInputNode(InputManager* Input, SDL_Keycode KeyCode, KeyboardInputType InputType);
+    KeyboardInputNode(InputManager* Input, const std::string& KeyCode, const std::string& InputType);
 
     void SendSignal() override;
 private:
@@ -60,13 +60,13 @@ class MouseInputNode : public ScriptingNode
 public:
     enum class MouseInputType{
         NONE,
-        IsMouseKeyDown,
-        IsMouseKeyUp,
+        IsMouseKeyJustPressed,
+        IsMouseKeyJustReleased,
         IsMouseKeyPressed,
         IsMouseKeyNotPressed
     };
 public:
-    MouseInputNode(InputManager* Input, Uint8 MouseKey, MouseInputType InputType);
+    MouseInputNode(InputManager* Input, Uint8 MouseKey, const std::string& InputType);
 
     void SendSignal() override;
 

@@ -34,12 +34,9 @@ void Engine::EngineStart(){
     double EndTime = 0;
     double Delta = 0;
 
-    ssq::VM vm(1024, ssq::Libs::ALL);
-
     Scene.SetRenderer(Windowptr->GetRenderer());
     Scene.SetPhysicsWorld(m_physicsworld);
     Scene.SetInput(&Input);
-    Scene.SetSquirrelVM(&vm);
     Scene.Start();
 
     while(IsRunning()){

@@ -5,8 +5,6 @@ void Sprite::InitSprite(const std::string& FilePath, Camera* Cam, SDL_Renderer* 
     Type = NodeType::SPRITE;
     SetCam(Cam);
     LoadImage(FilePath);
-
-    texture.s = this;
 }
 
 void Sprite::DeleteTexture(){

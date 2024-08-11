@@ -23,17 +23,12 @@ set(DISABLE_DYNAMIC ON CACHE BOOL "" FORCE)
 add_subdirectory(vendor/box2d)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/SDL_image)
-add_subdirectory(vendor/squirrel)
-add_subdirectory(vendor/simplesquirrel)
 
-file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Objects/*.cpp src/Math/*.cpp) #src/Engine/VisualScripting/*.cpp)
+file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Objects/*.cpp src/Math/*.cpp src/Engine/Scripting/VisualScripting/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
 
 include_directories(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL_image/include ${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL/include 
-                    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/squirrel/include ${CMAKE_CURRENT_SOURCE_DIR}/vendor/simplesquirrel/include
-                    ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/Math) #${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/VisualScripting)
+                    ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/Math ${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Scripting)
 
-add_dependencies(simplesquirrel_static squirrel_static)
-
-target_link_libraries(${PROJECT_NAME} SDL3::SDL3 squirrel_static sqstdlib_static simplesquirrel_static SDL3_image-static box2d)
+target_link_libraries(${PROJECT_NAME} SDL3::SDL3 SDL3_image-static box2d)

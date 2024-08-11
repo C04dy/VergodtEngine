@@ -9,8 +9,6 @@
 #include "Objects/PhysicsBody.h"
 #include "Objects/Node.h"
 
-#include "simplesquirrel/simplesquirrel.hpp"
-
 class b2World;
 
 class Scene
@@ -40,17 +38,12 @@ public:
 
 	void SetInput(InputManager* _Input) { Input = _Input; }
 	InputManager* GetInput() { return Input; }
-
-	void SetSquirrelVM(ssq::VM* vm) { SquirrelVirtualMachine = vm; }
-	ssq::VM* GetSquirrelVM() { return SquirrelVirtualMachine; }
 protected:
 	SDL_Renderer* Renderer;
 
 	b2World* PhysicsWorld;
 
 	InputManager* Input;
-
-	ssq::VM* SquirrelVirtualMachine;
 private:
 	std::string m_gamename = "VergodtEngineGame";
 

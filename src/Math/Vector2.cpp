@@ -1,8 +1,13 @@
 #include "Vector2.h"
 
+void Vector2::Set(const Vector2& other) {
+    x = other.x;
+    y = other.y;
+}
+
 void Vector2::operator=(const b2Vec2& other){
     x = other.x;
-    y += other.y;
+    y = other.y;
 }
 
 void Vector2::operator+=(const Vector2& other){

@@ -19,18 +19,6 @@ public:
 	void SetCam(Camera* Cam);
 
 	void ChangeTexture(const std::string& FilePath);
-
-	class Texture {
-	public:
-		Node* s;
-
-		void ChangeTexture(const std::string &FilePath){
-			((Sprite*)s)->ChangeTexture(FilePath);
-		}
-	private:
-	};
-
-	Texture texture;
 private:
 	SDL_Texture* m_texture = nullptr;
 	

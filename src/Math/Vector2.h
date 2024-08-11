@@ -13,6 +13,8 @@ public:
 
     Vector2(float xIn, float yIn)  { x = xIn; y = yIn; }
 
+	void Set(const Vector2 &other);
+
 	void operator=(const b2Vec2 &other);
 
 	Vector2 operator*(const Vector2 &other);
