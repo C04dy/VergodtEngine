@@ -21,14 +21,14 @@ set(BUILD_INSTALL OFF CACHE BOOL "" FORCE)
 set(DISABLE_DYNAMIC ON CACHE BOOL "" FORCE)
 
 add_subdirectory(vendor/box2d)
-add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
+add_subdirectory(vendor/SDL_image/external/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/SDL_image)
 
 file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Objects/*.cpp src/Math/*.cpp src/Engine/Scripting/VisualScripting/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
 
-include_directories(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL_image/include ${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL/include 
+include_directories(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL_image/include ${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL_image/external/SDL/include 
                     ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/Math ${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Scripting)
 
 target_link_libraries(${PROJECT_NAME} SDL3::SDL3 SDL3_image-static box2d)
