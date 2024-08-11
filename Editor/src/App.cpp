@@ -1,5 +1,4 @@
 #include "App.h"
-#include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
 #include <stdio.h>
@@ -23,7 +22,7 @@ void App::Init() {
     }
 
     // Create window with SDL_Renderer graphics context
-    Uint32 window_flags = SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN;
+    Uint32 window_flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
     m_window = SDL_CreateWindow("Dear ImGui SDL3+SDL_Renderer example", 1280, 720, window_flags);
     if (m_window == nullptr) {
         std::cout << "SDL_CreateWindow() failed : ";
@@ -41,10 +40,10 @@ void App::Init() {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+    io = &ImGui::GetIO(); (void)io;
+    io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -112,6 +111,25 @@ int App::Run() {
         ImGui::NewFrame();
 
         // Do stuff here
+        bool sdw = true; ImGui::ShowDemoWindow(&sdw);
+
+        {
+            static float f = 0.0f;
+            static int counter = 0;
+
+            ImGui::Begin("Script");
+
+            ImGui::Text("This is some useful text.");
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+
+            if (ImGui::Button("Button"))
+                counter++;
+            ImGui::SameLine();
+            ImGui::Text("counter = %d", counter);
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
+            ImGui::End();
+        }
 
         // Rendering
         ImGui::Render();
@@ -129,6 +147,8 @@ int App::Run() {
     ImGui_ImplSDLRenderer3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
+
+    io = nullptr;
 
     SDL_DestroyRenderer(m_renderer);
     SDL_DestroyWindow(m_window);

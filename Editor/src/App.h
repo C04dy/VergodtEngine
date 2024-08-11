@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include "imgui.h"
 
 class SDL_Window;
 class SDL_Renderer;
@@ -23,9 +24,11 @@ public:
 private:
     bool m_running = false;
 
-    SDL_Window* m_window;
+    SDL_Window* m_window = nullptr;
 
-    SDL_Renderer* m_renderer;
+    SDL_Renderer* m_renderer = nullptr;
+
+    ImGuiIO* io = nullptr;
 };
 
 #endif
