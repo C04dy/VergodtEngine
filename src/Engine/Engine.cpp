@@ -9,7 +9,7 @@ void Engine::EngineStart(){
 
     InputManager Input; 
 
-    if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS) < 0){
         std::cout << "SDL_Init failed";
         throw std::runtime_error(SDL_GetError());
     }

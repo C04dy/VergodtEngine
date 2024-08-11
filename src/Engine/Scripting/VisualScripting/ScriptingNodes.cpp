@@ -2,7 +2,7 @@
 
 SDL_Keycode GetKeyCode(const std::string& Type){
     if(Type == "A")
-        return SDLK_a;
+        return SDLK_A;
 }
 
 KeyboardInputNode::KeyboardInputType GetKeyboardInputType(const std::string& Type){

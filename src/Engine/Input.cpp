@@ -24,11 +24,11 @@ bool InputManager::DoInput(SDL_Event *e) {
             break;
         case SDL_EVENT_KEY_DOWN:
         if (e->key.repeat == 0) {
-            SetKeyDown(e->key.keysym.sym);
+            SetKeyDown(e->key.key);
         }
             break;
         case SDL_EVENT_KEY_UP:
-            SetKeyUp(e->key.keysym.sym);
+            SetKeyUp(e->key.key);
             break;
         }
     }
@@ -85,14 +85,14 @@ bool InputManager::IsKeyJustReleased(SDL_Keycode Key){
 }
 
 bool InputManager::IsKeyPressed(SDL_Keycode Key){
-    if(keystates[SDL_GetScancodeFromKey(Key)]){
+    if(keystates[SDL_GetScancodeFromKey(Key, NULL)]){
         return true;
     }
     return false;
 }
 
 bool InputManager::IsKeyNotPressed(SDL_Keycode Key){
-    if(!keystates[SDL_GetScancodeFromKey(Key)]){
+    if(!keystates[SDL_GetScancodeFromKey(Key, NULL)]){
         return true;
     }
     return false;
