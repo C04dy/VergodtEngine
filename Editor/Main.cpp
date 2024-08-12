@@ -5,6 +5,7 @@ int main()
     App app;
 
     try {
+        //app.test();
         app.Init();
         app.Run();
     } catch (const std::exception &e) {
