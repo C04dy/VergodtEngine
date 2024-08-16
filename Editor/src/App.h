@@ -31,7 +31,7 @@ private:
 
     ImGuiIO* io = nullptr;
 
-    Scripting scripting;
+    Scripting m_scripting;
 };
 
 #endif

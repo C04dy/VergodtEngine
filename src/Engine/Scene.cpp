@@ -4,18 +4,20 @@
 #include <ctime>
 #include "Util/SceneFileFunctions.h"
 
-std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
+void Scene::AddNodesToScene(const std::string& SceneFilePath) {
     std::string Line;
     std::ifstream SceneFile(SceneFilePath);
 
-    std::vector<Node*> SCRIPTABLENODES;
+    if (SceneFile.fail()) {
+        std::cout << "Scene File did not found.\n";
+        return;
+    }
 
     int IndexOffset = Nodes.size();
 
-    while (std::getline(SceneFile, Line)){
+    while (std::getline(SceneFile, Line)) {
         if (Line.at(0) != '#') {
             std::string CurNodeType = GetLineBetween(Line, "[NODETYPE=", "]");
-            std::size_t ScriptableNodeSize = ScriptableNodes.size();
             if(CurNodeType == "NODE"){
                 Node* n = new Node();
 
@@ -92,14 +94,9 @@ std::vector<Node*> Scene::AddNodesToScene(const std::string& SceneFilePath) {
 
                 Nodes.push_back(p);
             }
-
-            if (ScriptableNodeSize < ScriptableNodes.size())
-                SCRIPTABLENODES.push_back(ScriptableNodes[ScriptableNodes.size() - 1]);
         }
     }
     SceneFile.close();
-
-    return SCRIPTABLENODES;
 }
 
 void Scene::UpdateChilds() {
@@ -160,5 +157,4 @@ void Scene::Clean(){
         }
     }
     Nodes.clear();
-    ScriptableNodes.clear();
 }

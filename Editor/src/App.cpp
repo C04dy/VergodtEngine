@@ -194,7 +194,7 @@ int App::Run() {
 
         DockSpace();
 
-        scripting.ScriptingSpace();
+        m_scripting.ScriptingSpace();
 
         // Rendering
         ImGui::Render();

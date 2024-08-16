@@ -1,10 +1,93 @@
 #include "Scripting.h"
+#include <iostream>
 #include <math.h>
 #include "imgui.h"
+#include "imgui_stdlib.h"
 #include <string>
+#include <fstream>
+#include "StringFunctions.h"
 
 Scripting::Scripting() {
+    ChangeScript("../../Assets/test.verscript");
+}
 
+void Scripting::SaveScript(const std::string& ScriptPath) {
+    std::string Line;
+
+    for (size_t i = 0; i < nodes.Size; i++) {
+        Line += "[TYPE=";
+        Line += nodes[i].Type;
+        Line += "] ";
+
+        if (IsLineExist(nodes[i].Type, "PRINT")) {
+            Line += "(";
+            Line += (char*)nodes[i].NodeValues[0].GetValue();
+            Line += ") ";
+        } else if (IsLineExist(nodes[i].Type, "KEYBOARDINPUT")) {
+            
+        } else if (IsLineExist(nodes[i].Type, "MOUSEINPUT")) {
+            
+        }
+
+        Line += "(X=" + std::to_string(nodes[i].Pos.x) + ") ";
+        Line += "(Y=" + std::to_string(nodes[i].Pos.y) + ") ";
+        Line += '\n';
+    }
+    Line.erase(Line.size() - 2, Line.size());
+
+    std::ofstream WriteFile(ScriptPath);
+    WriteFile << Line;
+}
+
+void Scripting::ChangeScript(const std::string& ScriptPath) {
+    std::string Line;
+    std::ifstream ScriptFile(ScriptPath);
+
+    if (ScriptFile.fail()) {
+        std::cout << "Script File did not found.\n";
+        return;
+    }
+    
+    while (std::getline(ScriptFile, Line)) {
+        std::string node_type = GetLineBetween(Line, "[TYPE=", "]");
+        ImVec2 scene_pos = ImVec2(std::stof(GetLineBetween(Line, "(X=", ")")), std::stof(GetLineBetween(Line, "(Y=", ")")));
+
+        if (node_type == "START") {
+            nodes.push_back(ScriptingNode(nodes.Size, scene_pos, node_type.c_str(), 0, 1, "Start"));
+        } else if(node_type == "UPDATE") {
+            nodes.push_back(ScriptingNode(nodes.Size, scene_pos, node_type.c_str(), 0, 1, "Update"));
+        } else if(node_type == "PRINT") {
+            nodes.push_back(ScriptingNode(nodes.Size, scene_pos, node_type.c_str(), 1, 1, "Print"));
+
+            std::string msg = GetLineBetween(Line, "(", ")");
+            nodes[nodes.Size - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::STRING, msg, nodes.Size, "Message"));
+        } else if (node_type == "KEYBOARDINPUT") {
+            nodes.push_back(ScriptingNode(nodes.Size, scene_pos, node_type.c_str(), 0, 1, "Keyboard Input"));
+        
+            std::string key = GetLineBetween(Line, "[KEY=", "]");
+            std::string type = GetLineBetween(Line, "[INPUTTYPE=", "]");
+        } else if(node_type == "MOUSEINPUT") {
+            nodes.push_back(ScriptingNode(nodes.Size, scene_pos, node_type.c_str(), 0, 1, "Mouse Input"));
+        
+            int key = std::stoi(GetLineBetween(Line, "[KEY=", "]"));
+            std::string type = GetLineBetween(Line, "[INPUTTYPE=", "]");
+
+            nodes[nodes.Size - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::INT, new int(key), nodes.Size, "Key"));
+            nodes[nodes.Size - 1].NodeValues[0].ComboItems.push_back("None");
+            nodes[nodes.Size - 1].NodeValues[0].ComboItems.push_back("Mouse Button Left");
+            nodes[nodes.Size - 1].NodeValues[0].ComboItems.push_back("Mouse Button Middle");
+            nodes[nodes.Size - 1].NodeValues[0].ComboItems.push_back("Mouse Button Right");
+        }
+
+        if (IsLineExist(Line, "CONNECTEDID")) {
+            int connectedNode = std::stoi(GetLineBetween(Line, "[CONNECTEDID=", "]"));
+            
+            links.push_back(NodeLink(connectedNode, 0, nodes.Size - 1, 0));
+        }
+    }
+    ScriptFile.close();
+
+    CurrentScriptPath = ScriptPath;
 }
 
 void Scripting::ScriptingSpace() {
@@ -24,15 +107,13 @@ void Scripting::ScriptingSpace() {
     ImGui::BeginChild("node_list", ImVec2(100, 0));
     ImGui::Text("Nodes");
     ImGui::Separator();
-    for (int node_idx = 0; node_idx < nodes.Size; node_idx++)
-    {
-        ScriptingNode* node = &nodes[node_idx];
-        ImGui::PushID(node->ID);
-        if (ImGui::Selectable(node->Name, node->ID == node_selected))
-            node_selected = node->ID;
+    for (int node_idx = 0; node_idx < nodes.Size; node_idx++) {
+        ImGui::PushID(nodes[node_idx].ID);
+        if (ImGui::Selectable(nodes[node_idx].Name, nodes[node_idx].ID == node_selected))
+            node_selected = nodes[node_idx].ID;
         if (ImGui::IsItemHovered())
         {
-            node_hovered_in_list = node->ID;
+            node_hovered_in_list = nodes[node_idx].ID;
             open_context_menu |= ImGui::IsMouseClicked(1);
         }
         ImGui::PopID();
@@ -108,58 +189,93 @@ void Scripting::ScriptingSpace() {
     // Display nodes
     for (int node_idx = 0; node_idx < nodes.Size; node_idx++)
     {
-        ScriptingNode* node = &nodes[node_idx];
-        ImGui::PushID(node->ID);
+        ImGui::PushID(nodes[node_idx].ID);
         ImVec2 node_rect_min;
-        node_rect_min.x = offset.x + node->Pos.x;
-        node_rect_min.y = offset.y + node->Pos.y;
+        node_rect_min.x = offset.x + nodes[node_idx].Pos.x;
+        node_rect_min.y = offset.y + nodes[node_idx].Pos.y;
 
         // Display node contents first
         draw_list->ChannelsSetCurrent(1); // Foreground
         bool old_any_active = ImGui::IsAnyItemActive();
         ImGui::SetCursorScreenPos(ImVec2(node_rect_min.x + NODE_WINDOW_PADDING.x, node_rect_min.y + NODE_WINDOW_PADDING.y));
         ImGui::BeginGroup(); // Lock horizontal position
-        ImGui::Text("%s", node->Name);
-        //ImGui::SliderFloat("##value", &node->Value, 0.0f, 1.0f, "Alpha %.2f");
-        //ImGui::ColorEdit3("##color", &node->Color.x);
+        ImGui::Text("%s", nodes[node_idx].Name);
+        for (size_t i = 0; i < nodes[node_idx].NodeValues.size(); i++) {
+            char* valuename = nodes[node_idx].NodeValues[i].ValueName.data();
+            switch (nodes[node_idx].NodeValues[i].Type) {
+            case ScriptingNodeValueType::NULLTYPE:
+            case ScriptingNodeValueType::FLOAT:
+                ImGui::InputFloat(valuename, ((float*)nodes[node_idx].NodeValues[i].GetValue()));
+                break;
+            case ScriptingNodeValueType::INT: {
+                int intval = *((int*)nodes[node_idx].NodeValues[i].GetValue());
+
+                if (nodes[node_idx].NodeValues[i].ComboItems.size() != 0) {
+                    if (ImGui::BeginCombo(valuename, nodes[node_idx].NodeValues[i].ComboItems[intval].c_str() )) {
+                        for (size_t j = 0; j < nodes[node_idx].NodeValues[i].ComboItems.size(); ++j) {
+                            const bool isSelected = (intval == (int)j);
+                            if (ImGui::Selectable(nodes[node_idx].NodeValues[i].ComboItems[j].c_str(), isSelected)) {
+                                intval = j;
+                                nodes[node_idx].NodeValues[i].SetValue(new int(intval));
+                            }
+                            if (isSelected) {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+                } else {
+                    if (ImGui::InputInt(valuename, &intval))
+                        nodes[node_idx].NodeValues[i].SetValue(new int(intval));
+                }
+            }   break;
+            case ScriptingNodeValueType::STRING:
+                std::string msg = (char*)nodes[node_idx].NodeValues[i].GetValue();
+                if (ImGui::InputText(valuename, &msg))
+                    nodes[node_idx].NodeValues[i].SetValue(msg);
+                break;
+            }
+        }
         ImGui::EndGroup();
 
         // Save the size of what we have emitted and whether any of the widgets are being used
         bool node_widgets_active = (!old_any_active && ImGui::IsAnyItemActive());
-        node->Size.x = ImGui::GetItemRectSize().x + NODE_WINDOW_PADDING.x + NODE_WINDOW_PADDING.x;
-        node->Size.y = ImGui::GetItemRectSize().y + NODE_WINDOW_PADDING.y + NODE_WINDOW_PADDING.y;
+        nodes[node_idx].Size.x = ImGui::GetItemRectSize().x + NODE_WINDOW_PADDING.x + NODE_WINDOW_PADDING.x;
+        nodes[node_idx].Size.y = ImGui::GetItemRectSize().y + NODE_WINDOW_PADDING.y + NODE_WINDOW_PADDING.y;
         ImVec2 node_rect_max;
-        node_rect_max.x = node_rect_min.x + node->Size.x;
-        node_rect_max.y = node_rect_min.y + node->Size.y;
+        node_rect_max.x = node_rect_min.x + nodes[node_idx].Size.x;
+        node_rect_max.y = node_rect_min.y + nodes[node_idx].Size.y;
 
         // Display node box
         draw_list->ChannelsSetCurrent(0); // Background
         ImGui::SetCursorScreenPos(node_rect_min);
-        ImGui::InvisibleButton("node", node->Size);
+        ImGui::InvisibleButton("node", nodes[node_idx].Size);
         if (ImGui::IsItemHovered())
         {
-            node_hovered_in_scene = node->ID;
+            node_hovered_in_scene = nodes[node_idx].ID;
             open_context_menu |= ImGui::IsMouseClicked(1);
         }
         bool node_moving_active = ImGui::IsItemActive();
         if (node_widgets_active || node_moving_active)
-            node_selected = node->ID;
+            node_selected = nodes[node_idx].ID;
         if (node_moving_active && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
-            node->Pos.x = node->Pos.x + io.MouseDelta.x;
-            node->Pos.y = node->Pos.y + io.MouseDelta.y;
+            nodes[node_idx].Pos.x = nodes[node_idx].Pos.x + io.MouseDelta.x;
+            nodes[node_idx].Pos.y = nodes[node_idx].Pos.y + io.MouseDelta.y;
         }
 
-        ImU32 node_bg_color = (node_hovered_in_list == node->ID || node_hovered_in_scene == node->ID || (node_hovered_in_list == -1 && node_selected == node->ID)) ? IM_COL32(75, 75, 75, 255) : IM_COL32(60, 60, 60, 255);
+        ImU32 node_bg_color = (node_hovered_in_list == nodes[node_idx].ID || node_hovered_in_scene == nodes[node_idx].ID || (node_hovered_in_list == -1 && node_selected == nodes[node_idx].ID)) ? IM_COL32(75, 75, 75, 255) : IM_COL32(60, 60, 60, 255);
         draw_list->AddRectFilled(node_rect_min, node_rect_max, node_bg_color, 4.0f);
         draw_list->AddRect(node_rect_min, node_rect_max, IM_COL32(100, 100, 100, 255), 4.0f);
-        for (int slot_idx = 0; slot_idx < node->InputsCount; slot_idx++) {
-            ImGui::SetCursorScreenPos(ImVec2(offset.x + node->GetInputSlotPos(slot_idx).x - NODE_SLOT_RADIUS, offset.y + node->GetInputSlotPos(slot_idx).y - NODE_SLOT_RADIUS));
-            ImGui::InvisibleButton("hi", ImVec2(NODE_SLOT_RADIUS * 2, NODE_SLOT_RADIUS * 2));
+        
+        for (int slot_idx = 0; slot_idx < nodes[node_idx].InputsCount; slot_idx++) {
+            ImGui::SetCursorScreenPos(ImVec2(offset.x + nodes[node_idx].GetInputSlotPos(slot_idx).x - NODE_SLOT_RADIUS, offset.y + nodes[node_idx].GetInputSlotPos(slot_idx).y - NODE_SLOT_RADIUS));
+            ImGui::InvisibleButton("inputs", ImVec2(NODE_SLOT_RADIUS * 2, NODE_SLOT_RADIUS * 2));
             if (ImGui::IsItemHovered()) {
-                if (ImGui::IsMouseClicked(0)) {
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
                     if (NodeOutputSelected != -1) {
                         links.push_back(NodeLink(SelectedConnectionNode, NodeOutputSelected, node_idx, slot_idx));
                         NodeOutputSelected = -1;
+                        NodeInputSelected = -1;
                         SelectedConnectionNode = -1;
                     } else {
                         NodeInputSelected = slot_idx;
@@ -167,16 +283,16 @@ void Scripting::ScriptingSpace() {
                     }
                 }
             }
-
-            draw_list->AddCircleFilled(ImVec2(offset.x + node->GetInputSlotPos(slot_idx).x, offset.y + node->GetInputSlotPos(slot_idx).y), NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
+            draw_list->AddCircleFilled(ImVec2(offset.x + nodes[node_idx].GetInputSlotPos(slot_idx).x, offset.y + nodes[node_idx].GetInputSlotPos(slot_idx).y), NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
         }
-        for (int slot_idx = 0; slot_idx < node->OutputsCount; slot_idx++) {
-            ImGui::SetCursorScreenPos(ImVec2(offset.x + node->GetOutputSlotPos(slot_idx).x - NODE_SLOT_RADIUS, offset.y + node->GetOutputSlotPos(slot_idx).y - NODE_SLOT_RADIUS));
-            ImGui::InvisibleButton("hi", ImVec2(NODE_SLOT_RADIUS * 2, NODE_SLOT_RADIUS * 2));
+        for (int slot_idx = 0; slot_idx < nodes[node_idx].OutputsCount; slot_idx++) {
+            ImGui::SetCursorScreenPos(ImVec2(offset.x + nodes[node_idx].GetOutputSlotPos(slot_idx).x - NODE_SLOT_RADIUS, offset.y + nodes[node_idx].GetOutputSlotPos(slot_idx).y - NODE_SLOT_RADIUS));
+            ImGui::InvisibleButton("output", ImVec2(NODE_SLOT_RADIUS * 2, NODE_SLOT_RADIUS * 2));
             if (ImGui::IsItemHovered()) {
-                if (ImGui::IsMouseClicked(0)) {
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
                     if (NodeInputSelected != -1) {
                         links.push_back(NodeLink(node_idx, slot_idx, SelectedConnectionNode, NodeInputSelected));
+                        NodeOutputSelected = -1;
                         NodeInputSelected = -1;
                         SelectedConnectionNode = -1;
                     } else {
@@ -186,9 +302,13 @@ void Scripting::ScriptingSpace() {
                 }
             }
 
-            draw_list->AddCircleFilled(ImVec2(offset.x + node->GetOutputSlotPos(slot_idx).x, offset.y + node->GetOutputSlotPos(slot_idx).y), NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
+            draw_list->AddCircleFilled(ImVec2(offset.x + nodes[node_idx].GetOutputSlotPos(slot_idx).x, offset.y + nodes[node_idx].GetOutputSlotPos(slot_idx).y), NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
         }
-
+        if(ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered()) {
+            NodeInputSelected = -1;
+            NodeOutputSelected = -1;
+            SelectedConnectionNode = -1;
+        }
         ImGui::PopID();
     }
     draw_list->ChannelsMerge();
@@ -214,35 +334,33 @@ void Scripting::ScriptingSpace() {
     }
 
     // Draw context menu
+    bool OpenNodeMenu = false;
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
-    if (ImGui::BeginPopup("context_menu")) {
-        ScriptingNode* node = node_selected != -1 ? &nodes[node_selected] : NULL;
+    if (ImGui::BeginPopup("Node Menu")) {
         ImVec2 scene_pos;
         scene_pos.x = ImGui::GetMousePosOnOpeningCurrentPopup().x - offset.x;
         scene_pos.y = ImGui::GetMousePosOnOpeningCurrentPopup().y - offset.y;
+        //if (ImGui::MenuItem("Start")) { nodes.push_back(ScriptingNode(nodes.Size, scene_pos, 0, 1, "Start")); }
+        //if (ImGui::MenuItem("Update")) { nodes.push_back(ScriptingNode(nodes.Size, scene_pos, 0, 1, "Update")); }
+        //if (ImGui::MenuItem("Print")) {
+        //    nodes.push_back(ScriptingNode(nodes.Size, scene_pos, 1, 1, "Print"));
+        //    nodes[nodes.Size - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::STRING, "hello", nodes.Size, nodes[nodes.Size - 1].Name));
+        //}
+        ImGui::EndPopup();
+    }
+    if (ImGui::BeginPopup("context_menu")) {
+        ScriptingNode* node = node_selected != -1 ? &nodes[node_selected] : NULL;
         if (node) {
             ImGui::Text("Node '%s'", node->Name);
             ImGui::Separator();
-            if (ImGui::MenuItem("Rename..", NULL, false, false)) {}
-            if (ImGui::MenuItem("Delete", NULL, false, false)) {}
             if (ImGui::MenuItem("Copy", NULL, false, false)) {}
         } else {
-            if (ImGui::MenuItem("Add")) { ImGui::OpenPopup }
-            if (ImGui::MenuItem("Paste", NULL, false, false)) {}
+            if (ImGui::MenuItem("Scripting Nodes")) { OpenNodeMenu = true; }
         }
         ImGui::EndPopup();
     }
-    ImGui::PopStyleVar();
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
-    if (ImGui::BeginPopup("Nodes")) {
-        //ScriptingNode* node = node_selected != -1 ? &nodes[node_selected] : NULL;
-        ImVec2 scene_pos;
-        scene_pos.x = ImGui::GetMousePosOnOpeningCurrentPopup().x - offset.x;
-        scene_pos.y = ImGui::GetMousePosOnOpeningCurrentPopup().y - offset.y;
-        if (ImGui::MenuItem("Add")) { nodes.push_back(ScriptingNode(nodes.Size, scene_pos)); }
-        if (ImGui::MenuItem("Paste", NULL, false, false)) {}
-        ImGui::EndPopup();
+    if (OpenNodeMenu) {
+        ImGui::OpenPopup("Node Menu");
     }
     ImGui::PopStyleVar();
 
@@ -259,4 +377,10 @@ void Scripting::ScriptingSpace() {
     ImGui::EndGroup();
 
     ImGui::End();
+
+    if (ImGui::IsKeyPressed(ImGuiKey_LeftCtrl)) {
+        if (ImGui::IsKeyDown(ImGuiKey_S)) {
+            SaveScript(CurrentScriptPath);
+        }
+    }
 }

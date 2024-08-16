@@ -21,7 +21,7 @@ public:
 
 	void UpdateChilds();
 
-	std::vector<Node*> AddNodesToScene(const std::string& SceneFilePath);
+	void AddNodesToScene(const std::string& SceneFilePath);
 	void RemoveNodeFromScene(Node* n);
 
 	void SetRenderer(SDL_Renderer* _Renderer) { Renderer = _Renderer; }
@@ -53,6 +53,5 @@ private:
 
 	Camera Cam;
 
-	std::vector<Node*> ScriptableNodes;
 	std::vector<Node*> Nodes;
 };
