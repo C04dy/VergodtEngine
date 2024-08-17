@@ -7,6 +7,44 @@
 #include <fstream>
 #include "StringFunctions.h"
 
+void CreateKeyboardInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int key, int type) {
+    Nodes.push_back(Scripting::ScriptingNode(Nodes.size(), Position, "KEYBOARDINPUT", 0, 1, "Keyboard Input"));
+        
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(key), Nodes.size(), "Key"));
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("None");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("A");
+
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(type), Nodes.size(), "Input Type"));
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("None");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is Key Just Pressed");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is Key Just Released");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is Key Pressed");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is Key Not Pressed");
+}
+
+void CreateMouseInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int key, int type) {
+    Nodes.push_back(Scripting::ScriptingNode(Nodes.size(), Position, "MOUSEINPUT", 0, 1, "Mouse Input"));
+
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(key), Nodes.size(), "Key"));
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("None");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("Mouse Button Left");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("Mouse Button Middle");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("Mouse Button Right");
+
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(type), Nodes.size(), "Input Type"));
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("None");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is MouseKey Just Pressed");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is MouseKey Just Released");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is MouseKey Pressed");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is MouseKey Not Pressed");
+}
+
+void CreatePrintNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, const std::string& Msg) {
+    Nodes.push_back(Scripting::ScriptingNode(Nodes.size(), Position, "PRINT", 1, 1, "Print"));
+    
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::STRING, Msg, Nodes.size(), "Message"));
+}
+
 Scripting::Scripting() {
     ChangeScript("../../Assets/test.verscript");
 }
@@ -14,7 +52,7 @@ Scripting::Scripting() {
 void Scripting::SaveScript(const std::string& ScriptPath) {
     std::string Line;
 
-    for (size_t i = 0; i < nodes.Size; i++) {
+    for (size_t i = 0; i < nodes.size(); i++) {
         Line += "[TYPE=";
         Line += nodes[i].Type;
         Line += "] ";
@@ -24,10 +62,31 @@ void Scripting::SaveScript(const std::string& ScriptPath) {
             Line += (char*)nodes[i].NodeValues[0].GetValue();
             Line += ") ";
         } else if (IsLineExist(nodes[i].Type, "KEYBOARDINPUT")) {
+            Line += "[INPUTTYPE=";
+            Line += RemoveSpaceAndUpperCase(nodes[i].NodeValues[1].ComboItems[*(int*)nodes[i].NodeValues[1].GetValue()]);
+            Line += "] ";
             
+            Line += "[KEY=";
+            Line += nodes[i].NodeValues[0].ComboItems[*(int*)nodes[i].NodeValues[0].GetValue()];
+            Line += "] ";
         } else if (IsLineExist(nodes[i].Type, "MOUSEINPUT")) {
+            Line += "[INPUTTYPE=";
+            Line += RemoveSpaceAndUpperCase(nodes[i].NodeValues[1].ComboItems[*(int*)nodes[i].NodeValues[1].GetValue()]);
+            Line += "] ";
             
+            Line += "[KEY=";
+            Line += std::to_string(*(int*)nodes[i].NodeValues[0].GetValue());
+            Line += "] ";
         }
+
+        for (size_t j = 0; j < links.size(); j++) {
+            if (links[j].OutputIdx == nodes[i].ID) {
+                Line += "[CONNECTEDID=";
+                Line += std::to_string(links[j].InputIdx);
+                Line += "] ";
+            }
+        }
+        
 
         Line += "(X=" + std::to_string(nodes[i].Pos.x) + ") ";
         Line += "(Y=" + std::to_string(nodes[i].Pos.y) + ") ";
@@ -53,36 +112,21 @@ void Scripting::ChangeScript(const std::string& ScriptPath) {
         ImVec2 scene_pos = ImVec2(std::stof(GetLineBetween(Line, "(X=", ")")), std::stof(GetLineBetween(Line, "(Y=", ")")));
 
         if (node_type == "START") {
-            nodes.push_back(ScriptingNode(nodes.Size, scene_pos, node_type.c_str(), 0, 1, "Start"));
+            nodes.push_back(ScriptingNode(nodes.size(), scene_pos, node_type.c_str(), 0, 1, "Start"));
         } else if(node_type == "UPDATE") {
-            nodes.push_back(ScriptingNode(nodes.Size, scene_pos, node_type.c_str(), 0, 1, "Update"));
+            nodes.push_back(ScriptingNode(nodes.size(), scene_pos, node_type.c_str(), 0, 1, "Update"));
         } else if(node_type == "PRINT") {
-            nodes.push_back(ScriptingNode(nodes.Size, scene_pos, node_type.c_str(), 1, 1, "Print"));
-
-            std::string msg = GetLineBetween(Line, "(", ")");
-            nodes[nodes.Size - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::STRING, msg, nodes.Size, "Message"));
+            CreatePrintNode(nodes, scene_pos, GetLineBetween(Line, "(", ")"));
         } else if (node_type == "KEYBOARDINPUT") {
-            nodes.push_back(ScriptingNode(nodes.Size, scene_pos, node_type.c_str(), 0, 1, "Keyboard Input"));
-        
-            std::string key = GetLineBetween(Line, "[KEY=", "]");
-            std::string type = GetLineBetween(Line, "[INPUTTYPE=", "]");
-        } else if(node_type == "MOUSEINPUT") {
-            nodes.push_back(ScriptingNode(nodes.Size, scene_pos, node_type.c_str(), 0, 1, "Mouse Input"));
-        
-            int key = std::stoi(GetLineBetween(Line, "[KEY=", "]"));
-            std::string type = GetLineBetween(Line, "[INPUTTYPE=", "]");
-
-            nodes[nodes.Size - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::INT, new int(key), nodes.Size, "Key"));
-            nodes[nodes.Size - 1].NodeValues[0].ComboItems.push_back("None");
-            nodes[nodes.Size - 1].NodeValues[0].ComboItems.push_back("Mouse Button Left");
-            nodes[nodes.Size - 1].NodeValues[0].ComboItems.push_back("Mouse Button Middle");
-            nodes[nodes.Size - 1].NodeValues[0].ComboItems.push_back("Mouse Button Right");
+            CreateKeyboardInputNode(nodes, scene_pos, KeyToInt(GetLineBetween(Line, "[KEY=", "]")), InputTypeToInt(GetLineBetween(Line, "[INPUTTYPE=", "]")));
+        } else if (node_type == "MOUSEINPUT") {
+            CreateMouseInputNode(nodes, scene_pos, std::stoi(GetLineBetween(Line, "[KEY=", "]")), InputTypeToInt(GetLineBetween(Line, "[INPUTTYPE=", "]")));
         }
 
         if (IsLineExist(Line, "CONNECTEDID")) {
             int connectedNode = std::stoi(GetLineBetween(Line, "[CONNECTEDID=", "]"));
             
-            links.push_back(NodeLink(connectedNode, 0, nodes.Size - 1, 0));
+            links.push_back(NodeLink(connectedNode, 0, nodes.size() - 1, 0));
         }
     }
     ScriptFile.close();
@@ -107,7 +151,7 @@ void Scripting::ScriptingSpace() {
     ImGui::BeginChild("node_list", ImVec2(100, 0));
     ImGui::Text("Nodes");
     ImGui::Separator();
-    for (int node_idx = 0; node_idx < nodes.Size; node_idx++) {
+    for (size_t node_idx = 0; node_idx < nodes.size(); node_idx++) {
         ImGui::PushID(nodes[node_idx].ID);
         if (ImGui::Selectable(nodes[node_idx].Name, nodes[node_idx].ID == node_selected))
             node_selected = nodes[node_idx].ID;
@@ -172,7 +216,7 @@ void Scripting::ScriptingSpace() {
             draw_list->AddBezierCubic(p1, ImVec2( p1.x , p1.y), ImVec2(io.MousePos.x, io.MousePos.y), ImVec2(io.MousePos.x, io.MousePos.y), IM_COL32(200, 200, 100, 255), 3.0f);
         }
     }
-    for (int link_idx = 0; link_idx < links.Size; link_idx++)
+    for (size_t link_idx = 0; link_idx < links.size(); link_idx++)
     {
         NodeLink* link = &links[link_idx];
         ScriptingNode* node_inp = &nodes[link->InputIdx];
@@ -187,7 +231,7 @@ void Scripting::ScriptingSpace() {
     }
 
     // Display nodes
-    for (int node_idx = 0; node_idx < nodes.Size; node_idx++)
+    for (size_t node_idx = 0; node_idx < nodes.size(); node_idx++)
     {
         ImGui::PushID(nodes[node_idx].ID);
         ImVec2 node_rect_min;
@@ -340,12 +384,11 @@ void Scripting::ScriptingSpace() {
         ImVec2 scene_pos;
         scene_pos.x = ImGui::GetMousePosOnOpeningCurrentPopup().x - offset.x;
         scene_pos.y = ImGui::GetMousePosOnOpeningCurrentPopup().y - offset.y;
-        //if (ImGui::MenuItem("Start")) { nodes.push_back(ScriptingNode(nodes.Size, scene_pos, 0, 1, "Start")); }
-        //if (ImGui::MenuItem("Update")) { nodes.push_back(ScriptingNode(nodes.Size, scene_pos, 0, 1, "Update")); }
-        //if (ImGui::MenuItem("Print")) {
-        //    nodes.push_back(ScriptingNode(nodes.Size, scene_pos, 1, 1, "Print"));
-        //    nodes[nodes.Size - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::STRING, "hello", nodes.Size, nodes[nodes.Size - 1].Name));
-        //}
+        if (ImGui::MenuItem("Start")) { nodes.push_back(ScriptingNode(nodes.size(), scene_pos, "START", 0, 1, "Start")); }
+        if (ImGui::MenuItem("Update")) { nodes.push_back(ScriptingNode(nodes.size(), scene_pos, "UPDATE", 0, 1, "Update")); }
+        if (ImGui::MenuItem("Print")) { CreatePrintNode(nodes, scene_pos, ""); }
+        if (ImGui::MenuItem("Keyboard Input")) { CreateKeyboardInputNode(nodes, scene_pos, 0, 0); }
+        if (ImGui::MenuItem("Mouse Input")) { CreateMouseInputNode(nodes, scene_pos, 0, 0); }
         ImGui::EndPopup();
     }
     if (ImGui::BeginPopup("context_menu")) {

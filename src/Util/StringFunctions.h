@@ -1,3 +1,5 @@
+#include <algorithm>
+
 template <typename T>
 void Log(T log)
 {
@@ -35,4 +37,29 @@ int HowMuchIsInsideString(const std::string& s, char c) {
             count++;
 
     return count;
+}
+
+int KeyToInt(const std::string& Key) {
+    if (Key == "A")
+        return 1;
+    return 0;
+}
+
+int InputTypeToInt(const std::string& Type) {
+    if(Type == "ISMOUSEKEYJUSTPRESSED" || Type == "ISKEYJUSTPRESSED")
+        return 1;
+    if(Type == "ISMOUSEKEYJUSTRELEASED" || Type == "ISKEYJUSTRELEASED")
+        return 2;
+    if(Type == "ISMOUSEKEYPRESSED" || Type == "ISKEYPRESSED")
+        return 3;
+    if(Type == "ISMOUSEKEYNOTPRESSED" || Type == "ISKEYNOTPRESSED")
+        return 4;
+    return 0;
+}
+
+std::string RemoveSpaceAndUpperCase(const std::string& str) {
+    std::string l = str;
+    l.erase(remove_if(l.begin(), l.end(), isspace), l.end());
+    std::transform(l.begin(), l.end(), l.begin(), ::toupper);
+    return l;
 }

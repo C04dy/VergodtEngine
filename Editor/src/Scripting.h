@@ -17,7 +17,7 @@ public:
     void ChangeScript(const std::string& ScriptPath);
 
     void SaveScript(const std::string& ScriptPath);
-private:
+public:
     enum class ScriptingNodeValueType {
         NULLTYPE = 0,
         FLOAT = 1,
@@ -89,8 +89,9 @@ private:
         NodeLink(int input_idx, int input_slot, int output_idx, int output_slot) { InputIdx = input_idx; InputSlot = input_slot; OutputIdx = output_idx; OutputSlot = output_slot; }
     };
 
-    ImVector<ScriptingNode> nodes;
-    ImVector<NodeLink> links;
+private:
+    std::vector<ScriptingNode> nodes;
+    std::vector<NodeLink> links;
     ImVec2 scrolling = ImVec2(0.0f, 0.0f);
     bool show_grid = true;
     int node_selected = -1;
