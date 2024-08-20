@@ -14,7 +14,7 @@ public:
 
     void ScriptingSpace();
 
-    void ChangeScript(const std::string& ScriptPath);
+    void LoadScript(const std::string& ScriptPath);
 
     void SaveScript(const std::string& ScriptPath);
 public:
@@ -89,18 +89,29 @@ public:
         NodeLink(int input_idx, int input_slot, int output_idx, int output_slot) { InputIdx = input_idx; InputSlot = input_slot; OutputIdx = output_idx; OutputSlot = output_slot; }
     };
 
+    class Script {
+    public:
+        std::vector<ScriptingNode> nodes;
+        std::vector<NodeLink> links;
+        int node_selected = -1;
+
+        int SelectedConnectionNode = -1;
+        int NodeInputSelected = -1;
+        int NodeOutputSelected = -1;
+
+        bool Saved = true;
+
+        std::string CurrentScriptPath;
+
+        std::string ScriptName;
+    };
 private:
-    std::vector<ScriptingNode> nodes;
-    std::vector<NodeLink> links;
-    ImVec2 scrolling = ImVec2(0.0f, 0.0f);
+    std::vector<Script> m_scripts;
+
     bool show_grid = true;
-    int node_selected = -1;
+    ImVec2 scrolling = ImVec2(0.0f, 0.0f);
 
-    int SelectedConnectionNode = -1;
-    int NodeInputSelected = -1;
-    int NodeOutputSelected = -1;
-
-    std::string CurrentScriptPath;
+    int m_currentscript = 0;
 };
 
 #endif

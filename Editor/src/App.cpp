@@ -154,7 +154,6 @@ void App::Init() {
 }
 
 int App::Run() {
-    bool sdw = true;
 #ifdef __EMSCRIPTEN__
     // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
     // You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
@@ -190,7 +189,7 @@ int App::Run() {
         ImGui::NewFrame();
 
         // Do stuff here
-        ImGui::ShowDemoWindow(&sdw);
+        //bool sdw = true; ImGui::ShowDemoWindow(&sdw);
 
         DockSpace();
 
