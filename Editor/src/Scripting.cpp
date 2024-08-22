@@ -8,7 +8,7 @@
 #include "StringFunctions.h"
 
 void CreateKeyboardInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int key, int type) {
-    Nodes.push_back(Scripting::ScriptingNode(Nodes.size(), Position, "KEYBOARDINPUT", 0, 1, "Keyboard Input"));
+    Nodes.push_back(Scripting::ScriptingNode(Position, "KEYBOARDINPUT", 0, 1, "Keyboard Input"));
         
     Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(key), Nodes.size(), "Key"));
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("None");
@@ -23,7 +23,7 @@ void CreateKeyboardInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec
 }
 
 void CreateMouseInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int key, int type) {
-    Nodes.push_back(Scripting::ScriptingNode(Nodes.size(), Position, "MOUSEINPUT", 0, 1, "Mouse Input"));
+    Nodes.push_back(Scripting::ScriptingNode(Position, "MOUSEINPUT", 0, 1, "Mouse Input"));
 
     Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(key), Nodes.size(), "Key"));
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("None");
@@ -40,14 +40,14 @@ void CreateMouseInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 P
 }
 
 void CreatePrintNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, const std::string& Msg) {
-    Nodes.push_back(Scripting::ScriptingNode(Nodes.size(), Position, "PRINT", 1, 1, "Print"));
+    Nodes.push_back(Scripting::ScriptingNode(Position, "PRINT", 1, 1, "Print"));
     
     Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::STRING, Msg, Nodes.size(), "Message"));
 }
 
 Scripting::Scripting() {
-    LoadScript("../../Assets/test.verscript");
-    LoadScript("../../Assets/test2.verscript");
+    //LoadScript("../../Assets/test.verscript");
+    LoadScript("../../Assets/FlappyBird/bird.verscript");
 }
 
 void Scripting::SaveScript(const std::string& ScriptPath) {
@@ -81,9 +81,9 @@ void Scripting::SaveScript(const std::string& ScriptPath) {
         }
 
         for (size_t j = 0; j < m_scripts[m_currentscript].links.size(); j++) {
-            if (m_scripts[m_currentscript].links[j].OutputIdx == m_scripts[m_currentscript].nodes[i].ID) {
+            if (m_scripts[m_currentscript].links[j].InputIdx == i) {
                 Line += "[CONNECTEDID=";
-                Line += std::to_string(m_scripts[m_currentscript].links[j].InputIdx);
+                Line += std::to_string(m_scripts[m_currentscript].links[j].OutputIdx);
                 Line += "] ";
             }
         }
@@ -118,9 +118,9 @@ void Scripting::LoadScript(const std::string& ScriptPath) {
         ImVec2 scene_pos = ImVec2(std::stof(GetLineBetween(Line, "(X=", ")")), std::stof(GetLineBetween(Line, "(Y=", ")")));
 
         if (node_type == "START") {
-            m_scripts[m_currentscript].nodes.push_back(ScriptingNode(m_scripts[m_currentscript].nodes.size(), scene_pos, node_type.c_str(), 0, 1, "Start"));
+            m_scripts[m_currentscript].nodes.push_back(ScriptingNode(scene_pos, node_type.c_str(), 0, 1, "Start"));
         } else if(node_type == "UPDATE") {
-            m_scripts[m_currentscript].nodes.push_back(ScriptingNode(m_scripts[m_currentscript].nodes.size(), scene_pos, node_type.c_str(), 0, 1, "Update"));
+            m_scripts[m_currentscript].nodes.push_back(ScriptingNode(scene_pos, node_type.c_str(), 0, 1, "Update"));
         } else if(node_type == "PRINT") {
             CreatePrintNode(m_scripts[m_currentscript].nodes, scene_pos, GetLineBetween(Line, "(", ")"));
         } else if (node_type == "KEYBOARDINPUT") {
@@ -132,7 +132,7 @@ void Scripting::LoadScript(const std::string& ScriptPath) {
         if (IsLineExist(Line, "CONNECTEDID")) {
             int connectedNode = std::stoi(GetLineBetween(Line, "[CONNECTEDID=", "]"));
             
-            m_scripts[m_currentscript].links.push_back(NodeLink(connectedNode, 0, m_scripts[m_currentscript].nodes.size() - 1, 0));
+            m_scripts[m_currentscript].links.push_back(NodeLink(m_scripts[m_currentscript].nodes.size() - 1, 0, connectedNode, 0));
         }
     }
     ScriptFile.close();
@@ -179,11 +179,11 @@ void Scripting::ScriptingSpace() {
     ImGui::Text("Nodes");
     ImGui::Separator();
     for (size_t node_idx = 0; node_idx < m_scripts[m_currentscript].nodes.size(); node_idx++) {
-        ImGui::PushID(m_scripts[m_currentscript].nodes[node_idx].ID);
-        if (ImGui::Selectable(m_scripts[m_currentscript].nodes[node_idx].Name, m_scripts[m_currentscript].nodes[node_idx].ID == m_scripts[m_currentscript].node_selected))
-            m_scripts[m_currentscript].node_selected = m_scripts[m_currentscript].nodes[node_idx].ID;
+        ImGui::PushID(node_idx);
+        if (ImGui::Selectable(m_scripts[m_currentscript].nodes[node_idx].Name, node_idx == m_scripts[m_currentscript].node_selected))
+            m_scripts[m_currentscript].node_selected = node_idx;
         if (ImGui::IsItemHovered()) {
-            node_hovered_in_list = m_scripts[m_currentscript].nodes[node_idx].ID;
+            node_hovered_in_list = node_idx;
             open_context_menu |= ImGui::IsMouseClicked(1);
         }
         ImGui::PopID();
@@ -259,7 +259,7 @@ void Scripting::ScriptingSpace() {
     // Display nodes
     for (size_t node_idx = 0; node_idx < m_scripts[m_currentscript].nodes.size(); node_idx++)
     {
-        ImGui::PushID(m_scripts[m_currentscript].nodes[node_idx].ID);
+        ImGui::PushID(node_idx);
         ImVec2 node_rect_min;
         node_rect_min.x = offset.x + m_scripts[m_currentscript].nodes[node_idx].Pos.x;
         node_rect_min.y = offset.y + m_scripts[m_currentscript].nodes[node_idx].Pos.y;
@@ -326,19 +326,19 @@ void Scripting::ScriptingSpace() {
         ImGui::SetCursorScreenPos(node_rect_min);
         ImGui::InvisibleButton("node", m_scripts[m_currentscript].nodes[node_idx].Size);
         if (ImGui::IsItemHovered()) {
-            node_hovered_in_scene = m_scripts[m_currentscript].nodes[node_idx].ID;
-            open_context_menu |= ImGui::IsMouseClicked(1);
+            node_hovered_in_scene = node_idx;
+            open_context_menu |= ImGui::IsMouseClicked(ImGuiMouseButton_Right);
         }
         bool node_moving_active = ImGui::IsItemActive();
         if (node_widgets_active || node_moving_active)
-            m_scripts[m_currentscript].node_selected = m_scripts[m_currentscript].nodes[node_idx].ID;
+            m_scripts[m_currentscript].node_selected = node_idx;
         if (node_moving_active && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
             m_scripts[m_currentscript].nodes[node_idx].Pos.x = m_scripts[m_currentscript].nodes[node_idx].Pos.x + io.MouseDelta.x;
             m_scripts[m_currentscript].nodes[node_idx].Pos.y = m_scripts[m_currentscript].nodes[node_idx].Pos.y + io.MouseDelta.y;
             m_scripts[m_currentscript].Saved = false;
         }
 
-        ImU32 node_bg_color = (node_hovered_in_list == m_scripts[m_currentscript].nodes[node_idx].ID || node_hovered_in_scene == m_scripts[m_currentscript].nodes[node_idx].ID || (node_hovered_in_list == -1 && m_scripts[m_currentscript].node_selected == m_scripts[m_currentscript].nodes[node_idx].ID)) ? IM_COL32(75, 75, 75, 255) : IM_COL32(60, 60, 60, 255);
+        ImU32 node_bg_color = (node_hovered_in_list == node_idx || node_hovered_in_scene == node_idx || (node_hovered_in_list == -1 && m_scripts[m_currentscript].node_selected == node_idx)) ? IM_COL32(75, 75, 75, 255) : IM_COL32(60, 60, 60, 255);
         draw_list->AddRectFilled(node_rect_min, node_rect_max, node_bg_color, 4.0f);
         draw_list->AddRect(node_rect_min, node_rect_max, IM_COL32(100, 100, 100, 255), 4.0f);
         
@@ -349,6 +349,9 @@ void Scripting::ScriptingSpace() {
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
                     if (m_scripts[m_currentscript].NodeOutputSelected != -1) {
                         m_scripts[m_currentscript].links.push_back(NodeLink(m_scripts[m_currentscript].SelectedConnectionNode, m_scripts[m_currentscript].NodeOutputSelected, node_idx, slot_idx));
+
+                        if (m_scripts[m_currentscript].no)
+
                         m_scripts[m_currentscript].NodeOutputSelected = -1;
                         m_scripts[m_currentscript].NodeInputSelected = -1;
                         m_scripts[m_currentscript].SelectedConnectionNode = -1;
@@ -368,7 +371,7 @@ void Scripting::ScriptingSpace() {
             if (ImGui::IsItemHovered()) {
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
                     if (m_scripts[m_currentscript].NodeInputSelected != -1) {
-                        m_scripts[m_currentscript].links.push_back(NodeLink(node_idx, slot_idx, m_scripts[m_currentscript].SelectedConnectionNode, m_scripts[m_currentscript].NodeInputSelected));
+                        m_scripts[m_currentscript].links.push_back(NodeLink(node_idx, slot_idx, m_scripts[m_currentscript].SelectedConnectionNode, m_scripts[m_currentscript].NodeInputSelected));                        
                         m_scripts[m_currentscript].NodeOutputSelected = -1;
                         m_scripts[m_currentscript].NodeInputSelected = -1;
                         m_scripts[m_currentscript].SelectedConnectionNode = -1;
@@ -393,8 +396,8 @@ void Scripting::ScriptingSpace() {
     draw_list->ChannelsMerge();
 
     // Open context menu
-    if (ImGui::IsMouseReleased(ImGuiMouseButton_Right))
-        if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup) || !ImGui::IsAnyItemHovered())
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && !ImGui::IsAnyItemHovered())
+        if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup))
         {
             m_scripts[m_currentscript].node_selected = node_hovered_in_list = node_hovered_in_scene = -1;
             open_context_menu = true;
@@ -418,8 +421,8 @@ void Scripting::ScriptingSpace() {
         ImVec2 scene_pos;
         scene_pos.x = ImGui::GetMousePosOnOpeningCurrentPopup().x - offset.x;
         scene_pos.y = ImGui::GetMousePosOnOpeningCurrentPopup().y - offset.y;
-        if (ImGui::MenuItem("Start")) { m_scripts[m_currentscript].nodes.push_back(ScriptingNode(m_scripts[m_currentscript].nodes.size(), scene_pos, "START", 0, 1, "Start")); }
-        if (ImGui::MenuItem("Update")) { m_scripts[m_currentscript].nodes.push_back(ScriptingNode(m_scripts[m_currentscript].nodes.size(), scene_pos, "UPDATE", 0, 1, "Update")); }
+        if (ImGui::MenuItem("Start")) { m_scripts[m_currentscript].nodes.push_back(ScriptingNode(scene_pos, "START", 0, 1, "Start")); }
+        if (ImGui::MenuItem("Update")) { m_scripts[m_currentscript].nodes.push_back(ScriptingNode(scene_pos, "UPDATE", 0, 1, "Update")); }
         if (ImGui::MenuItem("Print")) { CreatePrintNode(m_scripts[m_currentscript].nodes, scene_pos, ""); }
         if (ImGui::MenuItem("Keyboard Input")) { CreateKeyboardInputNode(m_scripts[m_currentscript].nodes, scene_pos, 0, 0); }
         if (ImGui::MenuItem("Mouse Input")) { CreateMouseInputNode(m_scripts[m_currentscript].nodes, scene_pos, 0, 0); }
@@ -428,9 +431,17 @@ void Scripting::ScriptingSpace() {
     if (ImGui::BeginPopup("context_menu")) {
         ScriptingNode* node = m_scripts[m_currentscript].node_selected != -1 ? &m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].node_selected] : NULL;
         if (node) {
-            ImGui::Text("Node '%s'", node->Name);
+            ImGui::Text(node->Name);
             ImGui::Separator();
             if (ImGui::MenuItem("Copy", NULL, false, false)) {}
+            if (ImGui::MenuItem("Delete")) {
+                m_scripts[m_currentscript].nodes.erase(m_scripts[m_currentscript].nodes.begin() + m_scripts[m_currentscript].node_selected);
+                for (size_t i = 0; i < m_scripts[m_currentscript].links.size(); i++) {
+                    if (m_scripts[m_currentscript].links[i].InputIdx == m_scripts[m_currentscript].node_selected || m_scripts[m_currentscript].links[i].OutputIdx == m_scripts[m_currentscript].node_selected) {
+                        m_scripts[m_currentscript].links.erase(m_scripts[m_currentscript].links.begin() + i);
+                    }
+                }
+            }
         } else {
             if (ImGui::MenuItem("Scripting Nodes")) { OpenNodeMenu = true; }
         }

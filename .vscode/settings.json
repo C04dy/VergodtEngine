@@ -94,6 +94,7 @@
         "execution": "cpp",
         "complex": "cpp",
         "print": "cpp",
-        "cfenv": "cpp"
+        "cfenv": "cpp",
+        "__tree": "cpp"
     }
 }

@@ -106,8 +106,8 @@ void Scene::UpdateChilds() {
 }
 
 void Scene::Start(){
-    //AddNodesToScene("../Assets/FlappyBird/FlappyBird.vscene");
-    AddNodesToScene("../Assets/test.vscene");
+    AddNodesToScene("../Assets/FlappyBird/FlappyBird.vscene");
+    //AddNodesToScene("../Assets/test.vscene");
 
     UpdateChilds();
 

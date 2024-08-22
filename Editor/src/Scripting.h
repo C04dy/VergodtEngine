@@ -63,15 +63,13 @@ public:
     };
 
     struct ScriptingNode {
-        int ID;
         char Name[32] = "ScriptingNode";
         ImVec2 Pos, Size;
         int InputsCount = 1, OutputsCount = 1;
         std::vector<ScriptingNodeValue> NodeValues;
         char Type[32] = "NULL";
 
-        ScriptingNode(int id, const ImVec2& pos, const char* type, int i = 1, int o = 1, const char* nodename = "ScriptingNode") {
-            ID = id;
+        ScriptingNode(const ImVec2& pos, const char* type, int i = 1, int o = 1, const char* nodename = "ScriptingNode") {
             Pos = pos;
             strcpy(Name, nodename);
             InputsCount = i;

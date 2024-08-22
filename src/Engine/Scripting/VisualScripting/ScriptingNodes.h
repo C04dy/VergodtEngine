@@ -97,7 +97,7 @@ private:
 class VisualScript
 {
 public:
-    void InitVisualScript(StartNode* StartNode, UpdateNode* UpdateNode);
+    void InitVisualScript(StartNode* StartNode = nullptr, UpdateNode* UpdateNode = nullptr);
 
     ~VisualScript();
 
