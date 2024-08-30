@@ -33,8 +33,8 @@ bool InputManager::DoInput(SDL_Event *e) {
         }
     }
     keystates = SDL_GetKeyboardState(NULL);
-    //UpdateMouseInputNodes();
-    //UpdateKeyboardInputNodes();
+    UpdateMouseInputNodes();
+    UpdateKeyboardInputNodes();
     return true;
 }
 

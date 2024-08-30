@@ -100,7 +100,7 @@ void App::Init() {
 
     // Create window with SDL_Renderer graphics context
     Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
-    m_window = SDL_CreateWindow("Dear ImGui SDL3+SDL_Renderer example", 1280, 720, window_flags);
+    m_window = SDL_CreateWindow("VergodtEngine Editor", 1280, 720, window_flags);
     if (m_window == nullptr) {
         std::cout << "SDL_CreateWindow() failed : ";
         throw std::runtime_error(SDL_GetError());

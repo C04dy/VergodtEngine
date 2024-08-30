@@ -1,4 +1,5 @@
 #include "ScriptingNodes.h"
+#include "Objects/PhysicsBody.h"
 
 SDL_Keycode GetKeyCode(const std::string& Type){
     if(Type == "A")
@@ -98,15 +99,15 @@ MouseInputNode::MouseInputNode(InputManager* Input, Uint8 MouseKey, const std::s
     m_inputtype = GetMouseInputType(InputType);
 }
 
-void MouseInputNode::SendSignal(){
-    for (int i = 0; i < (int)ConnectedNodes.size(); i++){
+void MouseInputNode::SendSignal() {
+    for (int i = 0; i < (int)ConnectedNodes.size(); i++) {
         switch (m_inputtype)
         {
         case MouseInputType::NONE:
             std::cout << "ERROR: INVALID MOUSEINPUT TYPE" << '\n';
             break;
         case MouseInputType::IsMouseKeyJustPressed:
-            if(m_input->IsMouseKeyJustPressed(m_mousekey))
+            if (m_input->IsMouseKeyJustPressed(m_mousekey))
                 ConnectedNodes[i]->ReciveSignal();
             break;
         case MouseInputType::IsMouseKeyJustReleased:
@@ -168,6 +169,21 @@ void ConditionNode::SendSignal(){
     {
         ConnectedNodes[i]->ReciveSignal();
     }
+}
+
+// ADDFORCE NODE 
+
+ApplyForceNode::ApplyForceNode(PhysicsBody* Body, const Vector2& Force) {
+    m_body = Body;
+    m_force = Force;
+}
+
+ApplyForceNode::~ApplyForceNode() {
+    m_body = nullptr;
+}
+
+void ApplyForceNode::NodesFunction() {
+    m_body->GetBody()->ApplyForceToCenter(m_force, true);
 }
 
 // VISUAL SCRIPT

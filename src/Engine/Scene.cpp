@@ -21,12 +21,15 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath) {
             if(CurNodeType == "NODE"){
                 Node* n = new Node();
 
+                n->Type = NodeType::NODE;
+
                 SetNode(n, Line, Input);
  
                 SetChild(n, Nodes, Line, IndexOffset);
 
                 Nodes.push_back(n);
             }else if(CurNodeType == "CAMERA"){
+                Cam.Type = NodeType::CAM;
                 SetNode(&Cam, Line, Input);
 
                 Nodes.push_back(&Cam);
@@ -34,6 +37,8 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath) {
                 std::string AssetFilePath = GetLineBetween(Line, "[ASSET=", "]");
 
                 Sprite* s = new Sprite();
+
+                s->Type = NodeType::SPRITE;
 
                 s->InitSprite(AssetFilePath, &Cam, Renderer);
 
@@ -44,6 +49,8 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath) {
                 Nodes.push_back(s);
             }else if(CurNodeType == "PHYSICSBODY"){        
                 PhysicsBody* p = new PhysicsBody;
+
+                p->Type = NodeType::PHYSICSBODY;
 
                 SetNode(p, Line, Input);
 

@@ -2,13 +2,18 @@
 #include <iostream>
 #include "StringFunctions.h"
 
+void ScriptError(const std::string& Msg, const std::string& ScriptPath) {
+    std::cout << "Script File Error\n" << Msg << '\n' << "Script File Path = " << ScriptPath << '\n';
+}
+
 void SetScript(Node* n, const std::string& Line, InputManager* Input) {
     if(IsLineExist(Line, "[SCRIPT=")){
         std::string ln;
-        std::ifstream ScriptFile(GetLineBetween(Line, "[SCRIPT=", "]"));
+        std::string FilePath = GetLineBetween(Line, "[SCRIPT=", "]");
+        std::ifstream ScriptFile(FilePath);
 
         if (ScriptFile.fail()) {
-            std::cout << "Script File did not found.\n";
+            ScriptError("Script File did not found.", FilePath);
             return;
         }
 
@@ -23,31 +28,43 @@ void SetScript(Node* n, const std::string& Line, InputManager* Input) {
         while (std::getline(ScriptFile, ln)){
             std::string NodeType = GetLineBetween(ln, "[TYPE=", "]");
 
-            if(NodeType == "START"){
+            if (NodeType == "START"){
                 ALLSCRIPNODES.push_back(s);
-            }else if(NodeType == "UPDATE"){
+            } else if (NodeType == "UPDATE"){
                 ALLSCRIPNODES.push_back(u);
-            }else if(NodeType == "PRINT"){
+            } else if (NodeType == "PRINT"){
                 PrintNode* p = new PrintNode;
 
                 p->Message = GetLineBetween(ln, "(", ")");
 
                 ALLSCRIPNODES.push_back(p);
 
-                if(GetLineBetween(ln, "[CONNECTEDID=", "]") != "NULL")
+                if (GetLineBetween(ln, "[CONNECTEDID=", "]") != "NULL")
                     ALLSCRIPNODES[std::stoi(GetLineBetween(ln, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(p); 
-            }else if(NodeType == "KEYBOARDINPUT"){
+            } else if (NodeType == "KEYBOARDINPUT"){
                 KeyboardInputNode* k = new KeyboardInputNode(Input, 
                                                             GetLineBetween(ln, "[KEY=", "]"),
                                                             GetLineBetween(ln, "[INPUTTYPE=", "]"));
 
                 ALLSCRIPNODES.push_back(k);
-            }else if(NodeType == "MOUSEINPUT"){
+            } else if (NodeType == "MOUSEINPUT"){
                 MouseInputNode* k = new MouseInputNode(Input, 
                                                         std::stoi(GetLineBetween(ln, "[KEY=", "]")),
                                                         GetLineBetween(ln, "[INPUTTYPE=", "]"));
 
                 ALLSCRIPNODES.push_back(k);
+            } else if(NodeType == "APPLYFORCE"){
+                if (n->Type != NodeType::PHYSICSBODY) {
+                    std::cout << (int)n->Type;
+                    ScriptError("APPLYFORCE ScriptNode only works with PhysicsBody Node.", FilePath);
+                    return;
+                }
+                ApplyForceNode* a = new ApplyForceNode((PhysicsBody*)n, Vector2(std::stof(GetLineBetween(ln, "[FORCEX=", "]")), std::stof(GetLineBetween(ln, "[FORCEY=", "]"))));
+
+                ALLSCRIPNODES.push_back(a);
+
+                if (GetLineBetween(ln, "[CONNECTEDID=", "]") != "NULL")
+                    ALLSCRIPNODES[std::stoi(GetLineBetween(ln, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(a); 
             }
         }
 

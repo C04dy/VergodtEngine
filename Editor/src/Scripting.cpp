@@ -10,11 +10,11 @@
 void CreateKeyboardInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int key, int type) {
     Nodes.push_back(Scripting::ScriptingNode(Position, "KEYBOARDINPUT", 0, 1, "Keyboard Input"));
         
-    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(key), Nodes.size(), "Key"));
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(key), "Key"));
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("None");
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("A");
 
-    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(type), Nodes.size(), "Input Type"));
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(type), "Input Type"));
     Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("None");
     Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is Key Just Pressed");
     Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is Key Just Released");
@@ -25,13 +25,13 @@ void CreateKeyboardInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec
 void CreateMouseInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int key, int type) {
     Nodes.push_back(Scripting::ScriptingNode(Position, "MOUSEINPUT", 0, 1, "Mouse Input"));
 
-    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(key), Nodes.size(), "Key"));
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(key), "Key"));
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("None");
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("Mouse Button Left");
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("Mouse Button Middle");
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("Mouse Button Right");
 
-    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(type), Nodes.size(), "Input Type"));
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(type), "Input Type"));
     Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("None");
     Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is MouseKey Just Pressed");
     Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is MouseKey Just Released");
@@ -42,7 +42,7 @@ void CreateMouseInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 P
 void CreatePrintNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, const std::string& Msg) {
     Nodes.push_back(Scripting::ScriptingNode(Position, "PRINT", 1, 1, "Print"));
     
-    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::STRING, Msg, Nodes.size(), "Message"));
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::STRING, Msg, "Message"));
 }
 
 Scripting::Scripting() {
@@ -79,16 +79,24 @@ void Scripting::SaveScript(const std::string& ScriptPath) {
             Line += std::to_string(*(int*)m_scripts[m_currentscript].nodes[i].NodeValues[0].GetValue());
             Line += "] ";
         }
+        else if (IsLineExist(m_scripts[m_currentscript].nodes[i].Type, "APPLYFORCE")) {
+            Line += "[FORCEX=";
+            Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[0].GetValue());
+            Line += "] ";
+            
+            Line += "[FORCEY=";
+            Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[1].GetValue());
+            Line += "] ";
+        }
 
         for (size_t j = 0; j < m_scripts[m_currentscript].links.size(); j++) {
-            if (m_scripts[m_currentscript].links[j].InputIdx == i) {
+            if (m_scripts[m_currentscript].links[j].OutputIdx == i) {
                 Line += "[CONNECTEDID=";
-                Line += std::to_string(m_scripts[m_currentscript].links[j].OutputIdx);
+                Line += std::to_string(m_scripts[m_currentscript].links[j].InputIdx);
                 Line += "] ";
             }
         }
         
-
         Line += "(X=" + std::to_string(m_scripts[m_currentscript].nodes[i].Pos.x) + ") ";
         Line += "(Y=" + std::to_string(m_scripts[m_currentscript].nodes[i].Pos.y) + ") ";
         Line += '\n';
@@ -127,12 +135,20 @@ void Scripting::LoadScript(const std::string& ScriptPath) {
             CreateKeyboardInputNode(m_scripts[m_currentscript].nodes, scene_pos, KeyToInt(GetLineBetween(Line, "[KEY=", "]")), InputTypeToInt(GetLineBetween(Line, "[INPUTTYPE=", "]")));
         } else if (node_type == "MOUSEINPUT") {
             CreateMouseInputNode(m_scripts[m_currentscript].nodes, scene_pos, std::stoi(GetLineBetween(Line, "[KEY=", "]")), InputTypeToInt(GetLineBetween(Line, "[INPUTTYPE=", "]")));
+        } else if (node_type == "APPLYFORCE") {
+            m_scripts[m_currentscript].nodes.push_back(ScriptingNode(scene_pos, node_type.c_str(), 1, 1, "Apply Force"));
+
+            float x = std::stof(GetLineBetween(Line, "[FORCEX=", "]"));
+            float y = std::stof(GetLineBetween(Line, "[FORCEY=", "]"));
+            
+            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(x), "X"));
+            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(y), "Y"));
         }
 
         if (IsLineExist(Line, "CONNECTEDID")) {
             int connectedNode = std::stoi(GetLineBetween(Line, "[CONNECTEDID=", "]"));
             
-            m_scripts[m_currentscript].links.push_back(NodeLink(m_scripts[m_currentscript].nodes.size() - 1, 0, connectedNode, 0));
+            m_scripts[m_currentscript].links.push_back(NodeLink(connectedNode, 0, m_scripts[m_currentscript].nodes.size() - 1, 0));
         }
     }
     ScriptFile.close();
@@ -348,10 +364,27 @@ void Scripting::ScriptingSpace() {
             if (ImGui::IsItemHovered()) {
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
                     if (m_scripts[m_currentscript].NodeOutputSelected != -1) {
+                        if (node_idx < m_scripts[m_currentscript].SelectedConnectionNode) {
+                            auto from = m_scripts[m_currentscript].nodes.begin() + node_idx;
+                            auto to = m_scripts[m_currentscript].nodes.begin() + m_scripts[m_currentscript].SelectedConnectionNode;
+
+                            std::rotate(from, from + 1, to + 1);
+
+                            m_scripts[m_currentscript].links.push_back(NodeLink(m_scripts[m_currentscript].SelectedConnectionNode - 1, m_scripts[m_currentscript].NodeOutputSelected, m_scripts[m_currentscript].SelectedConnectionNode, slot_idx));
+                            
+                            for (size_t i = node_idx; i < m_scripts[m_currentscript].links.size(); i++) {
+                                m_scripts[m_currentscript].links[i].InputIdx = m_scripts[m_currentscript].links[i].InputIdx - 1;
+                                m_scripts[m_currentscript].links[i].OutputIdx = m_scripts[m_currentscript].links[i].OutputIdx - 1;
+                            }
+
+                            m_scripts[m_currentscript].NodeOutputSelected = -1;
+                            m_scripts[m_currentscript].NodeInputSelected = -1;
+                            m_scripts[m_currentscript].SelectedConnectionNode = -1;
+                            m_scripts[m_currentscript].Saved = false;
+                            break;
+                        }
+
                         m_scripts[m_currentscript].links.push_back(NodeLink(m_scripts[m_currentscript].SelectedConnectionNode, m_scripts[m_currentscript].NodeOutputSelected, node_idx, slot_idx));
-
-                        if (m_scripts[m_currentscript].no)
-
                         m_scripts[m_currentscript].NodeOutputSelected = -1;
                         m_scripts[m_currentscript].NodeInputSelected = -1;
                         m_scripts[m_currentscript].SelectedConnectionNode = -1;
@@ -371,7 +404,22 @@ void Scripting::ScriptingSpace() {
             if (ImGui::IsItemHovered()) {
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
                     if (m_scripts[m_currentscript].NodeInputSelected != -1) {
-                        m_scripts[m_currentscript].links.push_back(NodeLink(node_idx, slot_idx, m_scripts[m_currentscript].SelectedConnectionNode, m_scripts[m_currentscript].NodeInputSelected));                        
+                        if (node_idx > m_scripts[m_currentscript].SelectedConnectionNode) {
+                            auto from = m_scripts[m_currentscript].nodes.begin() + m_scripts[m_currentscript].SelectedConnectionNode;
+                            auto to = m_scripts[m_currentscript].nodes.begin() + node_idx;
+                            std::rotate(from, from + 1, to + 1);
+                            m_scripts[m_currentscript].links.push_back(NodeLink(node_idx - 1, slot_idx, node_idx, m_scripts[m_currentscript].NodeInputSelected));
+                            for (size_t i = m_scripts[m_currentscript].SelectedConnectionNode; i < m_scripts[m_currentscript].links.size(); i++) {
+                                m_scripts[m_currentscript].links[i].InputIdx = m_scripts[m_currentscript].links[i].InputIdx - 1;
+                                m_scripts[m_currentscript].links[i].OutputIdx = m_scripts[m_currentscript].links[i].OutputIdx - 1;
+                            }
+                            m_scripts[m_currentscript].NodeOutputSelected = -1;
+                            m_scripts[m_currentscript].NodeInputSelected = -1;
+                            m_scripts[m_currentscript].SelectedConnectionNode = -1;
+                            m_scripts[m_currentscript].Saved = false;
+                            break;
+                        }
+                        m_scripts[m_currentscript].links.push_back(NodeLink(node_idx, slot_idx, m_scripts[m_currentscript].SelectedConnectionNode, m_scripts[m_currentscript].NodeInputSelected));
                         m_scripts[m_currentscript].NodeOutputSelected = -1;
                         m_scripts[m_currentscript].NodeInputSelected = -1;
                         m_scripts[m_currentscript].SelectedConnectionNode = -1;
@@ -426,6 +474,11 @@ void Scripting::ScriptingSpace() {
         if (ImGui::MenuItem("Print")) { CreatePrintNode(m_scripts[m_currentscript].nodes, scene_pos, ""); }
         if (ImGui::MenuItem("Keyboard Input")) { CreateKeyboardInputNode(m_scripts[m_currentscript].nodes, scene_pos, 0, 0); }
         if (ImGui::MenuItem("Mouse Input")) { CreateMouseInputNode(m_scripts[m_currentscript].nodes, scene_pos, 0, 0); }
+        if (ImGui::MenuItem("Apply Force")) {
+            m_scripts[m_currentscript].nodes.push_back(ScriptingNode(scene_pos, "APPLYFORCE", 1, 1, "Apply Force"));
+            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(0), "X"));
+            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(0), "Y"));
+        }
         ImGui::EndPopup();
     }
     if (ImGui::BeginPopup("context_menu")) {

@@ -22,8 +22,6 @@ void PhysicsBody::InitPhysicsBodyBox(b2World* PhysicsWorld, b2BodyType BodyType,
 
 	m_physicsbody->CreateFixture(&fixturedef);
 
-	Type = NodeType::PHYSICSBODY;
-
 	//b2Filter f;
 	//f.maskBits = 
 	//m_physicsbody->GetFixtureList()[0].SetFilterData();
@@ -46,8 +44,6 @@ void PhysicsBody::InitPhysicsBodyCircle(b2World* PhysicsWorld, b2BodyType BodyTy
 	fixturedef.friction = Friction;
 
 	m_physicsbody->CreateFixture(&fixturedef);
-
-	Type = NodeType::PHYSICSBODY;
 }
 
 void PhysicsBody::InitPhysicsBodyPolygon(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 Polygons[], int32 PolygonCount, float Friction, float Density){
@@ -74,8 +70,6 @@ void PhysicsBody::InitPhysicsBodyPolygon(b2World* PhysicsWorld, b2BodyType BodyT
 	fixturedef.friction = Friction;
 
 	m_physicsbody->CreateFixture(&fixturedef);
-
-	Type = NodeType::PHYSICSBODY;
 }
 
 void PhysicsBody::UpdatePhysicsNode(){

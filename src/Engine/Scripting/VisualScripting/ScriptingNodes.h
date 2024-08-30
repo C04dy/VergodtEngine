@@ -94,6 +94,22 @@ private:
     bool* m_condition = nullptr;
 };
 
+class PhysicsBody;
+
+class ApplyForceNode : public ScriptingNode
+{
+public:
+    ApplyForceNode(PhysicsBody* Body, const Vector2& Force);
+
+    ~ApplyForceNode();
+
+    void NodesFunction() override;
+private:
+    PhysicsBody* m_body = nullptr;
+
+    Vector2 m_force;
+};
+
 class VisualScript
 {
 public:

@@ -50,12 +50,12 @@ public:
             Value = val;
         }
 
-        ScriptingNodeValue(ScriptingNodeValueType type, void* val, int id, const std::string& name) {
+        ScriptingNodeValue(ScriptingNodeValueType type, void* val, const std::string& name) {
             Value = val;
             Type = type;
             ValueName = name;
         }
-        ScriptingNodeValue(ScriptingNodeValueType type, const std::string& val, int id, const std::string& name) {
+        ScriptingNodeValue(ScriptingNodeValueType type, const std::string& val, const std::string& name) {
             StringValue = val;
             Type = type;
             ValueName = name;
