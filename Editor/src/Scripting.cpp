@@ -1,5 +1,4 @@
 #include "Scripting.h"
-#include <iostream>
 #include <math.h>
 #include "imgui.h"
 #include "imgui_stdlib.h"
@@ -78,13 +77,20 @@ void Scripting::SaveScript(const std::string& ScriptPath) {
             Line += "[KEY=";
             Line += std::to_string(*(int*)m_scripts[m_currentscript].nodes[i].NodeValues[0].GetValue());
             Line += "] ";
-        }
-        else if (IsLineExist(m_scripts[m_currentscript].nodes[i].Type, "APPLYFORCE")) {
+        } else if (IsLineExist(m_scripts[m_currentscript].nodes[i].Type, "APPLYFORCE")) {
             Line += "[FORCEX=";
             Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[0].GetValue());
             Line += "] ";
             
             Line += "[FORCEY=";
+            Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[1].GetValue());
+            Line += "] ";
+        } else if (IsLineExist(m_scripts[m_currentscript].nodes[i].Type, "SETVELOCITY")) {
+            Line += "[VELOCITYX=";
+            Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[0].GetValue());
+            Line += "] ";
+            
+            Line += "[VELOCITYY=";
             Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[1].GetValue());
             Line += "] ";
         }
@@ -143,6 +149,14 @@ void Scripting::LoadScript(const std::string& ScriptPath) {
             
             m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(x), "X"));
             m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(y), "Y"));
+        } else if (node_type == "SETVELOCITY") {
+            m_scripts[m_currentscript].nodes.push_back(ScriptingNode(scene_pos, node_type.c_str(), 1, 1, "Set Velocity"));
+
+            float x = std::stof(GetLineBetween(Line, "[VELOCITYX=", "]"));
+            float y = std::stof(GetLineBetween(Line, "[VELOCITYY=", "]"));
+            
+            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(x), "X"));
+            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(y), "Y"));
         }
 
         if (IsLineExist(Line, "CONNECTEDID")) {
@@ -161,7 +175,7 @@ void Scripting::ScriptingSpace() {
 
     ImGui::SetNextWindowSize(ImVec2(700, 600), ImGuiCond_FirstUseEver);
 
-    if (!ImGui::Begin("Script")) {
+    if (!ImGui::Begin("Scripting")) {
         ImGui::End();
         return;
     }

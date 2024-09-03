@@ -110,6 +110,20 @@ private:
     Vector2 m_force;
 };
 
+class SetVelocityNode : public ScriptingNode
+{
+public:
+    SetVelocityNode(PhysicsBody* Body, const Vector2& Force);
+
+    ~SetVelocityNode();
+
+    void NodesFunction() override;
+private:
+    PhysicsBody* m_body = nullptr;
+
+    Vector2 m_vel;
+};
+
 class VisualScript
 {
 public:

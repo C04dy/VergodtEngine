@@ -5,11 +5,29 @@
 
 #include <stdexcept>
 #include <iostream>
-#include "Scripting.h"
+#include "Viewport.h"
 #include "imgui.h"
+#include "Scripting.h"
 
 class SDL_Window;
 class SDL_Renderer;
+
+struct Node {
+    enum class NodeType {
+        NODE = 0,
+        SPRITE = 1,
+        CAM = 2,
+        PHYSICSBODY = 3
+    };
+
+    NodeType Type = NodeType::NODE;
+
+    std::string Name, Script;
+
+    ImVec2 Position, Size;
+
+    float Angle;
+};
 
 class App
 {
@@ -22,6 +40,8 @@ public:
 
     bool IsAppRunning() { return m_running; }
 
+    void LoadSceneFile(const std::string& FilePath);
+    
 private:
     bool m_running = false;
 
@@ -32,6 +52,10 @@ private:
     ImGuiIO* io = nullptr;
 
     Scripting m_scripting;
+
+    Viewport m_viewport;
+
+    std::vector<Node> m_nodes;
 };
 
 #endif

@@ -8,7 +8,8 @@
 #else
 #include <SDL3/SDL_opengl.h>
 #endif
-
+#include <fstream>
+#include "StringFunctions.h"
 
 App::~App() {
 
@@ -91,6 +92,34 @@ void DockSpace() {
     ImGui::End();
 }
 
+void App::LoadSceneFile(const std::string& FilePath) {
+    std::string Line;
+    std::ifstream SceneFile(FilePath);
+
+    if (SceneFile.fail()) {
+        std::cout << "Scene File did not found.\n";
+        return;
+    }
+
+    while (std::getline(SceneFile, Line)) {
+        m_nodes.push_back(Node());
+
+        if (IsLineExist(Line, "[POSITION(")) {
+            std::string pose = GetLineBetween(Line, "[POSITION(", ")]");
+            m_nodes[m_nodes.size() - 1].Position = ImVec2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
+        }
+        if (IsLineExist(Line, "[SIZE(")) {
+            std::string size = GetLineBetween(Line, "[SIZE(", ")]");
+            m_nodes[m_nodes.size() - 1].Size = ImVec2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
+        }
+        if (IsLineExist(Line, "[ANGLE(")) {
+            m_nodes[m_nodes.size() - 1].Angle = std::stof(GetLineBetween(Line, "[ANGLE(", ")]"));
+        }
+
+        m_nodes[m_nodes.size() - 1].Name = GetLineBetween(Line, "[NAME=", "]");
+    }
+}
+
 void App::Init() {
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD) != 0) {
@@ -149,6 +178,10 @@ void App::Init() {
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != nullptr);
 
+    // Load Scene
+
+    LoadSceneFile("../../Assets/FlappyBird/FlappyBird.vscene");
+
     // Main loop
     m_running = true;
 }
@@ -169,16 +202,15 @@ int App::Run() {
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
+        while (SDL_PollEvent(&event)) {
             ImGui_ImplSDL3_ProcessEvent(&event);
             if (event.type == SDL_EVENT_QUIT)
                 m_running = false;
             if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(m_window))
                 m_running = false;
         }
-        if (SDL_GetWindowFlags(m_window) & SDL_WINDOW_MINIMIZED)
-        {
+        
+        if (SDL_GetWindowFlags(m_window) & SDL_WINDOW_MINIMIZED) {
             SDL_Delay(10);
             continue;
         }
@@ -194,6 +226,8 @@ int App::Run() {
         DockSpace();
 
         m_scripting.ScriptingSpace();
+
+        m_viewport.ViewportSpace(m_renderer, m_nodes);
 
         // Rendering
         ImGui::Render();

@@ -186,6 +186,21 @@ void ApplyForceNode::NodesFunction() {
     m_body->GetBody()->ApplyForceToCenter(m_force, true);
 }
 
+// SETFORCE NODE 
+
+SetVelocityNode::SetVelocityNode(PhysicsBody* Body, const Vector2& Velocity) {
+    m_body = Body;
+    m_vel = Velocity;
+}
+
+SetVelocityNode::~SetVelocityNode() {
+    m_body = nullptr;
+}
+
+void SetVelocityNode::NodesFunction() {
+    m_body->GetBody()->SetLinearVelocity(m_vel);
+}
+
 // VISUAL SCRIPT
 
 void VisualScript::InitVisualScript(StartNode* StartNode, UpdateNode* UpdateNode){

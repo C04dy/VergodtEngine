@@ -55,11 +55,21 @@ void SetScript(Node* n, const std::string& Line, InputManager* Input) {
                 ALLSCRIPNODES.push_back(k);
             } else if(NodeType == "APPLYFORCE"){
                 if (n->Type != NodeType::PHYSICSBODY) {
-                    std::cout << (int)n->Type;
                     ScriptError("APPLYFORCE ScriptNode only works with PhysicsBody Node.", FilePath);
                     return;
                 }
                 ApplyForceNode* a = new ApplyForceNode((PhysicsBody*)n, Vector2(std::stof(GetLineBetween(ln, "[FORCEX=", "]")), std::stof(GetLineBetween(ln, "[FORCEY=", "]"))));
+
+                ALLSCRIPNODES.push_back(a);
+
+                if (GetLineBetween(ln, "[CONNECTEDID=", "]") != "NULL")
+                    ALLSCRIPNODES[std::stoi(GetLineBetween(ln, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(a); 
+            } else if(NodeType == "SETVELOCITY"){
+                if (n->Type != NodeType::PHYSICSBODY) {
+                    ScriptError("APPLYFORCE ScriptNode only works with PhysicsBody Node.", FilePath);
+                    return;
+                }
+                SetVelocityNode* a = new SetVelocityNode((PhysicsBody*)n, Vector2(std::stof(GetLineBetween(ln, "[VELOCITYX=", "]")), std::stof(GetLineBetween(ln, "[VELOCITYY=", "]"))));
 
                 ALLSCRIPNODES.push_back(a);
 
