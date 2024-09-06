@@ -17,7 +17,18 @@ Viewport::~Viewport() {
 bool LoadTextureFromFile(const std::string& FilePath, SDL_Texture** texture_ptr, float& width, float& height, SDL_Renderer* renderer) {
     SDL_Surface* surface = IMG_Load(FilePath.c_str());
 
+    if(surface == nullptr){
+        std::cout << "Failed to load texture: " << FilePath.c_str() << '\n';
+        return false;
+    }
+
     *texture_ptr = SDL_CreateTextureFromSurface(renderer, surface);
+
+    if(*texture_ptr == nullptr){
+        std::cout << "Failed to create texture from surface\n";
+        return false;
+    }
+
 
     width = surface->w;
     height = surface->h;
@@ -62,18 +73,46 @@ void Viewport::ViewportSpace(SDL_Renderer* renderer, const std::vector<Node>& no
     }
 
     for (size_t i = 0; i < nodes.size(); i++) {
-        SDL_Texture* my_tex_id;
-        float my_tex_w, my_tex_h;
-        LoadTextureFromFile("../../Assets/Test1.png", &my_tex_id, my_tex_w, my_tex_h, renderer);
-        static bool use_text_color_for_tint = false;
-        ImVec2 uv_min = ImVec2(0.0f, 0.0f);
-        ImVec2 uv_max = ImVec2(1.0f, 1.0f);
-        ImVec4 tint_col = use_text_color_for_tint ? ImGui::GetStyleColorVec4(ImGuiCol_Text) : ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-        ImVec4 border_col = ImGui::GetStyleColorVec4(ImGuiCol_Border);
-        ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
-        ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+        switch (nodes[i].NodeType)
+        {
+        case Node::Type::SPRITE:
+            SDL_Texture* my_tex_id;
+            float my_tex_w, my_tex_h;
+            if (LoadTextureFromFile(*(std::string*)nodes[i].NodeValues[0].Value, &my_tex_id, my_tex_w, my_tex_h, renderer)) {
+                static bool use_text_color_for_tint = false;
+                ImVec2 uv_min = ImVec2(0.0f, 0.0f);
+                ImVec2 uv_max = ImVec2(1.0f, 1.0f);
+                ImVec4 tint_col = use_text_color_for_tint ? ImGui::GetStyleColorVec4(ImGuiCol_Text) : ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+                ImVec4 border_col = ImGui::GetStyleColorVec4(ImGuiCol_Border);
+                ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
+                ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+            }
+            break;
+        case Node::Type::PHYSICSBODY:
+            ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
+            ImGui::BeginGroup();
+            ImGui::InvisibleButton("PHYSICSBODY", ImVec2(50, 50));
+            ImGui::Text("PhysicsBody");
+            ImGui::EndGroup();
+            break;
+        case Node::Type::NODE:
+            ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
+            ImGui::BeginGroup();
+            ImGui::InvisibleButton("NODE", ImVec2(50, 50));
+            ImGui::Text("Node");
+            ImGui::EndGroup();
+            break;
+        case Node::Type::CAM:
+            ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
+            ImGui::BeginGroup();
+            ImGui::InvisibleButton("CAM", ImVec2(50, 50));
+            ImGui::Text("Cam");
+            ImGui::EndGroup();
+            break;
+        }
     }
-    
+    draw_list->ChannelsMerge();
+
 
     if (ImGui::IsWindowHovered() && !ImGui::IsAnyItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Middle, 0.0f)) {
         m_scrolling.x = m_scrolling.x + io.MouseDelta.x;

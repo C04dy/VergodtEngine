@@ -104,6 +104,19 @@ void App::LoadSceneFile(const std::string& FilePath) {
     while (std::getline(SceneFile, Line)) {
         m_nodes.push_back(Node());
 
+        std::string type = GetLineBetween(Line, "[NODETYPE=", "]");
+
+        if (type == "NODE") {
+            m_nodes[m_nodes.size() - 1].NodeType = Node::Type::NODE;
+        } else if (type == "PHYSICSBODY") {
+            m_nodes[m_nodes.size() - 1].NodeType = Node::Type::PHYSICSBODY;
+        } else if (type == "SPRITE") {
+            m_nodes[m_nodes.size() - 1].NodeType = Node::Type::SPRITE;
+            m_nodes[m_nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string(GetLineBetween(Line, "[ASSET=", "]")), Node::NodeValue::Type::STRING));
+        } else if (type == "CAMERA") {
+            m_nodes[m_nodes.size() - 1].NodeType = Node::Type::CAM;
+        }
+
         if (IsLineExist(Line, "[POSITION(")) {
             std::string pose = GetLineBetween(Line, "[POSITION(", ")]");
             m_nodes[m_nodes.size() - 1].Position = ImVec2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
@@ -114,6 +127,26 @@ void App::LoadSceneFile(const std::string& FilePath) {
         }
         if (IsLineExist(Line, "[ANGLE(")) {
             m_nodes[m_nodes.size() - 1].Angle = std::stof(GetLineBetween(Line, "[ANGLE(", ")]"));
+        }
+
+        if (IsLineExist(Line, "[CHILDINDEX=")) {
+            std::string ci = GetLineBetween(Line, "[CHILDINDEX=(", ")]");
+            if (IsLineExist(ci, ",")) {
+                int childcount = 0;
+
+                for (size_t i = 0; i < ci.size(); i++) {
+                    if (ci[i] != ',') {
+                        childcount += 1;
+
+                        m_nodes[ci[i] - '0'].IsChild = true;
+                    }
+                }
+
+                m_nodes[m_nodes.size() - 1].ChildCount = childcount;
+            } else {
+                m_nodes[m_nodes.size() - 1].ChildCount = 1;
+                m_nodes[std::stoi(ci)].IsChild = true;
+            }
         }
 
         m_nodes[m_nodes.size() - 1].Name = GetLineBetween(Line, "[NAME=", "]");
@@ -187,6 +220,8 @@ void App::Init() {
 }
 
 int App::Run() {
+    int SelectedNode = -1;
+
 #ifdef __EMSCRIPTEN__
     // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
     // You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
@@ -209,7 +244,7 @@ int App::Run() {
             if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(m_window))
                 m_running = false;
         }
-        
+
         if (SDL_GetWindowFlags(m_window) & SDL_WINDOW_MINIMIZED) {
             SDL_Delay(10);
             continue;
@@ -221,13 +256,17 @@ int App::Run() {
         ImGui::NewFrame();
 
         // Do stuff here
-        //bool sdw = true; ImGui::ShowDemoWindow(&sdw);
+        bool sdw = true; ImGui::ShowDemoWindow(&sdw);
 
         DockSpace();
 
         m_scripting.ScriptingSpace();
 
         m_viewport.ViewportSpace(m_renderer, m_nodes);
+
+        m_sceneview.SceneViewSpace(m_nodes, SelectedNode);
+
+        m_inspector.InspectorSpace(m_nodes, SelectedNode);
 
         // Rendering
         ImGui::Render();

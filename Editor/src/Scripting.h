@@ -18,46 +18,26 @@ public:
 
     void SaveScript(const std::string& ScriptPath);
 public:
-    enum class ScriptingNodeValueType {
-        NULLTYPE = 0,
-        FLOAT = 1,
-        INT = 2,
-        STRING = 3
-    };
 
     struct ScriptingNodeValue {
-    private:
+        enum class Type {
+            NULLTYPE = 0,
+            FLOAT = 1,
+            INT = 2,
+            STRING = 3
+        };
+
         void* Value = nullptr;
-        std::string StringValue;
-    public:
-        ScriptingNodeValueType Type = ScriptingNodeValueType::NULLTYPE;
+
+        Type ValueType = Type::NULLTYPE;
+
         std::string ValueName = "Val";
-        
+
         std::vector<std::string> ComboItems;
 
-        void* GetValue() {
-            if (Type == ScriptingNodeValueType::STRING) {
-                return (void*)StringValue.data();
-            }
-            return Value;
-        }
-
-        void SetValue(const std::string& val) {
-            StringValue = val;
-        }
-
-        void SetValue(void* val) {
+        ScriptingNodeValue(Type type, void* val, const std::string& name) {
             Value = val;
-        }
-
-        ScriptingNodeValue(ScriptingNodeValueType type, void* val, const std::string& name) {
-            Value = val;
-            Type = type;
-            ValueName = name;
-        }
-        ScriptingNodeValue(ScriptingNodeValueType type, const std::string& val, const std::string& name) {
-            StringValue = val;
-            Type = type;
+            ValueType = type;
             ValueName = name;
         }
     };

@@ -9,11 +9,11 @@
 void CreateKeyboardInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int key, int type) {
     Nodes.push_back(Scripting::ScriptingNode(Position, "KEYBOARDINPUT", 0, 1, "Keyboard Input"));
         
-    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(key), "Key"));
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValue::Type::INT, new int(key), "Key"));
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("None");
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("A");
 
-    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(type), "Input Type"));
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValue::Type::INT, new int(type), "Input Type"));
     Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("None");
     Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is Key Just Pressed");
     Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is Key Just Released");
@@ -24,13 +24,13 @@ void CreateKeyboardInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec
 void CreateMouseInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int key, int type) {
     Nodes.push_back(Scripting::ScriptingNode(Position, "MOUSEINPUT", 0, 1, "Mouse Input"));
 
-    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(key), "Key"));
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValue::Type::INT, new int(key), "Key"));
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("None");
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("Mouse Button Left");
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("Mouse Button Middle");
     Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("Mouse Button Right");
 
-    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::INT, new int(type), "Input Type"));
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValue::Type::INT, new int(type), "Input Type"));
     Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("None");
     Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is MouseKey Just Pressed");
     Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is MouseKey Just Released");
@@ -41,7 +41,7 @@ void CreateMouseInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 P
 void CreatePrintNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, const std::string& Msg) {
     Nodes.push_back(Scripting::ScriptingNode(Position, "PRINT", 1, 1, "Print"));
     
-    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValueType::STRING, Msg, "Message"));
+    Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValue::Type::STRING, new std::string(Msg), "Message"));
 }
 
 Scripting::Scripting() {
@@ -59,39 +59,39 @@ void Scripting::SaveScript(const std::string& ScriptPath) {
 
         if (IsLineExist(m_scripts[m_currentscript].nodes[i].Type, "PRINT")) {
             Line += "(";
-            Line += (char*)m_scripts[m_currentscript].nodes[i].NodeValues[0].GetValue();
+            Line += *(std::string*)m_scripts[m_currentscript].nodes[i].NodeValues[0].Value;
             Line += ") ";
         } else if (IsLineExist(m_scripts[m_currentscript].nodes[i].Type, "KEYBOARDINPUT")) {
             Line += "[INPUTTYPE=";
-            Line += RemoveSpaceAndUpperCase(m_scripts[m_currentscript].nodes[i].NodeValues[1].ComboItems[*(int*)m_scripts[m_currentscript].nodes[i].NodeValues[1].GetValue()]);
+            Line += RemoveSpaceAndUpperCase(m_scripts[m_currentscript].nodes[i].NodeValues[1].ComboItems[*(int*)m_scripts[m_currentscript].nodes[i].NodeValues[1].Value]);
             Line += "] ";
             
             Line += "[KEY=";
-            Line += m_scripts[m_currentscript].nodes[i].NodeValues[0].ComboItems[*(int*)m_scripts[m_currentscript].nodes[i].NodeValues[0].GetValue()];
+            Line += m_scripts[m_currentscript].nodes[i].NodeValues[0].ComboItems[*(int*)m_scripts[m_currentscript].nodes[i].NodeValues[0].Value];
             Line += "] ";
         } else if (IsLineExist(m_scripts[m_currentscript].nodes[i].Type, "MOUSEINPUT")) {
             Line += "[INPUTTYPE=";
-            Line += RemoveSpaceAndUpperCase(m_scripts[m_currentscript].nodes[i].NodeValues[1].ComboItems[*(int*)m_scripts[m_currentscript].nodes[i].NodeValues[1].GetValue()]);
+            Line += RemoveSpaceAndUpperCase(m_scripts[m_currentscript].nodes[i].NodeValues[1].ComboItems[*(int*)m_scripts[m_currentscript].nodes[i].NodeValues[1].Value]);
             Line += "] ";
             
             Line += "[KEY=";
-            Line += std::to_string(*(int*)m_scripts[m_currentscript].nodes[i].NodeValues[0].GetValue());
+            Line += std::to_string(*(int*)m_scripts[m_currentscript].nodes[i].NodeValues[0].Value);
             Line += "] ";
         } else if (IsLineExist(m_scripts[m_currentscript].nodes[i].Type, "APPLYFORCE")) {
             Line += "[FORCEX=";
-            Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[0].GetValue());
+            Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[0].Value);
             Line += "] ";
             
             Line += "[FORCEY=";
-            Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[1].GetValue());
+            Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[1].Value);
             Line += "] ";
         } else if (IsLineExist(m_scripts[m_currentscript].nodes[i].Type, "SETVELOCITY")) {
             Line += "[VELOCITYX=";
-            Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[0].GetValue());
+            Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[0].Value);
             Line += "] ";
             
             Line += "[VELOCITYY=";
-            Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[1].GetValue());
+            Line += std::to_string(*(float*)m_scripts[m_currentscript].nodes[i].NodeValues[1].Value);
             Line += "] ";
         }
 
@@ -147,16 +147,16 @@ void Scripting::LoadScript(const std::string& ScriptPath) {
             float x = std::stof(GetLineBetween(Line, "[FORCEX=", "]"));
             float y = std::stof(GetLineBetween(Line, "[FORCEY=", "]"));
             
-            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(x), "X"));
-            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(y), "Y"));
+            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValue::Type::FLOAT, new float(x), "X"));
+            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValue::Type::FLOAT, new float(y), "Y"));
         } else if (node_type == "SETVELOCITY") {
             m_scripts[m_currentscript].nodes.push_back(ScriptingNode(scene_pos, node_type.c_str(), 1, 1, "Set Velocity"));
 
             float x = std::stof(GetLineBetween(Line, "[VELOCITYX=", "]"));
             float y = std::stof(GetLineBetween(Line, "[VELOCITYY=", "]"));
             
-            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(x), "X"));
-            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(y), "Y"));
+            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValue::Type::FLOAT, new float(x), "X"));
+            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValue::Type::FLOAT, new float(y), "Y"));
         }
 
         if (IsLineExist(Line, "CONNECTEDID")) {
@@ -302,13 +302,13 @@ void Scripting::ScriptingSpace() {
         ImGui::Text("%s", m_scripts[m_currentscript].nodes[node_idx].Name);
         for (size_t i = 0; i < m_scripts[m_currentscript].nodes[node_idx].NodeValues.size(); i++) {
             char* valuename = m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ValueName.data();
-            switch (m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Type) {
-            case ScriptingNodeValueType::NULLTYPE:
-            case ScriptingNodeValueType::FLOAT:
-                ImGui::InputFloat(valuename, ((float*)m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].GetValue()));
+            switch (m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ValueType) {
+            case ScriptingNodeValue::Type::NULLTYPE:
+            case ScriptingNodeValue::Type::FLOAT:
+                ImGui::InputFloat(valuename, ((float*)m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value));
                 break;
-            case ScriptingNodeValueType::INT: {
-                int intval = *((int*)m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].GetValue());
+            case ScriptingNodeValue::Type::INT: {
+                int intval = *((int*)m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value);
 
                 if (m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ComboItems.size() != 0) {
                     if (ImGui::BeginCombo(valuename, m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ComboItems[intval].c_str() )) {
@@ -316,7 +316,7 @@ void Scripting::ScriptingSpace() {
                             const bool isSelected = (intval == (int)j);
                             if (ImGui::Selectable(m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ComboItems[j].c_str(), isSelected)) {
                                 intval = j;
-                                m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].SetValue(new int(intval));
+                                m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value = new int(intval);
                                 m_scripts[m_currentscript].Saved = false;
                             }
                             if (isSelected) {
@@ -327,15 +327,15 @@ void Scripting::ScriptingSpace() {
                     }
                 } else {
                     if (ImGui::InputInt(valuename, &intval)) {
-                        m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].SetValue(new int(intval));
+                        m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value = new int(intval);
                         m_scripts[m_currentscript].Saved = false;
                     }
                 }
             }   break;
-            case ScriptingNodeValueType::STRING:
-                std::string msg = (char*)m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].GetValue();
+            case ScriptingNodeValue::Type::STRING:
+                std::string msg = *(std::string*)m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value;
                 if (ImGui::InputText(valuename, &msg)) {
-                    m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].SetValue(msg);
+                    m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value = new std::string(msg);
                     m_scripts[m_currentscript].Saved = false;
                 }
                 break;
@@ -490,8 +490,8 @@ void Scripting::ScriptingSpace() {
         if (ImGui::MenuItem("Mouse Input")) { CreateMouseInputNode(m_scripts[m_currentscript].nodes, scene_pos, 0, 0); }
         if (ImGui::MenuItem("Apply Force")) {
             m_scripts[m_currentscript].nodes.push_back(ScriptingNode(scene_pos, "APPLYFORCE", 1, 1, "Apply Force"));
-            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(0), "X"));
-            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValueType::FLOAT, new float(0), "Y"));
+            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValue::Type::FLOAT, new float(0), "X"));
+            m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValue::Type::FLOAT, new float(0), "Y"));
         }
         ImGui::EndPopup();
     }
