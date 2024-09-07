@@ -38,7 +38,7 @@ bool LoadTextureFromFile(const std::string& FilePath, SDL_Texture** texture_ptr,
     return true;
 }
 
-void Viewport::ViewportSpace(SDL_Renderer* renderer, const std::vector<Node>& nodes) {
+void Viewport::ViewportSpace(SDL_Renderer* renderer, std::vector<Node>& nodes, int& selectednode) {
     ImGuiIO& io = ImGui::GetIO();
 
     if (!ImGui::Begin("Viewport")) {
@@ -60,6 +60,9 @@ void Viewport::ViewportSpace(SDL_Renderer* renderer, const std::vector<Node>& no
     ImVec2 offset;
     offset.x = ImGui::GetCursorScreenPos().x + m_scrolling.x;
     offset.y = ImGui::GetCursorScreenPos().y + m_scrolling.y;
+    ImVec2 DrawListOffset;
+    DrawListOffset.x = offset.x + ImGui::GetCursorScreenPos().x;
+    DrawListOffset.y = offset.y + ImGui::GetCursorScreenPos().y;
 
     if (show_grid) {
         ImU32 GRID_COLOR = IM_COL32(200, 200, 200, 40);
@@ -71,46 +74,90 @@ void Viewport::ViewportSpace(SDL_Renderer* renderer, const std::vector<Node>& no
         for (float y = fmodf(m_scrolling.y, GRID_SZ); y < canvas_sz.y; y += GRID_SZ)
             draw_list->AddLine(ImVec2(win_pos.x, y + win_pos.y), ImVec2(canvas_sz.x + win_pos.x, y + win_pos.y), GRID_COLOR);
     }
+    
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
+        selectednode = -1;
 
     for (size_t i = 0; i < nodes.size(); i++) {
+        ImGui::PushID(i);
         switch (nodes[i].NodeType)
         {
         case Node::Type::SPRITE:
             SDL_Texture* my_tex_id;
             float my_tex_w, my_tex_h;
-            if (LoadTextureFromFile(*(std::string*)nodes[i].NodeValues[0].Value, &my_tex_id, my_tex_w, my_tex_h, renderer)) {
+            if (*(std::string*)nodes[i].NodeValues[0].Value == "None") {
+
+                ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
+                ImGui::BeginGroup();
+                ImGui::InvisibleButton("SPRITE", ImVec2(50, 50), ImGuiButtonFlags_MouseButtonLeft);
+                if (ImGui::IsItemActivated()) {
+                    selectednode = i;
+                    std::cout << i << '\n';
+                }
+                ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
+                ImGui::Text("Sprite");
+                ImGui::EndGroup();
+
+            } else if (LoadTextureFromFile(*(std::string*)nodes[i].NodeValues[0].Value, &my_tex_id, my_tex_w, my_tex_h, renderer)) {
                 static bool use_text_color_for_tint = false;
                 ImVec2 uv_min = ImVec2(0.0f, 0.0f);
                 ImVec2 uv_max = ImVec2(1.0f, 1.0f);
                 ImVec4 tint_col = use_text_color_for_tint ? ImGui::GetStyleColorVec4(ImGuiCol_Text) : ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
                 ImVec4 border_col = ImGui::GetStyleColorVec4(ImGuiCol_Border);
+
+                if (i == selectednode) {
+                    ImVec2 minrec(nodes[i].Position.x + DrawListOffset.x, nodes[i].Position.y + DrawListOffset.y);
+                    draw_list->AddRect(minrec, ImVec2(minrec.x + (my_tex_w * nodes[i].Size.x) + 2.5f, minrec.y + (my_tex_h * nodes[i].Size.y) + 2.5f), IM_COL32(255, 99, 71, 255), 0.0f, ImDrawFlags_None, 5);
+                }
+
                 ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
+                ImGui::BeginGroup();
                 ImGui::Image(my_tex_id, ImVec2(my_tex_w * nodes[i].Size.x, my_tex_h * nodes[i].Size.y), uv_min, uv_max, tint_col, border_col);
+                ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
+                ImGui::InvisibleButton("SPRITE", ImVec2(my_tex_w * nodes[i].Size.x, my_tex_h * nodes[i].Size.y), ImGuiButtonFlags_MouseButtonLeft);
+                if (ImGui::IsItemActivated())
+                    selectednode = i;
+                ImGui::EndGroup();
             }
             break;
         case Node::Type::PHYSICSBODY:
             ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
             ImGui::BeginGroup();
-            ImGui::InvisibleButton("PHYSICSBODY", ImVec2(50, 50));
+            ImGui::InvisibleButton("PHYSICSBODY", ImVec2(50, 50), ImGuiButtonFlags_MouseButtonLeft);
+            if (ImGui::IsItemActivated())
+                selectednode = i;
+            ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
             ImGui::Text("PhysicsBody");
             ImGui::EndGroup();
             break;
         case Node::Type::NODE:
             ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
             ImGui::BeginGroup();
-            ImGui::InvisibleButton("NODE", ImVec2(50, 50));
+            ImGui::InvisibleButton("NODE", ImVec2(50, 50), ImGuiButtonFlags_MouseButtonLeft);
+            if (ImGui::IsItemActivated())
+                selectednode = i;
+            ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
             ImGui::Text("Node");
             ImGui::EndGroup();
             break;
         case Node::Type::CAM:
             ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
             ImGui::BeginGroup();
-            ImGui::InvisibleButton("CAM", ImVec2(50, 50));
+            ImGui::InvisibleButton("CAM", ImVec2(50, 50), ImGuiButtonFlags_MouseButtonLeft);
+            if (ImGui::IsItemActivated())
+                selectednode = i;
+            ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
             ImGui::Text("Cam");
             ImGui::EndGroup();
             break;
         }
+        ImGui::PopID();
     }
+    if (ImGui::IsAnyItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+        nodes[selectednode].Position.x += io.MouseDelta.x;
+        nodes[selectednode].Position.y += io.MouseDelta.y;
+    }
+
     draw_list->ChannelsMerge();
 
 

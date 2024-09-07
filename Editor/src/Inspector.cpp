@@ -63,8 +63,19 @@ void Inspector::InspectorSpace(std::vector<Node>& nodes, int& selectednode, Scri
 
         ImGui::Text("Angle");
         float OldAngle = nodes[selectednode].Angle;
-        if (ImGui::InputFloat("Angle", &nodes[selectednode].Angle) && nodes[selectednode].ChildCount != 0) {
+        if (ImGui::InputFloat(" ", &nodes[selectednode].Angle) && nodes[selectednode].ChildCount != 0) {
             ChangeChildNodesAngle(nodes, selectednode - nodes[selectednode].ChildCount, nodes[selectednode].ChildCount, selectednode, OldAngle);
+        }
+
+        switch (nodes[selectednode].NodeType) {
+        case Node::Type::SPRITE:
+            ImGui::Text("Texture");
+            if (ImGui::Button((*(std::string*)nodes[selectednode].NodeValues[0].Value).c_str())) {
+                delete nodes[selectednode].NodeValues[0].Value;
+                nodes[selectednode].NodeValues[0].Value = nullptr;
+                nodes[selectednode].NodeValues[0].Value = new std::string(CreateFileDialog({ "Image File" }, { "png,jpg,avif,jxl,tif,webp" }));
+            }
+            break;
         }
 
         ImGui::Text("Script");

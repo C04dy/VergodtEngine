@@ -6,6 +6,9 @@
 #include <fstream>
 #include "StringFunctions.h"
 
+// Used this example as a base here since i started using ImGui for the first time and started to learn it from here
+// https://gist.github.com/ocornut/7e9b3ec566a333d725d4
+
 void CreateKeyboardInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int key, int type) {
     Nodes.push_back(Scripting::ScriptingNode(Position, "KEYBOARDINPUT", 0, 1, "Keyboard Input"));
         
@@ -241,8 +244,7 @@ void Scripting::ScriptingSpace() {
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
     // Display grid
-    if (show_grid)
-    {
+    if (show_grid) {
         ImU32 GRID_COLOR = IM_COL32(200, 200, 200, 40);
         float GRID_SZ = 64.0f;
         ImVec2 win_pos = ImGui::GetCursorScreenPos();
@@ -253,10 +255,9 @@ void Scripting::ScriptingSpace() {
             draw_list->AddLine(ImVec2(win_pos.x, y + win_pos.y), ImVec2(canvas_sz.x + win_pos.x, y + win_pos.y), GRID_COLOR);
     }
 
-    // Display links
     if (m_scripts.size() != 0) {
         draw_list->ChannelsSplit(2);
-        draw_list->ChannelsSetCurrent(0); // Background
+        draw_list->ChannelsSetCurrent(0);
         if (m_scripts[m_currentscript].SelectedConnectionNode != -1) {
             if (m_scripts[m_currentscript].NodeInputSelected != -1) {
                 ImVec2 p1;
@@ -505,6 +506,12 @@ void Scripting::ScriptingSpace() {
             ImGui::Separator();
             if (ImGui::MenuItem("Copy", NULL, false, false)) {}
             if (ImGui::MenuItem("Delete")) {
+                for (int i = 0; i < m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].node_selected].NodeValues.size(); i++) {
+                    delete m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].node_selected].NodeValues[i].Value;
+                    m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].node_selected].NodeValues[i].Value = nullptr;
+                    m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].node_selected].NodeValues[i].ComboItems.clear();
+                    m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].node_selected].NodeValues[i].ValueName.clear();
+                }
                 m_scripts[m_currentscript].nodes.erase(m_scripts[m_currentscript].nodes.begin() + m_scripts[m_currentscript].node_selected);
                 for (size_t i = 0; i < m_scripts[m_currentscript].links.size(); i++) {
                     if (m_scripts[m_currentscript].links[i].InputIdx == m_scripts[m_currentscript].node_selected || m_scripts[m_currentscript].links[i].OutputIdx == m_scripts[m_currentscript].node_selected) {

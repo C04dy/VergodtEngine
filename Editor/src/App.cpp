@@ -124,7 +124,11 @@ void App::LoadSceneFile(const std::string& FilePath) {
             m_nodes[m_nodes.size() - 1].NodeType = Node::Type::PHYSICSBODY;
         } else if (type == "SPRITE") {
             m_nodes[m_nodes.size() - 1].NodeType = Node::Type::SPRITE;
-            m_nodes[m_nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string(GetLineBetween(Line, "[ASSET=", "]")), Node::NodeValue::Type::STRING));
+            if (IsLineExist(Line, "[ASSET=")) {
+                m_nodes[m_nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string(GetLineBetween(Line, "[ASSET=", "]")), Node::NodeValue::Type::STRING));
+            } else {
+                m_nodes[m_nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
+            }
         } else if (type == "CAMERA") {
             m_nodes[m_nodes.size() - 1].NodeType = Node::Type::CAM;
         }
@@ -282,7 +286,7 @@ int App::Run() {
 
         m_scripting.ScriptingSpace();
 
-        m_viewport.ViewportSpace(m_renderer, m_nodes);
+        m_viewport.ViewportSpace(m_renderer, m_nodes, SelectedNode);
 
         m_sceneview.SceneViewSpace(m_nodes, SelectedNode);
 

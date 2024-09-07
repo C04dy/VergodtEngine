@@ -14,7 +14,7 @@ public:
     Viewport();
     ~Viewport();
 
-    void ViewportSpace(SDL_Renderer* renderer, const std::vector<Node>& nodes);
+    void ViewportSpace(SDL_Renderer* renderer, std::vector<Node>& nodes, int& selectednode);
 
 private:
     ImVec2 m_scrolling;
