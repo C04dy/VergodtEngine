@@ -45,8 +45,7 @@ void CreatePrintNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Positi
 }
 
 Scripting::Scripting() {
-    //LoadScript("../../Assets/test.verscript");
-    LoadScript("../../Assets/FlappyBird/bird.verscript");
+    
 }
 
 void Scripting::SaveScript(const std::string& ScriptPath) {
@@ -181,7 +180,7 @@ void Scripting::ScriptingSpace() {
     }
 
     ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_S, ImGuiInputFlags_Tooltip);
-        if (ImGui::Button("Save"))
+        if (ImGui::Button("Save") && m_scripts.size() != 0)
             SaveScript(m_scripts[m_currentscript].CurrentScriptPath);
 
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
@@ -201,22 +200,24 @@ void Scripting::ScriptingSpace() {
     }
     ImGui::Separator();
 
-    // Draw a list of nodes on the left side
+        // Draw a list of nodes on the left side
     bool open_context_menu = false;
     int node_hovered_in_list = -1;
     int node_hovered_in_scene = -1;
     ImGui::BeginChild("node_list", ImVec2(100, 0));
     ImGui::Text("Nodes");
     ImGui::Separator();
-    for (size_t node_idx = 0; node_idx < m_scripts[m_currentscript].nodes.size(); node_idx++) {
-        ImGui::PushID(node_idx);
-        if (ImGui::Selectable(m_scripts[m_currentscript].nodes[node_idx].Name, node_idx == m_scripts[m_currentscript].node_selected))
-            m_scripts[m_currentscript].node_selected = node_idx;
-        if (ImGui::IsItemHovered()) {
-            node_hovered_in_list = node_idx;
-            open_context_menu |= ImGui::IsMouseClicked(1);
+    if (m_scripts.size() != 0) {
+        for (size_t node_idx = 0; node_idx < m_scripts[m_currentscript].nodes.size(); node_idx++) {
+            ImGui::PushID(node_idx);
+            if (ImGui::Selectable(m_scripts[m_currentscript].nodes[node_idx].Name, node_idx == m_scripts[m_currentscript].node_selected))
+                m_scripts[m_currentscript].node_selected = node_idx;
+            if (ImGui::IsItemHovered()) {
+                node_hovered_in_list = node_idx;
+                open_context_menu |= ImGui::IsMouseClicked(1);
+            }
+            ImGui::PopID();
         }
-        ImGui::PopID();
     }
     ImGui::EndChild();
 
@@ -227,9 +228,6 @@ void Scripting::ScriptingSpace() {
     const ImVec2 NODE_WINDOW_PADDING(8.0f, 8.0f);
 
     // Create our child canvas
-    ImGui::Text("Hold middle mouse button to scroll (%.2f,%.2f)", scrolling.x, scrolling.y);
-    ImGui::SameLine(ImGui::GetWindowWidth() - 100);
-    ImGui::Checkbox("Show grid", &show_grid);
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1, 1));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(60, 60, 70, 200));
@@ -256,211 +254,216 @@ void Scripting::ScriptingSpace() {
     }
 
     // Display links
-    draw_list->ChannelsSplit(2);
-    draw_list->ChannelsSetCurrent(0); // Background
-    if (m_scripts[m_currentscript].SelectedConnectionNode != -1) {
-        if (m_scripts[m_currentscript].NodeInputSelected != -1) {
-            ImVec2 p1;
-            p1.x = offset.x + m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].SelectedConnectionNode].GetInputSlotPos(m_scripts[m_currentscript].NodeInputSelected).x;
-            p1.y = offset.y + m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].SelectedConnectionNode].GetInputSlotPos(m_scripts[m_currentscript].NodeInputSelected).y;
-            draw_list->AddBezierCubic(p1, ImVec2( p1.x , p1.y), ImVec2(io.MousePos.x, io.MousePos.y), ImVec2(io.MousePos.x, io.MousePos.y), IM_COL32(200, 200, 100, 255), 3.0f);
-        }
-        if (m_scripts[m_currentscript].NodeOutputSelected != -1) {
-            ImVec2 p1;
-            p1.x = offset.x + m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].SelectedConnectionNode].GetOutputSlotPos(m_scripts[m_currentscript].NodeOutputSelected).x;
-            p1.y = offset.y + m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].SelectedConnectionNode].GetOutputSlotPos(m_scripts[m_currentscript].NodeOutputSelected).y;
-            draw_list->AddBezierCubic(p1, ImVec2( p1.x , p1.y), ImVec2(io.MousePos.x, io.MousePos.y), ImVec2(io.MousePos.x, io.MousePos.y), IM_COL32(200, 200, 100, 255), 3.0f);
-        }
-    }
-    for (size_t link_idx = 0; link_idx < m_scripts[m_currentscript].links.size(); link_idx++)
-    {
-        NodeLink* link = &m_scripts[m_currentscript].links[link_idx];
-        ScriptingNode* node_inp = &m_scripts[m_currentscript].nodes[link->InputIdx];
-        ScriptingNode* node_out = &m_scripts[m_currentscript].nodes[link->OutputIdx];
-        ImVec2 p1;
-        p1.x = offset.x + node_inp->GetOutputSlotPos(link->InputSlot).x;
-        p1.y = offset.y + node_inp->GetOutputSlotPos(link->InputSlot).y;
-        ImVec2 p2;
-        p2.x = offset.x + node_out->GetInputSlotPos(link->OutputSlot).x;
-        p2.y = offset.y + node_out->GetInputSlotPos(link->OutputSlot).y;
-        draw_list->AddBezierCubic(p1, ImVec2( p1.x + 50, p1.y), ImVec2(p2.x + -50, p2.y), p2, IM_COL32(200, 200, 100, 255), 3.0f);
-    }
-
-    // Display nodes
-    for (size_t node_idx = 0; node_idx < m_scripts[m_currentscript].nodes.size(); node_idx++)
-    {
-        ImGui::PushID(node_idx);
-        ImVec2 node_rect_min;
-        node_rect_min.x = offset.x + m_scripts[m_currentscript].nodes[node_idx].Pos.x;
-        node_rect_min.y = offset.y + m_scripts[m_currentscript].nodes[node_idx].Pos.y;
-
-        // Display node contents first
-        draw_list->ChannelsSetCurrent(1); // Foreground
-        bool old_any_active = ImGui::IsAnyItemActive();
-        ImGui::SetCursorScreenPos(ImVec2(node_rect_min.x + NODE_WINDOW_PADDING.x, node_rect_min.y + NODE_WINDOW_PADDING.y));
-        ImGui::BeginGroup(); // Lock horizontal position
-        ImGui::Text("%s", m_scripts[m_currentscript].nodes[node_idx].Name);
-        for (size_t i = 0; i < m_scripts[m_currentscript].nodes[node_idx].NodeValues.size(); i++) {
-            char* valuename = m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ValueName.data();
-            switch (m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ValueType) {
-            case ScriptingNodeValue::Type::NULLTYPE:
-            case ScriptingNodeValue::Type::FLOAT:
-                ImGui::InputFloat(valuename, ((float*)m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value));
-                break;
-            case ScriptingNodeValue::Type::INT: {
-                int intval = *((int*)m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value);
-
-                if (m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ComboItems.size() != 0) {
-                    if (ImGui::BeginCombo(valuename, m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ComboItems[intval].c_str() )) {
-                        for (size_t j = 0; j < m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ComboItems.size(); ++j) {
-                            const bool isSelected = (intval == (int)j);
-                            if (ImGui::Selectable(m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ComboItems[j].c_str(), isSelected)) {
-                                intval = j;
-                                m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value = new int(intval);
-                                m_scripts[m_currentscript].Saved = false;
-                            }
-                            if (isSelected) {
-                                ImGui::SetItemDefaultFocus();
-                            }
-                        }
-                        ImGui::EndCombo();
-                    }
-                } else {
-                    if (ImGui::InputInt(valuename, &intval)) {
-                        m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value = new int(intval);
-                        m_scripts[m_currentscript].Saved = false;
-                    }
-                }
-            }   break;
-            case ScriptingNodeValue::Type::STRING:
-                std::string msg = *(std::string*)m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value;
-                if (ImGui::InputText(valuename, &msg)) {
-                    m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value = new std::string(msg);
-                    m_scripts[m_currentscript].Saved = false;
-                }
-                break;
-            }
-        }
-        ImGui::EndGroup();
-
-        // Save the size of what we have emitted and whether any of the widgets are being used
-        bool node_widgets_active = (!old_any_active && ImGui::IsAnyItemActive());
-        m_scripts[m_currentscript].nodes[node_idx].Size.x = ImGui::GetItemRectSize().x + NODE_WINDOW_PADDING.x + NODE_WINDOW_PADDING.x;
-        m_scripts[m_currentscript].nodes[node_idx].Size.y = ImGui::GetItemRectSize().y + NODE_WINDOW_PADDING.y + NODE_WINDOW_PADDING.y;
-        ImVec2 node_rect_max;
-        node_rect_max.x = node_rect_min.x + m_scripts[m_currentscript].nodes[node_idx].Size.x;
-        node_rect_max.y = node_rect_min.y + m_scripts[m_currentscript].nodes[node_idx].Size.y;
-
-        // Display node box
+    if (m_scripts.size() != 0) {
+        draw_list->ChannelsSplit(2);
         draw_list->ChannelsSetCurrent(0); // Background
-        ImGui::SetCursorScreenPos(node_rect_min);
-        ImGui::InvisibleButton("node", m_scripts[m_currentscript].nodes[node_idx].Size);
-        if (ImGui::IsItemHovered()) {
-            node_hovered_in_scene = node_idx;
-            open_context_menu |= ImGui::IsMouseClicked(ImGuiMouseButton_Right);
+        if (m_scripts[m_currentscript].SelectedConnectionNode != -1) {
+            if (m_scripts[m_currentscript].NodeInputSelected != -1) {
+                ImVec2 p1;
+                p1.x = offset.x + m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].SelectedConnectionNode].GetInputSlotPos(m_scripts[m_currentscript].NodeInputSelected).x;
+                p1.y = offset.y + m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].SelectedConnectionNode].GetInputSlotPos(m_scripts[m_currentscript].NodeInputSelected).y;
+                draw_list->AddBezierCubic(p1, ImVec2(p1.x, p1.y), ImVec2(io.MousePos.x, io.MousePos.y), ImVec2(io.MousePos.x, io.MousePos.y), IM_COL32(200, 200, 100, 255), 3.0f);
+            }
+            if (m_scripts[m_currentscript].NodeOutputSelected != -1) {
+                ImVec2 p1;
+                p1.x = offset.x + m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].SelectedConnectionNode].GetOutputSlotPos(m_scripts[m_currentscript].NodeOutputSelected).x;
+                p1.y = offset.y + m_scripts[m_currentscript].nodes[m_scripts[m_currentscript].SelectedConnectionNode].GetOutputSlotPos(m_scripts[m_currentscript].NodeOutputSelected).y;
+                draw_list->AddBezierCubic(p1, ImVec2(p1.x, p1.y), ImVec2(io.MousePos.x, io.MousePos.y), ImVec2(io.MousePos.x, io.MousePos.y), IM_COL32(200, 200, 100, 255), 3.0f);
+            }
         }
-        bool node_moving_active = ImGui::IsItemActive();
-        if (node_widgets_active || node_moving_active)
-            m_scripts[m_currentscript].node_selected = node_idx;
-        if (node_moving_active && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
-            m_scripts[m_currentscript].nodes[node_idx].Pos.x = m_scripts[m_currentscript].nodes[node_idx].Pos.x + io.MouseDelta.x;
-            m_scripts[m_currentscript].nodes[node_idx].Pos.y = m_scripts[m_currentscript].nodes[node_idx].Pos.y + io.MouseDelta.y;
-            m_scripts[m_currentscript].Saved = false;
+        for (size_t link_idx = 0; link_idx < m_scripts[m_currentscript].links.size(); link_idx++)
+        {
+            NodeLink* link = &m_scripts[m_currentscript].links[link_idx];
+            ScriptingNode* node_inp = &m_scripts[m_currentscript].nodes[link->InputIdx];
+            ScriptingNode* node_out = &m_scripts[m_currentscript].nodes[link->OutputIdx];
+            ImVec2 p1;
+            p1.x = offset.x + node_inp->GetOutputSlotPos(link->InputSlot).x;
+            p1.y = offset.y + node_inp->GetOutputSlotPos(link->InputSlot).y;
+            ImVec2 p2;
+            p2.x = offset.x + node_out->GetInputSlotPos(link->OutputSlot).x;
+            p2.y = offset.y + node_out->GetInputSlotPos(link->OutputSlot).y;
+            draw_list->AddBezierCubic(p1, ImVec2(p1.x + 50, p1.y), ImVec2(p2.x + -50, p2.y), p2, IM_COL32(200, 200, 100, 255), 3.0f);
         }
 
-        ImU32 node_bg_color = (node_hovered_in_list == node_idx || node_hovered_in_scene == node_idx || (node_hovered_in_list == -1 && m_scripts[m_currentscript].node_selected == node_idx)) ? IM_COL32(75, 75, 75, 255) : IM_COL32(60, 60, 60, 255);
-        draw_list->AddRectFilled(node_rect_min, node_rect_max, node_bg_color, 4.0f);
-        draw_list->AddRect(node_rect_min, node_rect_max, IM_COL32(100, 100, 100, 255), 4.0f);
-        
-        for (int slot_idx = 0; slot_idx < m_scripts[m_currentscript].nodes[node_idx].InputsCount; slot_idx++) {
-            ImGui::SetCursorScreenPos(ImVec2(offset.x + m_scripts[m_currentscript].nodes[node_idx].GetInputSlotPos(slot_idx).x - NODE_SLOT_RADIUS, offset.y + m_scripts[m_currentscript].nodes[node_idx].GetInputSlotPos(slot_idx).y - NODE_SLOT_RADIUS));
-            ImGui::InvisibleButton("inputs", ImVec2(NODE_SLOT_RADIUS * 2, NODE_SLOT_RADIUS * 2));
+
+        // Display nodes
+        for (size_t node_idx = 0; node_idx < m_scripts[m_currentscript].nodes.size(); node_idx++)
+        {
+            ImGui::PushID(node_idx);
+            ImVec2 node_rect_min;
+            node_rect_min.x = offset.x + m_scripts[m_currentscript].nodes[node_idx].Pos.x;
+            node_rect_min.y = offset.y + m_scripts[m_currentscript].nodes[node_idx].Pos.y;
+
+            // Display node contents first
+            draw_list->ChannelsSetCurrent(1); // Foreground
+            bool old_any_active = ImGui::IsAnyItemActive();
+            ImGui::SetCursorScreenPos(ImVec2(node_rect_min.x + NODE_WINDOW_PADDING.x, node_rect_min.y + NODE_WINDOW_PADDING.y));
+            ImGui::BeginGroup(); // Lock horizontal position
+            ImGui::Text("%s", m_scripts[m_currentscript].nodes[node_idx].Name);
+            for (size_t i = 0; i < m_scripts[m_currentscript].nodes[node_idx].NodeValues.size(); i++) {
+                char* valuename = m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ValueName.data();
+                switch (m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ValueType) {
+                case ScriptingNodeValue::Type::NULLTYPE:
+                case ScriptingNodeValue::Type::FLOAT:
+                    ImGui::InputFloat(valuename, ((float*)m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value));
+                    break;
+                case ScriptingNodeValue::Type::INT: {
+                    int intval = *((int*)m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value);
+
+                    if (m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ComboItems.size() != 0) {
+                        if (ImGui::BeginCombo(valuename, m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ComboItems[intval].c_str())) {
+                            for (size_t j = 0; j < m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ComboItems.size(); ++j) {
+                                const bool isSelected = (intval == (int)j);
+                                if (ImGui::Selectable(m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].ComboItems[j].c_str(), isSelected)) {
+                                    intval = j;
+                                    m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value = new int(intval);
+                                    m_scripts[m_currentscript].Saved = false;
+                                }
+                                if (isSelected) {
+                                    ImGui::SetItemDefaultFocus();
+                                }
+                            }
+                            ImGui::EndCombo();
+                        }
+                    }
+                    else {
+                        if (ImGui::InputInt(valuename, &intval)) {
+                            m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value = new int(intval);
+                            m_scripts[m_currentscript].Saved = false;
+                        }
+                    }
+                }   break;
+                case ScriptingNodeValue::Type::STRING:
+                    std::string msg = *(std::string*)m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value;
+                    if (ImGui::InputText(valuename, &msg)) {
+                        m_scripts[m_currentscript].nodes[node_idx].NodeValues[i].Value = new std::string(msg);
+                        m_scripts[m_currentscript].Saved = false;
+                    }
+                    break;
+                }
+            }
+            ImGui::EndGroup();
+
+            // Save the size of what we have emitted and whether any of the widgets are being used
+            bool node_widgets_active = (!old_any_active && ImGui::IsAnyItemActive());
+            m_scripts[m_currentscript].nodes[node_idx].Size.x = ImGui::GetItemRectSize().x + NODE_WINDOW_PADDING.x + NODE_WINDOW_PADDING.x;
+            m_scripts[m_currentscript].nodes[node_idx].Size.y = ImGui::GetItemRectSize().y + NODE_WINDOW_PADDING.y + NODE_WINDOW_PADDING.y;
+            ImVec2 node_rect_max;
+            node_rect_max.x = node_rect_min.x + m_scripts[m_currentscript].nodes[node_idx].Size.x;
+            node_rect_max.y = node_rect_min.y + m_scripts[m_currentscript].nodes[node_idx].Size.y;
+
+            // Display node box
+            draw_list->ChannelsSetCurrent(0); // Background
+            ImGui::SetCursorScreenPos(node_rect_min);
+            ImGui::InvisibleButton("node", m_scripts[m_currentscript].nodes[node_idx].Size);
             if (ImGui::IsItemHovered()) {
-                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-                    if (m_scripts[m_currentscript].NodeOutputSelected != -1) {
-                        if (node_idx < m_scripts[m_currentscript].SelectedConnectionNode) {
-                            auto from = m_scripts[m_currentscript].nodes.begin() + node_idx;
-                            auto to = m_scripts[m_currentscript].nodes.begin() + m_scripts[m_currentscript].SelectedConnectionNode;
+                node_hovered_in_scene = node_idx;
+                open_context_menu |= ImGui::IsMouseClicked(ImGuiMouseButton_Right);
+            }
+            bool node_moving_active = ImGui::IsItemActive();
+            if (node_widgets_active || node_moving_active)
+                m_scripts[m_currentscript].node_selected = node_idx;
+            if (node_moving_active && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+                m_scripts[m_currentscript].nodes[node_idx].Pos.x = m_scripts[m_currentscript].nodes[node_idx].Pos.x + io.MouseDelta.x;
+                m_scripts[m_currentscript].nodes[node_idx].Pos.y = m_scripts[m_currentscript].nodes[node_idx].Pos.y + io.MouseDelta.y;
+                m_scripts[m_currentscript].Saved = false;
+            }
 
-                            std::rotate(from, from + 1, to + 1);
+            ImU32 node_bg_color = (node_hovered_in_list == node_idx || node_hovered_in_scene == node_idx || (node_hovered_in_list == -1 && m_scripts[m_currentscript].node_selected == node_idx)) ? IM_COL32(75, 75, 75, 255) : IM_COL32(60, 60, 60, 255);
+            draw_list->AddRectFilled(node_rect_min, node_rect_max, node_bg_color, 4.0f);
+            draw_list->AddRect(node_rect_min, node_rect_max, IM_COL32(100, 100, 100, 255), 4.0f);
 
-                            m_scripts[m_currentscript].links.push_back(NodeLink(m_scripts[m_currentscript].SelectedConnectionNode - 1, m_scripts[m_currentscript].NodeOutputSelected, m_scripts[m_currentscript].SelectedConnectionNode, slot_idx));
-                            
-                            for (size_t i = node_idx; i < m_scripts[m_currentscript].links.size(); i++) {
-                                m_scripts[m_currentscript].links[i].InputIdx = m_scripts[m_currentscript].links[i].InputIdx - 1;
-                                m_scripts[m_currentscript].links[i].OutputIdx = m_scripts[m_currentscript].links[i].OutputIdx - 1;
+            for (int slot_idx = 0; slot_idx < m_scripts[m_currentscript].nodes[node_idx].InputsCount; slot_idx++) {
+                ImGui::SetCursorScreenPos(ImVec2(offset.x + m_scripts[m_currentscript].nodes[node_idx].GetInputSlotPos(slot_idx).x - NODE_SLOT_RADIUS, offset.y + m_scripts[m_currentscript].nodes[node_idx].GetInputSlotPos(slot_idx).y - NODE_SLOT_RADIUS));
+                ImGui::InvisibleButton("inputs", ImVec2(NODE_SLOT_RADIUS * 2, NODE_SLOT_RADIUS * 2));
+                if (ImGui::IsItemHovered()) {
+                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                        if (m_scripts[m_currentscript].NodeOutputSelected != -1) {
+                            if (node_idx < m_scripts[m_currentscript].SelectedConnectionNode) {
+                                auto from = m_scripts[m_currentscript].nodes.begin() + node_idx;
+                                auto to = m_scripts[m_currentscript].nodes.begin() + m_scripts[m_currentscript].SelectedConnectionNode;
+
+                                std::rotate(from, from + 1, to + 1);
+
+                                m_scripts[m_currentscript].links.push_back(NodeLink(m_scripts[m_currentscript].SelectedConnectionNode - 1, m_scripts[m_currentscript].NodeOutputSelected, m_scripts[m_currentscript].SelectedConnectionNode, slot_idx));
+
+                                for (size_t i = node_idx; i < m_scripts[m_currentscript].links.size(); i++) {
+                                    m_scripts[m_currentscript].links[i].InputIdx = m_scripts[m_currentscript].links[i].InputIdx - 1;
+                                    m_scripts[m_currentscript].links[i].OutputIdx = m_scripts[m_currentscript].links[i].OutputIdx - 1;
+                                }
+
+                                m_scripts[m_currentscript].NodeOutputSelected = -1;
+                                m_scripts[m_currentscript].NodeInputSelected = -1;
+                                m_scripts[m_currentscript].SelectedConnectionNode = -1;
+                                m_scripts[m_currentscript].Saved = false;
+                                break;
                             }
 
+                            m_scripts[m_currentscript].links.push_back(NodeLink(m_scripts[m_currentscript].SelectedConnectionNode, m_scripts[m_currentscript].NodeOutputSelected, node_idx, slot_idx));
                             m_scripts[m_currentscript].NodeOutputSelected = -1;
                             m_scripts[m_currentscript].NodeInputSelected = -1;
                             m_scripts[m_currentscript].SelectedConnectionNode = -1;
                             m_scripts[m_currentscript].Saved = false;
-                            break;
                         }
-
-                        m_scripts[m_currentscript].links.push_back(NodeLink(m_scripts[m_currentscript].SelectedConnectionNode, m_scripts[m_currentscript].NodeOutputSelected, node_idx, slot_idx));
-                        m_scripts[m_currentscript].NodeOutputSelected = -1;
-                        m_scripts[m_currentscript].NodeInputSelected = -1;
-                        m_scripts[m_currentscript].SelectedConnectionNode = -1;
-                        m_scripts[m_currentscript].Saved = false;
-                    } else {
-                        m_scripts[m_currentscript].NodeInputSelected = slot_idx;
-                        m_scripts[m_currentscript].SelectedConnectionNode = node_idx;
-                        m_scripts[m_currentscript].Saved = false;
+                        else {
+                            m_scripts[m_currentscript].NodeInputSelected = slot_idx;
+                            m_scripts[m_currentscript].SelectedConnectionNode = node_idx;
+                            m_scripts[m_currentscript].Saved = false;
+                        }
                     }
                 }
+                draw_list->AddCircleFilled(ImVec2(offset.x + m_scripts[m_currentscript].nodes[node_idx].GetInputSlotPos(slot_idx).x, offset.y + m_scripts[m_currentscript].nodes[node_idx].GetInputSlotPos(slot_idx).y), NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
             }
-            draw_list->AddCircleFilled(ImVec2(offset.x + m_scripts[m_currentscript].nodes[node_idx].GetInputSlotPos(slot_idx).x, offset.y + m_scripts[m_currentscript].nodes[node_idx].GetInputSlotPos(slot_idx).y), NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
-        }
-        for (int slot_idx = 0; slot_idx < m_scripts[m_currentscript].nodes[node_idx].OutputsCount; slot_idx++) {
-            ImGui::SetCursorScreenPos(ImVec2(offset.x + m_scripts[m_currentscript].nodes[node_idx].GetOutputSlotPos(slot_idx).x - NODE_SLOT_RADIUS, offset.y + m_scripts[m_currentscript].nodes[node_idx].GetOutputSlotPos(slot_idx).y - NODE_SLOT_RADIUS));
-            ImGui::InvisibleButton("output", ImVec2(NODE_SLOT_RADIUS * 2, NODE_SLOT_RADIUS * 2));
-            if (ImGui::IsItemHovered()) {
-                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-                    if (m_scripts[m_currentscript].NodeInputSelected != -1) {
-                        if (node_idx > m_scripts[m_currentscript].SelectedConnectionNode) {
-                            auto from = m_scripts[m_currentscript].nodes.begin() + m_scripts[m_currentscript].SelectedConnectionNode;
-                            auto to = m_scripts[m_currentscript].nodes.begin() + node_idx;
-                            std::rotate(from, from + 1, to + 1);
-                            m_scripts[m_currentscript].links.push_back(NodeLink(node_idx - 1, slot_idx, node_idx, m_scripts[m_currentscript].NodeInputSelected));
-                            for (size_t i = m_scripts[m_currentscript].SelectedConnectionNode; i < m_scripts[m_currentscript].links.size(); i++) {
-                                m_scripts[m_currentscript].links[i].InputIdx = m_scripts[m_currentscript].links[i].InputIdx - 1;
-                                m_scripts[m_currentscript].links[i].OutputIdx = m_scripts[m_currentscript].links[i].OutputIdx - 1;
+            for (int slot_idx = 0; slot_idx < m_scripts[m_currentscript].nodes[node_idx].OutputsCount; slot_idx++) {
+                ImGui::SetCursorScreenPos(ImVec2(offset.x + m_scripts[m_currentscript].nodes[node_idx].GetOutputSlotPos(slot_idx).x - NODE_SLOT_RADIUS, offset.y + m_scripts[m_currentscript].nodes[node_idx].GetOutputSlotPos(slot_idx).y - NODE_SLOT_RADIUS));
+                ImGui::InvisibleButton("output", ImVec2(NODE_SLOT_RADIUS * 2, NODE_SLOT_RADIUS * 2));
+                if (ImGui::IsItemHovered()) {
+                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                        if (m_scripts[m_currentscript].NodeInputSelected != -1) {
+                            if (node_idx > m_scripts[m_currentscript].SelectedConnectionNode) {
+                                auto from = m_scripts[m_currentscript].nodes.begin() + m_scripts[m_currentscript].SelectedConnectionNode;
+                                auto to = m_scripts[m_currentscript].nodes.begin() + node_idx;
+                                std::rotate(from, from + 1, to + 1);
+                                m_scripts[m_currentscript].links.push_back(NodeLink(node_idx - 1, slot_idx, node_idx, m_scripts[m_currentscript].NodeInputSelected));
+                                for (size_t i = m_scripts[m_currentscript].SelectedConnectionNode; i < m_scripts[m_currentscript].links.size(); i++) {
+                                    m_scripts[m_currentscript].links[i].InputIdx = m_scripts[m_currentscript].links[i].InputIdx - 1;
+                                    m_scripts[m_currentscript].links[i].OutputIdx = m_scripts[m_currentscript].links[i].OutputIdx - 1;
+                                }
+                                m_scripts[m_currentscript].NodeOutputSelected = -1;
+                                m_scripts[m_currentscript].NodeInputSelected = -1;
+                                m_scripts[m_currentscript].SelectedConnectionNode = -1;
+                                m_scripts[m_currentscript].Saved = false;
+                                break;
                             }
+                            m_scripts[m_currentscript].links.push_back(NodeLink(node_idx, slot_idx, m_scripts[m_currentscript].SelectedConnectionNode, m_scripts[m_currentscript].NodeInputSelected));
                             m_scripts[m_currentscript].NodeOutputSelected = -1;
                             m_scripts[m_currentscript].NodeInputSelected = -1;
                             m_scripts[m_currentscript].SelectedConnectionNode = -1;
                             m_scripts[m_currentscript].Saved = false;
-                            break;
                         }
-                        m_scripts[m_currentscript].links.push_back(NodeLink(node_idx, slot_idx, m_scripts[m_currentscript].SelectedConnectionNode, m_scripts[m_currentscript].NodeInputSelected));
-                        m_scripts[m_currentscript].NodeOutputSelected = -1;
-                        m_scripts[m_currentscript].NodeInputSelected = -1;
-                        m_scripts[m_currentscript].SelectedConnectionNode = -1;
-                        m_scripts[m_currentscript].Saved = false;
-                    } else {
-                        m_scripts[m_currentscript].NodeOutputSelected = slot_idx;
-                        m_scripts[m_currentscript].SelectedConnectionNode = node_idx;
-                        m_scripts[m_currentscript].Saved = false;
+                        else {
+                            m_scripts[m_currentscript].NodeOutputSelected = slot_idx;
+                            m_scripts[m_currentscript].SelectedConnectionNode = node_idx;
+                            m_scripts[m_currentscript].Saved = false;
+                        }
                     }
                 }
-            }
 
-            draw_list->AddCircleFilled(ImVec2(offset.x + m_scripts[m_currentscript].nodes[node_idx].GetOutputSlotPos(slot_idx).x, offset.y + m_scripts[m_currentscript].nodes[node_idx].GetOutputSlotPos(slot_idx).y), NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
+                draw_list->AddCircleFilled(ImVec2(offset.x + m_scripts[m_currentscript].nodes[node_idx].GetOutputSlotPos(slot_idx).x, offset.y + m_scripts[m_currentscript].nodes[node_idx].GetOutputSlotPos(slot_idx).y), NODE_SLOT_RADIUS, IM_COL32(150, 150, 150, 150));
+            }
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered()) {
+                m_scripts[m_currentscript].NodeInputSelected = -1;
+                m_scripts[m_currentscript].NodeOutputSelected = -1;
+                m_scripts[m_currentscript].SelectedConnectionNode = -1;
+            }
+            ImGui::PopID();
         }
-        if(ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered()) {
-            m_scripts[m_currentscript].NodeInputSelected = -1;
-            m_scripts[m_currentscript].NodeOutputSelected = -1;
-            m_scripts[m_currentscript].SelectedConnectionNode = -1;
-        }
-        ImGui::PopID();
+        draw_list->ChannelsMerge();
     }
-    draw_list->ChannelsMerge();
 
     // Open context menu
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && !ImGui::IsAnyItemHovered())
-        if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup))
-        {
+        if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup) && m_scripts.size() != 0) {
             m_scripts[m_currentscript].node_selected = node_hovered_in_list = node_hovered_in_scene = -1;
             open_context_menu = true;
         }
@@ -479,7 +482,7 @@ void Scripting::ScriptingSpace() {
     // Draw context menu
     bool OpenNodeMenu = false;
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
-    if (ImGui::BeginPopup("Node Menu")) {
+    if (ImGui::BeginPopup("Node Menu") && m_scripts.size() != 0) {
         ImVec2 scene_pos;
         scene_pos.x = ImGui::GetMousePosOnOpeningCurrentPopup().x - offset.x;
         scene_pos.y = ImGui::GetMousePosOnOpeningCurrentPopup().y - offset.y;

@@ -10,9 +10,21 @@
 #endif
 #include <fstream>
 #include "StringFunctions.h"
+#include <functional>
+#include <nfd.h>
 
 App::~App() {
+    NFD_Quit();
+    
+    ImGui_ImplSDLRenderer3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
 
+    io = nullptr;
+
+    SDL_DestroyRenderer(m_renderer);
+    SDL_DestroyWindow(m_window);
+    SDL_Quit();
 }
 
 void DockSpace() {
@@ -124,9 +136,15 @@ void App::LoadSceneFile(const std::string& FilePath) {
         if (IsLineExist(Line, "[SIZE(")) {
             std::string size = GetLineBetween(Line, "[SIZE(", ")]");
             m_nodes[m_nodes.size() - 1].Size = ImVec2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
-        }
+        } else {
+            m_nodes[m_nodes.size() - 1].Size = ImVec2(1, 1);
+        } 
         if (IsLineExist(Line, "[ANGLE(")) {
             m_nodes[m_nodes.size() - 1].Angle = std::stof(GetLineBetween(Line, "[ANGLE(", ")]"));
+        }
+
+        if (IsLineExist(Line, "[SCRIPT=")) {
+            m_nodes[m_nodes.size() - 1].Script = GetLineBetween(Line, "[SCRIPT=", "]");
         }
 
         if (IsLineExist(Line, "[CHILDINDEX=")) {
@@ -211,6 +229,8 @@ void App::Init() {
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != nullptr);
 
+    NFD_Init();
+    
     // Load Scene
 
     LoadSceneFile("../../Assets/FlappyBird/FlappyBird.vscene");
@@ -256,7 +276,7 @@ int App::Run() {
         ImGui::NewFrame();
 
         // Do stuff here
-        bool sdw = true; ImGui::ShowDemoWindow(&sdw);
+        //bool sdw = true; ImGui::ShowDemoWindow(&sdw);
 
         DockSpace();
 
@@ -266,7 +286,7 @@ int App::Run() {
 
         m_sceneview.SceneViewSpace(m_nodes, SelectedNode);
 
-        m_inspector.InspectorSpace(m_nodes, SelectedNode);
+        m_inspector.InspectorSpace(m_nodes, SelectedNode, &m_scripting);
 
         // Rendering
         ImGui::Render();
@@ -281,15 +301,5 @@ int App::Run() {
 #endif
 
     // Cleanup
-    ImGui_ImplSDLRenderer3_Shutdown();
-    ImGui_ImplSDL3_Shutdown();
-    ImGui::DestroyContext();
-
-    io = nullptr;
-
-    SDL_DestroyRenderer(m_renderer);
-    SDL_DestroyWindow(m_window);
-    SDL_Quit();
-
     return 0;
 }

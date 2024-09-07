@@ -13,9 +13,7 @@ SceneView::~SceneView() {
 void SceneView::SceneViewSpace(const std::vector<Node>& nodes, int& selectednode) {
     ImGui::Begin("Scene");
 
-
     CreateTreeNodes(nodes, selectednode);
-
     
     ImGui::End();
 }
@@ -33,6 +31,9 @@ void SceneView::CreateTreeNodes(const std::vector<Node>& nodes, int& selectednod
         loopstart = startpoint;
 
     for (size_t i = loopstart; i < (size_t)(loopstart + looplength); i++) {
+        ImGui::PushID(i + 1);
+        ImGui::BeginGroup();
+
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
         const bool is_selected = (selection_mask & (1 << i)) != 0;
         if (is_selected)
@@ -48,16 +49,21 @@ void SceneView::CreateTreeNodes(const std::vector<Node>& nodes, int& selectednod
         
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             selectednode = i;
-        if (ImGui::BeginDragDropSource()) {
-            ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
-            ImGui::Text("This is a drag and drop source");
-            ImGui::EndDragDropSource();
-        }
+
+        // I don't know why but this is crashes the editor i will fix it later
+        //if (ImGui::BeginDragDropSource()) {
+        //    ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
+        //    ImGui::Text("This is a drag and drop source");
+        //    ImGui::EndDragDropSource();
+        //}
+        
         if (node_open && nodes[i].ChildCount != 0) {
             CreateTreeNodes(nodes, selectednode, i - nodes[i].ChildCount, nodes[i].ChildCount, true);
             ImGui::TreePop();
         }
-        
+
+        ImGui::PopID();
+        ImGui::EndGroup();
     }
     if (selectednode != -1) {
         if (ImGui::GetIO().KeyCtrl)

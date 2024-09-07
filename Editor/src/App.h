@@ -41,11 +41,11 @@ public:
 
     Type NodeType = Type::NODE;
 
-    std::string Name = "Node", Script = "Null";
+    std::string Name = "Node", Script = "None";
 
     ImVec2 Position, Size;
 
-    float Angle;
+    float Angle = 0;
 
     std::vector<NodeValue> NodeValues;
 

@@ -85,7 +85,7 @@ void Viewport::ViewportSpace(SDL_Renderer* renderer, const std::vector<Node>& no
                 ImVec4 tint_col = use_text_color_for_tint ? ImGui::GetStyleColorVec4(ImGuiCol_Text) : ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
                 ImVec4 border_col = ImGui::GetStyleColorVec4(ImGuiCol_Border);
                 ImGui::SetCursorPos(ImVec2(nodes[i].Position.x + offset.x, nodes[i].Position.y + offset.y));
-                ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+                ImGui::Image(my_tex_id, ImVec2(my_tex_w * nodes[i].Size.x, my_tex_h * nodes[i].Size.y), uv_min, uv_max, tint_col, border_col);
             }
             break;
         case Node::Type::PHYSICSBODY:

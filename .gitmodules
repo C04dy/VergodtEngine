@@ -11,3 +11,6 @@
 [submodule "vendor/SDL"]
 	path = vendor/SDL
 	url = https://github.com/libsdl-org/SDL.git
+[submodule "vendor/nativefiledialog-extended"]
+	path = vendor/nativefiledialog-extended
+	url = https://github.com/btzy/nativefiledialog-extended.git

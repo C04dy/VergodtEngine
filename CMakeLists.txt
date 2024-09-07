@@ -23,7 +23,6 @@ set(DISABLE_DYNAMIC ON CACHE BOOL "" FORCE)
 add_subdirectory(vendor/box2d)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendor/SDL_image)
-
 add_subdirectory(Editor)
 
 file(GLOB SRCS src/*.cpp src/Engine/*.cpp src/Objects/*.cpp src/Math/*.cpp src/Util/*.cpp src/Engine/Scripting/VisualScripting/*.cpp)
