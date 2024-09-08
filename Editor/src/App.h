@@ -53,6 +53,7 @@ public:
 
     int ChildCount = 0;
 };
+Node CreateNode(ImVec2 Pos, Node::Type NodeType = Node::Type::NODE);
 
 class App
 {

@@ -233,6 +233,8 @@ void App::Init() {
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != nullptr);
 
+    io->Fonts->AddFontFromFileTTF("../../Assets/JetBrainsMono-Medium.ttf", 15.0f);
+
     NFD_Init();
     
     // Load Scene
@@ -280,7 +282,7 @@ int App::Run() {
         ImGui::NewFrame();
 
         // Do stuff here
-        //bool sdw = true; ImGui::ShowDemoWindow(&sdw);
+        bool sdw = true; ImGui::ShowDemoWindow(&sdw);
 
         DockSpace();
 
@@ -306,4 +308,20 @@ int App::Run() {
 
     // Cleanup
     return 0;
+}
+
+
+Node CreateNode(ImVec2 Pos, Node::Type NodeType) {
+    Node n;
+    n.Position = Pos;
+    n.NodeType = NodeType;
+
+    switch (NodeType)
+    {
+    case Node::Type::SPRITE:
+        n.NodeValues.push_back(Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
+        break;
+    }
+    
+    return n;
 }
