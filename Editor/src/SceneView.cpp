@@ -1,5 +1,6 @@
 #include "SceneView.h"
 #include "imgui.h"
+//#include <cstdint>
 #include "App.h"
 
 SceneView::SceneView() {
@@ -47,7 +48,7 @@ void SceneView::CreateTreeNodes(const std::vector<Node>& nodes, int& selectednod
         bool node_open = false;
 
         if (!nodes[i].IsChild || isnodeschild)
-            node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, nodes[i].Name.c_str());
+            node_open = ImGui::TreeNodeEx((void*)(int*)&i, node_flags, nodes[i].Name.c_str());
         
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             selectednode = i;

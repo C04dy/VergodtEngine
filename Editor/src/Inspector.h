@@ -4,7 +4,7 @@
 #pragma once
 
 #include <vector>
-#include "ImGui.h"
+#include "imgui.h"
 #include "imgui_stdlib.h"
 
 struct Node;

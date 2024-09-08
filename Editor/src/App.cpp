@@ -234,6 +234,7 @@ void App::Init() {
     //IM_ASSERT(font != nullptr);
 
     io->Fonts->AddFontFromFileTTF("../../Assets/JetBrainsMono-Medium.ttf", 15.0f);
+    io->IniFilename = "../../Assets/VergodtEngine.ini";
 
     NFD_Init();
     
