@@ -8,7 +8,7 @@
 class Sprite : public Node
 {
 public:
-	void InitSprite(const std::string& FilePath, Camera* Cam, SDL_Renderer* Renderer);
+	void InitSprite(const std::string& FilePath, Camera* Camera, SDL_Renderer* Renderer);
 
 	void DeleteTexture();
 
@@ -16,15 +16,15 @@ public:
 
 	void DrawImage(); 
 
-	void SetCam(Camera* Cam);
+	void SetCam(Camera* Camera);
 
 	void ChangeTexture(const std::string& FilePath);
 private:
-	SDL_Texture* m_texture = nullptr;
+	SDL_Texture* m_Texture = nullptr;
 	
-	SDL_Renderer* m_renderer = nullptr;
+	SDL_Renderer* m_Renderer = nullptr;
 	
-	Camera* m_cam = nullptr;
+	Camera* m_Camera = nullptr;
 	
-	float m_w, m_h;
+	float m_Width, m_Heigth;
 };

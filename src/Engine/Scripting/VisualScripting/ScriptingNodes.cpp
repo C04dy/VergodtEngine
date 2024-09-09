@@ -1,90 +1,101 @@
 #include "ScriptingNodes.h"
 #include "Objects/PhysicsBody.h"
 
-SDL_Keycode GetKeyCode(const std::string& Type){
-    if(Type == "A")
+SDL_Keycode GetKeyCode(const std::string& Type)
+{
+    if (Type == "A")
         return SDLK_A;
+    return SDLK_UNKNOWN;
 }
 
-KeyboardInputNode::KeyboardInputType GetKeyboardInputType(const std::string& Type){
-    if(Type == "ISKEYJUSTPRESSED")
-        return KeyboardInputNode::KeyboardInputType::IsKeyJustPressed;
-    if(Type == "ISKEYJUSTRELEASED")
-        return KeyboardInputNode::KeyboardInputType::IsKeyJustReleased;
-    if(Type == "ISKEYPRESSED")
-        return KeyboardInputNode::KeyboardInputType::IsKeyPressed;
-    if(Type == "ISKEYNOTPRESSED")
-        return KeyboardInputNode::KeyboardInputType::IsKeyNotPressed;
+KeyboardInputNode::Type GetKeyboardInputType(const std::string& Type)
+{
+    if (Type == "ISKEYJUSTPRESSED")
+        return KeyboardInputNode::Type::ISKEYJUSTPRESSED;
+    else if(Type == "ISKEYJUSTRELEASED")
+        return KeyboardInputNode::Type::ISKEYJUSTRELEASED;
+    else if(Type == "ISKEYPRESSED")
+        return KeyboardInputNode::Type::ISKEYPRESSED;
+    else if(Type == "ISKEYNOTPRESSED")
+        return KeyboardInputNode::Type::ISKEYNOTPRESSED;
+    return KeyboardInputNode::Type::NONE;
 }
 
-MouseInputNode::MouseInputType GetMouseInputType(const std::string& Type){
-    if(Type == "ISMOUSEKEYJUSTPRESSED")
-        return MouseInputNode::MouseInputType::IsMouseKeyJustPressed;
-    if(Type == "ISMOUSEKEYJUSTRELEASED")
-        return MouseInputNode::MouseInputType::IsMouseKeyJustReleased;
-    if(Type == "ISMOUSEKEYPRESSED")
-        return MouseInputNode::MouseInputType::IsMouseKeyPressed;
-    if(Type == "ISMOUSEKEYNOTPRESSED")
-        return MouseInputNode::MouseInputType::IsMouseKeyNotPressed;
+MouseInputNode::Type GetMouseInputType(const std::string& Type)
+{
+    if (Type == "ISMOUSEKEYJUSTPRESSED")
+        return MouseInputNode::Type::ISMOUSEKEYJUSTPRESSED;
+    else if(Type == "ISMOUSEKEYJUSTRELEASED")
+        return MouseInputNode::Type::ISMOUSEKEYJUSTRELEASED;
+    else if(Type == "ISMOUSEKEYPRESSED")
+        return MouseInputNode::Type::ISMOUSEKEYPRESSED;
+    else if(Type == "ISMOUSEKEYNOTPRESSED")
+        return MouseInputNode::Type::ISMOUSEKEYNOTPRESSED;
+    return MouseInputNode::Type::NONE;
 }
 
 // SCRIPTING NODE
 
-ScriptingNode::~ScriptingNode(){
-    for (int i = 0; i < (int)ConnectedNodes.size(); i++){
-        delete ConnectedNodes[i];
-        ConnectedNodes[i] = nullptr;
+ScriptingNode::~ScriptingNode()
+{
+    ConnectedNodes.clear();
+}
+
+void ScriptingNode::SendSignal()
+{
+    for (ScriptingNode* scripting_node : ConnectedNodes)
+    {
+        scripting_node->ReciveSignal();
     }
 }
 
-void ScriptingNode::SendSignal(){
-    for (int i = 0; i < (int)ConnectedNodes.size(); i++){
-        ConnectedNodes[i]->ReciveSignal();
-    }
-}
-
-void ScriptingNode::ReciveSignal(){
+void ScriptingNode::ReciveSignal()
+{
     NodesFunction();
     SendSignal();
 }
 
 // PRINT NODE
 
-void PrintNode::NodesFunction(){
+void PrintNode::NodesFunction()
+{
     std::cout << Message << '\n';
 }
 
 // KEYBOARD INPUT NODE
 
-KeyboardInputNode::KeyboardInputNode(InputManager* Input, const std::string& KeyCode, const std::string& InputType){
-    m_input = Input;
-    m_input->SetInputNode(this);
-    m_keycode = GetKeyCode(KeyCode);
-    m_inputtype = GetKeyboardInputType(InputType);
+KeyboardInputNode::KeyboardInputNode(InputManager* Input, const std::string& KeyCode, const std::string& InputType)
+{
+    m_Input = Input;
+    m_Input->SetInputNode(this);
+    m_KeyCode = GetKeyCode(KeyCode);
+    m_InputType = GetKeyboardInputType(InputType);
 }
 
-void KeyboardInputNode::SendSignal(){
-    for (int i = 0; i < (int)ConnectedNodes.size(); i++){
-        switch (m_inputtype)
+void KeyboardInputNode::SendSignal()
+{
+    for (ScriptingNode* scripting_node : ConnectedNodes)
+    {
+        switch (m_InputType)
         {
-        case KeyboardInputType::NONE:
+        case Type::NONE:
             std::cout << "ERROR: INVALID KEYBOARDINPUT TYPE" << '\n';
             break;
-        case KeyboardInputType::IsKeyJustPressed:
-            if(m_input->IsKeyJustPressed(m_keycode))
-                ConnectedNodes[i]->ReciveSignal();
+        case Type::ISKEYJUSTPRESSED:
+            if(m_Input->IsKeyJustPressed(m_KeyCode))
+                scripting_node->ReciveSignal();
             break;
-        case KeyboardInputType::IsKeyJustReleased:
-            if(m_input->IsKeyJustReleased(m_keycode))
-                ConnectedNodes[i]->ReciveSignal();
+        case Type::ISKEYJUSTRELEASED:
+            if(m_Input->IsKeyJustReleased(m_KeyCode))
+                scripting_node->ReciveSignal();
             break;
-        case KeyboardInputType::IsKeyPressed:
-            if(m_input->IsKeyPressed(m_keycode))
-                ConnectedNodes[i]->ReciveSignal();
+        case Type::ISKEYPRESSED:
+            if(m_Input->IsKeyPressed(m_KeyCode))
+                scripting_node->ReciveSignal();
             break;
-        case KeyboardInputType::IsKeyNotPressed:
-            if(m_input->IsKeyNotPressed(m_keycode))
-                ConnectedNodes[i]->ReciveSignal();
+        case Type::ISKEYNOTPRESSED:
+            if(m_Input->IsKeyNotPressed(m_KeyCode))
+                scripting_node->ReciveSignal();
             break;
         }
     }
@@ -92,35 +103,38 @@ void KeyboardInputNode::SendSignal(){
 
 // MOUSE INPUT NODE
 
-MouseInputNode::MouseInputNode(InputManager* Input, Uint8 MouseKey, const std::string& InputType){
-    m_input = Input;
-    m_input->SetInputNode(this);
-    m_mousekey = MouseKey;
-    m_inputtype = GetMouseInputType(InputType);
+MouseInputNode::MouseInputNode(InputManager* Input, Uint8 MouseKey, const std::string& InputType)
+{
+    m_Input = Input;
+    m_Input->SetInputNode(this);
+    m_MouseKey = MouseKey;
+    m_InputType = GetMouseInputType(InputType);
 }
 
-void MouseInputNode::SendSignal() {
-    for (int i = 0; i < (int)ConnectedNodes.size(); i++) {
-        switch (m_inputtype)
+void MouseInputNode::SendSignal()
+{
+    for (ScriptingNode* scripting_node : ConnectedNodes)
+    {
+        switch (m_InputType)
         {
-        case MouseInputType::NONE:
+        case Type::NONE:
             std::cout << "ERROR: INVALID MOUSEINPUT TYPE" << '\n';
             break;
-        case MouseInputType::IsMouseKeyJustPressed:
-            if (m_input->IsMouseKeyJustPressed(m_mousekey))
-                ConnectedNodes[i]->ReciveSignal();
+        case Type::ISMOUSEKEYJUSTPRESSED:
+            if (m_Input->IsMouseKeyJustPressed(m_MouseKey))
+                scripting_node->ReciveSignal();
             break;
-        case MouseInputType::IsMouseKeyJustReleased:
-            if(m_input->IsMouseKeyJustReleased(m_mousekey))
-                ConnectedNodes[i]->ReciveSignal();
+        case Type::ISMOUSEKEYJUSTRELEASED:
+            if(m_Input->IsMouseKeyJustReleased(m_MouseKey))
+                scripting_node->ReciveSignal();
             break;
-        case MouseInputType::IsMouseKeyPressed:
-            if(m_input->IsMouseKeyPressed(m_mousekey))
-                ConnectedNodes[i]->ReciveSignal();
+        case Type::ISMOUSEKEYPRESSED:
+            if(m_Input->IsMouseKeyPressed(m_MouseKey))
+                scripting_node->ReciveSignal();
             break;
-        case MouseInputType::IsMouseKeyNotPressed:
-            if(m_input->IsMouseKeyNotPressed(m_mousekey))
-                ConnectedNodes[i]->ReciveSignal();
+        case Type::ISMOUSEKEYNOTPRESSED:
+            if(m_Input->IsMouseKeyNotPressed(m_MouseKey))
+                scripting_node->ReciveSignal();
             break;
         }
     }
@@ -128,97 +142,102 @@ void MouseInputNode::SendSignal() {
 
 // CONDITION NODE
 
-ConditionNode::ConditionNode(bool* Condition){
-    m_condition = Condition;
+ConditionNode::ConditionNode(bool* Condition)
+{
+    m_Condition = Condition;
 }
 
-ConditionNode::~ConditionNode(){
-    for (int i = 0; i < (int)ConnectedNodes.size(); i++)
-    {
-        delete ConnectedNodes[i];
-        ConnectedNodes[i] = nullptr;
-    }
-    for (int i = 0; i < (int)ConnectedNodesToFalse.size(); i++)
-    {
-        delete ConnectedNodesToFalse[i];
-        ConnectedNodesToFalse[i] = nullptr;
-    }
-    for (int i = 0; i < (int)ConnectedNodesToTrue.size(); i++)
-    {
-        delete ConnectedNodesToTrue[i];
-        ConnectedNodesToTrue[i] = nullptr;
-    }
-    m_condition = nullptr;
+ConditionNode::~ConditionNode()
+{
+    ConnectedNodes.clear();
+    ConnectedNodesToFalse.clear();
+    ConnectedNodesToTrue.clear();
+    m_Condition = nullptr;
 }
 
-void ConditionNode::SendSignal(){
-    if(m_condition != nullptr){
-        if(*m_condition == true){
-            for (int i = 0; i < (int)ConnectedNodesToTrue.size(); i++)
+void ConditionNode::SendSignal()
+{
+    if (m_Condition != nullptr)
+    {
+        if (*m_Condition == true)
+        {
+            for (ScriptingNode* scripting_node : ConnectedNodesToTrue)
             {
-                ConnectedNodesToTrue[i]->ReciveSignal();
+                scripting_node->ReciveSignal();
             }
-        }else{
-            for (int i = 0; i < (int)ConnectedNodesToFalse.size(); i++)
+        }
+        else
+        {
+            for (ScriptingNode* scripting_node : ConnectedNodesToFalse)
             {
-                ConnectedNodesToFalse[i]->ReciveSignal();
+                scripting_node->ReciveSignal();
             }
         }
     }
-    for (int i = 0; i < (int)ConnectedNodes.size(); i++)
+    for (ScriptingNode* scripting_node : ConnectedNodes)
     {
-        ConnectedNodes[i]->ReciveSignal();
+        scripting_node->ReciveSignal();
     }
 }
 
 // ADDFORCE NODE 
 
-ApplyForceNode::ApplyForceNode(PhysicsBody* Body, const Vector2& Force) {
-    m_body = Body;
-    m_force = Force;
+ApplyForceNode::ApplyForceNode(PhysicsBody* Body, const Vector2& Force)
+{
+    m_Body = Body;
+    m_Force = Force;
 }
 
-ApplyForceNode::~ApplyForceNode() {
-    m_body = nullptr;
+ApplyForceNode::~ApplyForceNode()
+{
+    m_Body = nullptr;
 }
 
-void ApplyForceNode::NodesFunction() {
-    m_body->GetBody()->ApplyForceToCenter(m_force, true);
+void ApplyForceNode::NodesFunction()
+{
+    m_Body->GetBody()->ApplyForceToCenter(m_Force, true);
 }
 
 // SETFORCE NODE 
 
-SetVelocityNode::SetVelocityNode(PhysicsBody* Body, const Vector2& Velocity) {
-    m_body = Body;
-    m_vel = Velocity;
+SetVelocityNode::SetVelocityNode(PhysicsBody* Body, const Vector2& Velocity)
+{
+    m_Body = Body;
+    m_Velocity = Velocity;
 }
 
-SetVelocityNode::~SetVelocityNode() {
-    m_body = nullptr;
+SetVelocityNode::~SetVelocityNode()
+{
+    m_Body = nullptr;
 }
 
-void SetVelocityNode::NodesFunction() {
-    m_body->GetBody()->SetLinearVelocity(m_vel);
+void SetVelocityNode::NodesFunction()
+{
+    m_Body->GetBody()->SetLinearVelocity(m_Velocity);
 }
 
 // VISUAL SCRIPT
 
-void VisualScript::InitVisualScript(StartNode* StartNode, UpdateNode* UpdateNode){
-    m_startnode = StartNode;
-    m_updatenode = UpdateNode;
+void VisualScript::InitVisualScript(StartNode* StartNode, UpdateNode* UpdateNode)
+{
+    m_StartNode = StartNode;
+    m_UpdateNode = UpdateNode;
 }
 
-VisualScript::~VisualScript(){
-    delete m_startnode;
-    m_startnode = nullptr;
-    delete m_updatenode;
-    m_updatenode = nullptr;
+VisualScript::~VisualScript()
+{
+    delete m_StartNode;
+    m_StartNode = nullptr;
+    delete m_UpdateNode;
+    m_UpdateNode = nullptr;
 }
 
-void VisualScript::StartScript(){
-    m_startnode->ReciveSignal();
+void VisualScript::StartScript()
+{
+    m_StartNode->ReciveSignal();
 }
 
-void VisualScript::UpdateScript(){
-    m_updatenode->ReciveSignal();
+void VisualScript::UpdateScript()
+{
+    m_UpdateNode->ReciveSignal();
 }

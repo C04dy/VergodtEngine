@@ -28,7 +28,7 @@ class UpdateNode : public ScriptingNode { };
 class PrintNode : public ScriptingNode
 {
 public:
-    void NodesFunction() override ;
+    void NodesFunction() override;
 
     std::string Message = "";
 };
@@ -36,34 +36,35 @@ public:
 class KeyboardInputNode : public ScriptingNode
 {
 public:
-    enum class KeyboardInputType{
-        NONE,
-        IsKeyJustPressed,
-        IsKeyJustReleased,
-        IsKeyPressed,
-        IsKeyNotPressed
+    enum class Type
+    {
+        NONE = 0,
+        ISKEYJUSTPRESSED = 1,
+        ISKEYJUSTRELEASED = 2,
+        ISKEYPRESSED = 3,
+        ISKEYNOTPRESSED = 4
     };
 public:
     KeyboardInputNode(InputManager* Input, const std::string& KeyCode, const std::string& InputType);
 
     void SendSignal() override;
 private:
-    SDL_Keycode m_keycode;
+    SDL_Keycode m_KeyCode;
 
-    InputManager* m_input = nullptr;
+    InputManager* m_Input = nullptr;
 
-    KeyboardInputType m_inputtype = KeyboardInputType::NONE;
+    Type m_InputType = Type::NONE;
 };
 
 class MouseInputNode : public ScriptingNode
 {
 public:
-    enum class MouseInputType{
-        NONE,
-        IsMouseKeyJustPressed,
-        IsMouseKeyJustReleased,
-        IsMouseKeyPressed,
-        IsMouseKeyNotPressed
+    enum class Type{
+        NONE = 0,
+        ISMOUSEKEYJUSTPRESSED = 1,
+        ISMOUSEKEYJUSTRELEASED = 2,
+        ISMOUSEKEYPRESSED = 3,
+        ISMOUSEKEYNOTPRESSED = 4
     };
 public:
     MouseInputNode(InputManager* Input, Uint8 MouseKey, const std::string& InputType);
@@ -72,11 +73,11 @@ public:
 
     int X, Y;
 private:
-    Uint8 m_mousekey;
+    Uint8 m_MouseKey;
 
-    InputManager* m_input = nullptr;
+    InputManager* m_Input = nullptr;
 
-    MouseInputType m_inputtype = MouseInputType::NONE;
+    Type m_InputType = Type::NONE;
 };
 
 class ConditionNode : public ScriptingNode
@@ -91,7 +92,7 @@ public:
     std::vector<ScriptingNode*> ConnectedNodesToTrue;
     std::vector<ScriptingNode*> ConnectedNodesToFalse;
 private:
-    bool* m_condition = nullptr;
+    bool* m_Condition = nullptr;
 };
 
 class PhysicsBody;
@@ -105,9 +106,9 @@ public:
 
     void NodesFunction() override;
 private:
-    PhysicsBody* m_body = nullptr;
+    PhysicsBody* m_Body = nullptr;
 
-    Vector2 m_force;
+    Vector2 m_Force;
 };
 
 class SetVelocityNode : public ScriptingNode
@@ -119,9 +120,9 @@ public:
 
     void NodesFunction() override;
 private:
-    PhysicsBody* m_body = nullptr;
+    PhysicsBody* m_Body = nullptr;
 
-    Vector2 m_vel;
+    Vector2 m_Velocity;
 };
 
 class VisualScript
@@ -135,9 +136,9 @@ public:
     
     void UpdateScript();
 private:
-    StartNode* m_startnode = nullptr;
+    StartNode* m_StartNode = nullptr;
 
-    UpdateNode* m_updatenode = nullptr;
+    UpdateNode* m_UpdateNode = nullptr;
 };
 
 #endif

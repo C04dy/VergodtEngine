@@ -10,19 +10,18 @@
 struct Node;
 class Scripting;
 
-class Inspector {
+class Inspector
+{
 public:
     Inspector();
 
-    void InspectorSpace(std::vector<Node>& nodes, int& selectednode, Scripting* ScriptingTab);
+    void InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scripting* ScriptingTab);
 private:
-
-    void ChangeChildNodesPosition(std::vector<Node>& Nodes, int StartPose, int Lentgth, int CurrentNode, const ImVec2& OldPos);
+    void ChangeChildNodesPosition(std::vector<Node>& Nodes, int StartPose, int Lentgth, int CurrentNode, const ImVec2& OldPosition);
 
     void ChangeChildNodesSize(std::vector<Node>& Nodes, int StartPose, int Lentgth, int CurrentNode, const ImVec2& OldSize);
 
     void ChangeChildNodesAngle(std::vector<Node>& Nodes, int StartPose, int Lentgth, int CurrentNode, float OldAngle);
-
 };
 
 #endif

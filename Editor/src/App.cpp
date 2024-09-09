@@ -13,199 +13,148 @@
 #include <functional>
 #include <nfd.h>
 
-App::~App() {
+App::~App()
+{
     NFD_Quit();
     
     ImGui_ImplSDLRenderer3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
 
-    io = nullptr;
+    m_io = nullptr;
 
-    SDL_DestroyRenderer(m_renderer);
-    SDL_DestroyWindow(m_window);
+    SDL_DestroyRenderer(m_Renderer);
+    SDL_DestroyWindow(m_Window);
     SDL_Quit();
 }
 
-void DockSpace() {
-    static bool opt_fullscreen = true;
-    static bool opt_padding = false;
-    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+void App::LoadSceneFile(const std::string& FilePath)
+{
+    std::string line;
+    std::ifstream scene_file(FilePath);
 
-    // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-    // because it would be confusing to have two docking targets within each others.
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-    if (opt_fullscreen)
+    if (scene_file.fail())
     {
-        const ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->WorkPos);
-        ImGui::SetNextWindowSize(viewport->WorkSize);
-        ImGui::SetNextWindowViewport(viewport->ID);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-    }
-    else
-    {
-        dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
-    }
-
-    // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
-    // and handle the pass-thru hole, so we ask Begin() to not render a background.
-    if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-        window_flags |= ImGuiWindowFlags_NoBackground;
-
-    // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-    // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-    // all active windows docked into it will lose their parent and become undocked.
-    // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-    // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-    if (!opt_padding)
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-    ImGui::Begin("DockSpace Demo", nullptr, window_flags);
-    if (!opt_padding)
-        ImGui::PopStyleVar();
-
-    if (opt_fullscreen)
-        ImGui::PopStyleVar(2);
-
-    // Submit the DockSpace
-    ImGuiIO& io = ImGui::GetIO();
-    if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
-        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-    }
-
-    if (ImGui::BeginMenuBar())
-    {
-        if (ImGui::BeginMenu("Options"))
-        {
-            // Disabling fullscreen would allow the window to be moved to the front of other windows,
-            // which we can't undo at the moment without finer window depth/z control.
-            ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
-            ImGui::MenuItem("Padding", NULL, &opt_padding);
-            ImGui::Separator();
-
-            if (ImGui::MenuItem("Flag: NoDockingOverCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingOverCentralNode) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoDockingOverCentralNode; }
-            if (ImGui::MenuItem("Flag: NoDockingSplit",         "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingSplit) != 0))             { dockspace_flags ^= ImGuiDockNodeFlags_NoDockingSplit; }
-            if (ImGui::MenuItem("Flag: NoUndocking",            "", (dockspace_flags & ImGuiDockNodeFlags_NoUndocking) != 0))                { dockspace_flags ^= ImGuiDockNodeFlags_NoUndocking; }
-            if (ImGui::MenuItem("Flag: NoResize",               "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                   { dockspace_flags ^= ImGuiDockNodeFlags_NoResize; }
-            if (ImGui::MenuItem("Flag: AutoHideTabBar",         "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))             { dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar; }
-            if (ImGui::MenuItem("Flag: PassthruCentralNode",    "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0, opt_fullscreen)) { dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode; }
-            ImGui::Separator();
-
-            ImGui::EndMenu();
-        }
-
-        ImGui::EndMenuBar();
-    }
-
-    ImGui::End();
-}
-
-void App::LoadSceneFile(const std::string& FilePath) {
-    std::string Line;
-    std::ifstream SceneFile(FilePath);
-
-    if (SceneFile.fail()) {
         std::cout << "Scene File did not found.\n";
         return;
     }
 
-    while (std::getline(SceneFile, Line)) {
-        m_nodes.push_back(Node());
+    while (std::getline(scene_file, line))
+    {
+        m_Nodes.push_back(Node());
 
-        std::string type = GetLineBetween(Line, "[NODETYPE=", "]");
+        std::string type = GetLineBetween(line, "[NODETYPE=", "]");
 
-        if (type == "NODE") {
-            m_nodes[m_nodes.size() - 1].NodeType = Node::Type::NODE;
-        } else if (type == "PHYSICSBODY") {
-            m_nodes[m_nodes.size() - 1].NodeType = Node::Type::PHYSICSBODY;
-        } else if (type == "SPRITE") {
-            m_nodes[m_nodes.size() - 1].NodeType = Node::Type::SPRITE;
-            if (IsLineExist(Line, "[ASSET=")) {
-                m_nodes[m_nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string(GetLineBetween(Line, "[ASSET=", "]")), Node::NodeValue::Type::STRING));
-            } else {
-                m_nodes[m_nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
+        if (type == "NODE")
+        {
+            m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::NODE;
+        }
+        else if (type == "PHYSICSBODY")
+        {
+            m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::PHYSICSBODY;
+        }
+        else if (type == "SPRITE")
+        {
+            m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::SPRITE;
+            if (IsLineExist(line, "[ASSET="))
+            {
+                m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string(GetLineBetween(line, "[ASSET=", "]")), Node::NodeValue::Type::STRING));
             }
-        } else if (type == "CAMERA") {
-            m_nodes[m_nodes.size() - 1].NodeType = Node::Type::CAM;
+            else
+            {
+                m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
+            }
+        }
+        else if (type == "CAMERA")
+        {
+            m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::CAM;
         }
 
-        if (IsLineExist(Line, "[POSITION(")) {
-            std::string pose = GetLineBetween(Line, "[POSITION(", ")]");
-            m_nodes[m_nodes.size() - 1].Position = ImVec2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
+        if (IsLineExist(line, "[POSITION("))
+        {
+            std::string pose = GetLineBetween(line, "[POSITION(", ")]");
+            m_Nodes[m_Nodes.size() - 1].Position = ImVec2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
         }
-        if (IsLineExist(Line, "[SIZE(")) {
-            std::string size = GetLineBetween(Line, "[SIZE(", ")]");
-            m_nodes[m_nodes.size() - 1].Size = ImVec2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
-        } else {
-            m_nodes[m_nodes.size() - 1].Size = ImVec2(1, 1);
-        } 
-        if (IsLineExist(Line, "[ANGLE(")) {
-            m_nodes[m_nodes.size() - 1].Angle = std::stof(GetLineBetween(Line, "[ANGLE(", ")]"));
+        if (IsLineExist(line, "[SIZE("))
+        {
+            std::string size = GetLineBetween(line, "[SIZE(", ")]");
+            m_Nodes[m_Nodes.size() - 1].Size = ImVec2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
         }
 
-        if (IsLineExist(Line, "[SCRIPT=")) {
-            m_nodes[m_nodes.size() - 1].Script = GetLineBetween(Line, "[SCRIPT=", "]");
+        if (IsLineExist(line, "[ANGLE("))
+        {
+            m_Nodes[m_Nodes.size() - 1].Angle = std::stof(GetLineBetween(line, "[ANGLE(", ")]"));
         }
 
-        if (IsLineExist(Line, "[CHILDINDEX=")) {
-            std::string ci = GetLineBetween(Line, "[CHILDINDEX=(", ")]");
+        if (IsLineExist(line, "[SCRIPT="))
+        {
+            m_Nodes[m_Nodes.size() - 1].Script = GetLineBetween(line, "[SCRIPT=", "]");
+        }
+
+        if (IsLineExist(line, "[CHILDINDEX="))
+        {
+            std::string ci = GetLineBetween(line, "[CHILDINDEX=(", ")]");
             if (IsLineExist(ci, ",")) {
                 int childcount = 0;
 
-                for (size_t i = 0; i < ci.size(); i++) {
-                    if (ci[i] != ',') {
+                for (int i = 0; i < static_cast<int>(ci.size()); i++)
+                {
+                    if (ci[i] != ',')
+                    {
                         childcount += 1;
 
-                        m_nodes[ci[i] - '0'].IsChild = true;
+                        m_Nodes[ci[i] - '0'].IsChild = true;
                     }
                 }
 
-                m_nodes[m_nodes.size() - 1].ChildCount = childcount;
-            } else {
-                m_nodes[m_nodes.size() - 1].ChildCount = 1;
-                m_nodes[std::stoi(ci)].IsChild = true;
+                m_Nodes[m_Nodes.size() - 1].ChildCount = childcount;
+            }
+            else
+            {
+                m_Nodes[m_Nodes.size() - 1].ChildCount = 1;
+                m_Nodes[std::stoi(ci)].IsChild = true;
             }
         }
 
-        m_nodes[m_nodes.size() - 1].Name = GetLineBetween(Line, "[NAME=", "]");
+        m_Nodes[m_Nodes.size() - 1].Name = GetLineBetween(line, "[NAME=", "]");
     }
 }
 
-void App::Init() {
+void App::Init()
+{
     // Setup SDL
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD) != 0)
+    {
         std::cout << "SDL_Init failed : ";
         throw std::runtime_error(SDL_GetError());
     }
 
     // Create window with SDL_Renderer graphics context
     Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
-    m_window = SDL_CreateWindow("VergodtEngine Editor", 1280, 720, window_flags);
-    if (m_window == nullptr) {
+    m_Window = SDL_CreateWindow("VergodtEngine Editor", 1280, 720, window_flags);
+    if (m_Window == nullptr)
+    {
         std::cout << "SDL_CreateWindow() failed : ";
         throw std::runtime_error(SDL_GetError());
     }
-    m_renderer = SDL_CreateRenderer(m_window, nullptr);
-    SDL_SetRenderVSync(m_renderer, 1);
-    if (m_renderer == nullptr) {
+    m_Renderer = SDL_CreateRenderer(m_Window, nullptr);
+    SDL_SetRenderVSync(m_Renderer, 1);
+    if (m_Renderer == nullptr)
+    {
         std::cout << "SDL_CreateRenderer() failed : ";
         throw std::runtime_error(SDL_GetError());
     }
-    SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-    SDL_ShowWindow(m_window);
+    SDL_SetWindowPosition(m_Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    SDL_ShowWindow(m_Window);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    io = &ImGui::GetIO(); (void)io;
-    io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-    io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    m_io = &ImGui::GetIO(); (void)m_io;
+    m_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    m_io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+    m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -213,8 +162,8 @@ void App::Init() {
     //ImGui::StyleColorsLight();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplSDL3_InitForSDLRenderer(m_window, m_renderer);
-    ImGui_ImplSDLRenderer3_Init(m_renderer);
+    ImGui_ImplSDL3_InitForSDLRenderer(m_Window, m_Renderer);
+    ImGui_ImplSDLRenderer3_Init(m_Renderer);
 
     // Load Fonts
     // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -233,8 +182,8 @@ void App::Init() {
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != nullptr);
 
-    io->Fonts->AddFontFromFileTTF("../../Assets/JetBrainsMono-Medium.ttf", 15.0f);
-    io->IniFilename = "../../Assets/VergodtEngine.ini";
+    m_io->Fonts->AddFontFromFileTTF("../../Assets/JetBrainsMono-Medium.ttf", 15.0f);
+    m_io->IniFilename = "../../Assets/VergodtEngine.ini";
 
     NFD_Init();
     
@@ -243,11 +192,11 @@ void App::Init() {
     LoadSceneFile("../../Assets/FlappyBird/FlappyBird.vscene");
 
     // Main loop
-    m_running = true;
+    m_Running = true;
 }
 
 int App::Run() {
-    int SelectedNode = -1;
+    int selected_node = -1;
 
 #ifdef __EMSCRIPTEN__
     // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
@@ -264,15 +213,17 @@ int App::Run() {
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         SDL_Event event;
-        while (SDL_PollEvent(&event)) {
+        while (SDL_PollEvent(&event))
+        {
             ImGui_ImplSDL3_ProcessEvent(&event);
             if (event.type == SDL_EVENT_QUIT)
-                m_running = false;
-            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(m_window))
-                m_running = false;
+                m_Running = false;
+            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(m_Window))
+                m_Running = false;
         }
 
-        if (SDL_GetWindowFlags(m_window) & SDL_WINDOW_MINIMIZED) {
+        if (SDL_GetWindowFlags(m_Window) & SDL_WINDOW_MINIMIZED)
+        {
             SDL_Delay(10);
             continue;
         }
@@ -287,42 +238,82 @@ int App::Run() {
 
         DockSpace();
 
-        m_scripting.ScriptingSpace();
+        m_Scripting.ScriptingSpace();
 
-        m_viewport.ViewportSpace(m_renderer, m_nodes, SelectedNode);
+        m_Viewport.ViewportSpace(m_Renderer, m_Nodes, selected_node);
 
-        m_sceneview.SceneViewSpace(m_nodes, SelectedNode);
+        m_SceneView.SceneViewSpace(m_Nodes, selected_node);
 
-        m_inspector.InspectorSpace(m_nodes, SelectedNode, &m_scripting);
+        m_Inspector.InspectorSpace(m_Nodes, selected_node, &m_Scripting);
 
         // Rendering
         ImGui::Render();
         //SDL_RenderSetScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
-        SDL_SetRenderDrawColorFloat(m_renderer, 0.45f, 0.55f, 0.60f, 1.00f);
-        SDL_RenderClear(m_renderer);
-        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_renderer);
-        SDL_RenderPresent(m_renderer);
+        SDL_SetRenderDrawColorFloat(m_Renderer, 0.45f, 0.55f, 0.60f, 1.00f);
+        SDL_RenderClear(m_Renderer);
+        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_Renderer);
+        SDL_RenderPresent(m_Renderer);
     }
 #ifdef __EMSCRIPTEN__
     EMSCRIPTEN_MAINLOOP_END;
 #endif
 
-    // Cleanup
     return 0;
 }
 
+void App::DockSpace()
+{
+    static bool opt_padding = true;
+    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
-Node CreateNode(ImVec2 Pos, Node::Type NodeType) {
-    Node n;
-    n.Position = Pos;
-    n.NodeType = NodeType;
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-    switch (NodeType)
+    if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+        window_flags |= ImGuiWindowFlags_NoBackground;
+
+    if (!opt_padding)
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::Begin("DockSpace", nullptr, window_flags);
+    if (!opt_padding)
+        ImGui::PopStyleVar();
+
+    ImGui::PopStyleVar(2);
+
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
     {
-    case Node::Type::SPRITE:
-        n.NodeValues.push_back(Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
-        break;
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
     }
-    
-    return n;
+
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("Options"))
+        {
+            //ImGui::MenuItem("Padding", NULL, &opt_padding);
+            //ImGui::Separator();
+
+            //if (ImGui::MenuItem("Flag: NoDockingOverCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingOverCentralNode) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoDockingOverCentralNode; }
+            //if (ImGui::MenuItem("Flag: NoDockingSplit",         "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingSplit) != 0))             { dockspace_flags ^= ImGuiDockNodeFlags_NoDockingSplit; }
+            //if (ImGui::MenuItem("Flag: NoUndocking",            "", (dockspace_flags & ImGuiDockNodeFlags_NoUndocking) != 0))                { dockspace_flags ^= ImGuiDockNodeFlags_NoUndocking; }
+            //if (ImGui::MenuItem("Flag: NoResize",               "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                   { dockspace_flags ^= ImGuiDockNodeFlags_NoResize; }
+            //if (ImGui::MenuItem("Flag: AutoHideTabBar",         "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))             { dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar; }
+            //if (ImGui::MenuItem("Flag: PassthruCentralNode",    "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0, true)) { dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode; }
+            ImGui::Separator();
+
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMenuBar();
+    }
+
+    ImGui::End();
 }

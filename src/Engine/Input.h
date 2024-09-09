@@ -13,7 +13,7 @@ class MouseInputNode;
 class InputManager
 {
 public:
-    bool DoInput(SDL_Event *e);
+    bool DoInput(SDL_Event* Event);
 
     void SetKeyDown(SDL_Keycode KeyCode);
     void SetKeyUp(SDL_Keycode KeyCode);
@@ -35,34 +35,34 @@ public:
     bool IsMouseKeyPressed(int Key);
     bool IsMouseKeyNotPressed(int Key);
 
-    void SetInputNode(KeyboardInputNode* InputNode);
-    void SetInputNode(MouseInputNode* InputNode);
-    
     void UpdateKeyboardInputNodes();
     void UpdateMouseInputNodes();
+    
+    void SetInputNode(KeyboardInputNode* InputNode) { m_KeyboardInputNodes.push_back(InputNode); }
+    void SetInputNode(MouseInputNode* InputNode) { m_MouseInputNodes.push_back(InputNode); }
 
-    bool IsMouseKeyDown() { return m_ismousekeydown; }
-    bool IsKeyboardKeyDown() { return m_iskeydown; }
+    bool IsMouseKeyDown() { return m_IsMouseKeyDown; }
+    bool IsKeyboardKeyDown() { return m_IsKeyDown; }
 
-    Vector2 GetMousePos() { return m_mousepos; }
+    Vector2 GetMousePos() { return m_Mousepos; }
 
-    const Uint8* keystates = nullptr;
 private:
-    int m_key = 0;
-    bool m_iskeyup = true;
-    bool m_iskeydown = false;
-    bool m_keypressed = false;
+    const Uint8* m_KeyStates = nullptr;
+    SDL_Keycode m_Key = 0;
+    bool m_IsKeyUp = true;
+    bool m_IsKeyDown = false;
+    bool m_KeyPressed = false;
 
-    int m_mousekey = 0;
-    bool m_ismousekeyup = true;
-    bool m_ismousekeydown = false;
-    bool m_mousekeypressed = false;
+    int m_MouseKey = 0;
+    bool m_IsMouseKeyUp = true;
+    bool m_IsMouseKeyDown = false;
+    bool m_MouseKeyPressed = false;
 
-    Vector2 m_mousepos = Vector2(0, 0);
+    Vector2 m_Mousepos = Vector2(0, 0);
 
-    std::vector<KeyboardInputNode*> KeyboardInputNodes;
+    std::vector<KeyboardInputNode*> m_KeyboardInputNodes;
 
-    std::vector<MouseInputNode*> MouseInputNodes;
+    std::vector<MouseInputNode*> m_MouseInputNodes;
 };
 
 #endif

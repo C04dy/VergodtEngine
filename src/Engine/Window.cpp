@@ -1,18 +1,23 @@
 #include "Window.h"
 #include <SDL3/SDL.h>
+#include <stdexcept>
+#include <iostream>
 
-Window::Window(const std::string& Title, int Width, int Height, bool UseVsync){
-    if(SDL_CreateWindowAndRenderer(Title.c_str(), Width, Height, SDL_WINDOW_VULKAN, &m_window, &m_renderer) < 0){
-        SDL_Log("SDL_CreateWindowAndRenderer failed (%s)", SDL_GetError());
-        SDL_Quit();
-        return ;
+Window::Window(const std::string& Title, int Width, int Height, bool UseVsync)
+{
+    if (SDL_CreateWindowAndRenderer(Title.c_str(), Width, Height, SDL_WINDOW_VULKAN, &m_Window, &m_Renderer) < 0)
+    {
+        std::cout << "SDL_CreateWindowAndRenderer failed :";
+        throw std::runtime_error(SDL_GetError());
     }
-    SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
-    SDL_SetRenderVSync(m_renderer, UseVsync);
+    SDL_SetWindowPosition(m_Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
+    SDL_SetRenderVSync(m_Renderer, UseVsync);
 }
 
-Window::~Window(){
-    SDL_DestroyRenderer(m_renderer);
-    SDL_DestroyWindow(m_window);
+Window::~Window()
+{
+    SDL_DestroyRenderer(m_Renderer);
+    SDL_DestroyWindow(m_Window);
 }

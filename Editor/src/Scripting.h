@@ -6,26 +6,27 @@
 #include "imgui.h"
 #include <string>
 #include <vector>
+#include <iostream>
 
 class Scripting
 {
 public:
-    Scripting();
-
-    void ScriptingSpace();
-
-    void LoadScript(const std::string& ScriptPath);
-
-    void SaveScript(const std::string& ScriptPath);
-public:
-
-    struct ScriptingNodeValue {
-        enum class Type {
+    struct ScriptingNodeValue
+    {
+        enum class Type
+        {
             NULLTYPE = 0,
             FLOAT = 1,
             INT = 2,
             STRING = 3
         };
+        
+        ScriptingNodeValue(Type _Type, void* _Value, const std::string& Name)
+        {
+            Value = _Value;
+            ValueType = _Type;
+            ValueName = Name;
+        }
 
         void* Value = nullptr;
 
@@ -34,44 +35,42 @@ public:
         std::string ValueName = "Val";
 
         std::vector<std::string> ComboItems;
-
-        ScriptingNodeValue(Type type, void* val, const std::string& name) {
-            Value = val;
-            ValueType = type;
-            ValueName = name;
-        }
     };
 
-    struct ScriptingNode {
+    struct ScriptingNode
+    {
+        ScriptingNode(const ImVec2& _Position, const char* _Type, int Inputs = 1, int Outputs = 1, const char* NodeName = "ScriptingNode")
+        {
+            Position = _Position;
+            strcpy(Name, NodeName);
+            InputsCount = Inputs;
+            OutputsCount = Outputs;
+            strcpy(Type, _Type);
+        }
+
+        ImVec2 GetInputSlotPos(int SlotNo) const { return ImVec2(Position.x, Position.y + Size.y * ((float)SlotNo+ 1) / ((float)InputsCount + 1)); }
+        ImVec2 GetOutputSlotPos(int SlotNo) const { return ImVec2(Position.x + Size.x, Position.y + Size.y * ((float)SlotNo + 1) / ((float)OutputsCount + 1)); }
+
         char Name[32] = "ScriptingNode";
-        ImVec2 Pos, Size;
+        ImVec2 Position, Size;
         int InputsCount = 1, OutputsCount = 1;
         std::vector<ScriptingNodeValue> NodeValues;
         char Type[32] = "NULL";
-
-        ScriptingNode(const ImVec2& pos, const char* type, int i = 1, int o = 1, const char* nodename = "ScriptingNode") {
-            Pos = pos;
-            strcpy(Name, nodename);
-            InputsCount = i;
-            OutputsCount = o;
-            strcpy(Type, type);
-        }
-
-        ImVec2 GetInputSlotPos(int slot_no) const { return ImVec2(Pos.x, Pos.y + Size.y * ((float)slot_no + 1) / ((float)InputsCount + 1)); }
-        ImVec2 GetOutputSlotPos(int slot_no) const { return ImVec2(Pos.x + Size.x, Pos.y + Size.y * ((float)slot_no + 1) / ((float)OutputsCount + 1)); }
     };
     
-    struct NodeLink {
-        int InputIdx, InputSlot, OutputIdx, OutputSlot;
+    struct NodeLink
+    {
+        NodeLink(int _InputIndex, int _InputSlot, int _OutputIndex, int _OutputSlot) { InputIndex = _InputIndex; InputSlot = _InputSlot; OutputIndex = _OutputIndex; OutputSlot = _OutputSlot; }
 
-        NodeLink(int input_idx, int input_slot, int output_idx, int output_slot) { InputIdx = input_idx; InputSlot = input_slot; OutputIdx = output_idx; OutputSlot = output_slot; }
+        int InputIndex, InputSlot, OutputIndex, OutputSlot;
     };
 
-    class Script {
+    class Script
+    {
     public:
-        std::vector<ScriptingNode> nodes;
-        std::vector<NodeLink> links;
-        int node_selected = -1;
+        std::vector<ScriptingNode> Nodes;
+        std::vector<NodeLink> Links;
+        int SelectedNode = -1;
 
         int SelectedConnectionNode = -1;
         int NodeInputSelected = -1;
@@ -83,13 +82,21 @@ public:
 
         std::string ScriptName;
     };
+public:
+    Scripting();
+
+    void ScriptingSpace();
+
+    void LoadScript(const std::string& ScriptPath);
+
+    void SaveScript(const std::string& ScriptPath);
 private:
-    std::vector<Script> m_scripts;
+    std::vector<Script> m_Scripts;
 
-    bool show_grid = true;
-    ImVec2 scrolling = ImVec2(0.0f, 0.0f);
+    bool m_ShowGrid = true;
+    ImVec2 m_Scrolling = ImVec2(0.0f, 0.0f);
 
-    int m_currentscript = 0;
+    int m_CurrentScript = 0;
 };
 
 #endif

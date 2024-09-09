@@ -15,35 +15,57 @@
 class SDL_Window;
 class SDL_Renderer;
 
-struct Node {
+struct Node
+{
 public:
-    struct NodeValue {
-        enum class Type {
-            NULLTYPE = 0,
-            STRING = 1
-        };
-        void* Value = nullptr;
-        Type ValueType = Type::NULLTYPE;
-
-        NodeValue(void* value, Type type) {
-            Value = value;
-            ValueType = type;
-        }
-    };
-
-
-    enum class Type {
+    enum class Type
+    {
         NODE = 0,
         SPRITE = 1,
         CAM = 2,
         PHYSICSBODY = 3
     };
 
+    struct NodeValue
+    {
+    public:
+        enum class Type
+        {
+            NULLTYPE = 0,
+            STRING = 1
+        };
+
+        NodeValue(void* value, Type type)
+        {
+            Value = value;
+            ValueType = type;
+        }
+    public:
+        void* Value = nullptr;
+
+        Type ValueType = Type::NULLTYPE;
+    };
+public:
+    Node(ImVec2 _Position = ImVec2(0, 0), Type _NodeType = Type::NODE)
+    {
+        Position = _Position;
+        NodeType = _NodeType;
+
+        switch (NodeType)
+        {
+        case Node::Type::SPRITE:
+            NodeValues.push_back(Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
+            break;
+        default:
+            break;
+        }
+    }
+public:
     Type NodeType = Type::NODE;
 
     std::string Name = "Node", Script = "None";
 
-    ImVec2 Position, Size;
+    ImVec2 Position = ImVec2(0, 0), Size = ImVec2(1, 1);
 
     float Angle = 0;
 
@@ -53,7 +75,6 @@ public:
 
     int ChildCount = 0;
 };
-Node CreateNode(ImVec2 Pos, Node::Type NodeType = Node::Type::NODE);
 
 class App
 {
@@ -64,28 +85,29 @@ public:
 
     int Run();
 
-    bool IsAppRunning() { return m_running; }
+    bool IsAppRunning() { return m_Running; }
 
     void LoadSceneFile(const std::string& FilePath);
-
 private:
-    bool m_running = false;
+    void DockSpace();
+private:
+    bool m_Running = false;
 
-    SDL_Window* m_window = nullptr;
+    SDL_Window* m_Window = nullptr;
 
-    SDL_Renderer* m_renderer = nullptr;
+    SDL_Renderer* m_Renderer = nullptr;
 
-    ImGuiIO* io = nullptr;
+    ImGuiIO* m_io = nullptr;
 
-    Scripting m_scripting;
+    Scripting m_Scripting;
 
-    Viewport m_viewport;
+    Viewport m_Viewport;
 
-    Inspector m_inspector;
+    Inspector m_Inspector;
 
-    SceneView m_sceneview;
+    SceneView m_SceneView;
 
-    std::vector<Node> m_nodes;
+    std::vector<Node> m_Nodes;
 };
 
 #endif

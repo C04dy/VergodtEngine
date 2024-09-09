@@ -12,12 +12,12 @@ class Engine
 public:
 	void EngineStart();
 
-	bool IsRunning() { return m_running; }
+	bool IsRunning() { return m_Running; }
 
-	void SetRunning(bool running) { m_running = running; }
+	void SetRunning(bool Running) { m_Running = Running; }
 private:
-	bool m_running = true;
+	bool m_Running = true;
 
-	b2World* m_physicsworld = nullptr;
+	b2World* m_PhysicsWorld = nullptr;
 };
 

@@ -2,117 +2,145 @@
 #include <iostream>
 #include "StringFunctions.h"
 
-void ScriptError(const std::string& Msg, const std::string& ScriptPath) {
-    std::cout << "Script File Error\n" << Msg << '\n' << "Script File Path = " << ScriptPath << '\n';
+void ScriptError(const std::string& Message, const std::string& ScriptPath)
+{
+    std::cout << "Script File Error\n" << Message << '\n' << "Script File Path = " << ScriptPath << '\n';
 }
 
-void SetScript(Node* n, const std::string& Line, InputManager* Input) {
-    if(IsLineExist(Line, "[SCRIPT=")){
-        std::string ln;
-        std::string FilePath = GetLineBetween(Line, "[SCRIPT=", "]");
-        std::ifstream ScriptFile(FilePath);
+void SetScript(Node* _Node, const std::string& Line, InputManager* Input)
+{
+    if (IsLineExist(Line, "[SCRIPT="))
+    {
+        std::string line;
+        std::string file_path = GetLineBetween(Line, "[SCRIPT=", "]");
+        std::ifstream script_file(file_path);
 
-        if (ScriptFile.fail()) {
-            ScriptError("Script File did not found.", FilePath);
+        if (script_file.fail())
+        {
+            ScriptError("Script File did not found.", file_path);
             return;
         }
 
-        StartNode* s = new StartNode;
-        UpdateNode* u = new UpdateNode;
-        n->Script = new VisualScript;
+        StartNode* start_node = new StartNode;
+        UpdateNode* update_node = new UpdateNode;
+        _Node->Script = new VisualScript;
 
-        n->Script->InitVisualScript(s, u);
+        _Node->Script->InitVisualScript(start_node, update_node);
 
-        std::vector<ScriptingNode*> ALLSCRIPNODES;
+        std::vector<ScriptingNode*> all_script_nodes;
 
-        while (std::getline(ScriptFile, ln)){
-            std::string NodeType = GetLineBetween(ln, "[TYPE=", "]");
+        while (std::getline(script_file, line))
+        {
+            std::string node_type = GetLineBetween(line, "[TYPE=", "]");
 
-            if (NodeType == "START"){
-                ALLSCRIPNODES.push_back(s);
-            } else if (NodeType == "UPDATE"){
-                ALLSCRIPNODES.push_back(u);
-            } else if (NodeType == "PRINT"){
-                PrintNode* p = new PrintNode;
+            if (node_type == "START")
+            {
+                all_script_nodes.push_back(start_node);
+            }
+            else if (node_type == "UPDATE")
+            {
+                all_script_nodes.push_back(update_node);
+            }
+            else if (node_type == "PRINT")
+            {
+                PrintNode* print_node = new PrintNode;
 
-                p->Message = GetLineBetween(ln, "(", ")");
+                print_node->Message = GetLineBetween(line, "(", ")");
 
-                ALLSCRIPNODES.push_back(p);
+                all_script_nodes.push_back(print_node);
 
-                if (GetLineBetween(ln, "[CONNECTEDID=", "]") != "NULL")
-                    ALLSCRIPNODES[std::stoi(GetLineBetween(ln, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(p); 
-            } else if (NodeType == "KEYBOARDINPUT"){
-                KeyboardInputNode* k = new KeyboardInputNode(Input, 
-                                                            GetLineBetween(ln, "[KEY=", "]"),
-                                                            GetLineBetween(ln, "[INPUTTYPE=", "]"));
-
-                ALLSCRIPNODES.push_back(k);
-            } else if (NodeType == "MOUSEINPUT"){
-                MouseInputNode* k = new MouseInputNode(Input, 
-                                                        std::stoi(GetLineBetween(ln, "[KEY=", "]")),
-                                                        GetLineBetween(ln, "[INPUTTYPE=", "]"));
-
-                ALLSCRIPNODES.push_back(k);
-            } else if(NodeType == "APPLYFORCE"){
-                if (n->Type != NodeType::PHYSICSBODY) {
-                    ScriptError("APPLYFORCE ScriptNode only works with PhysicsBody Node.", FilePath);
+                if (GetLineBetween(line, "[CONNECTEDID=", "]") != "NULL")
+                    all_script_nodes[std::stoi(GetLineBetween(line, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(print_node); 
+            }
+            else if (node_type == "KEYBOARDINPUT")
+            {
+                KeyboardInputNode* keyboard_node = new KeyboardInputNode(Input, 
+                                                            GetLineBetween(line, "[KEY=", "]"),
+                                                            GetLineBetween(line, "[INPUTTYPE=", "]"));
+                all_script_nodes.push_back(keyboard_node);
+            }
+            else if (node_type == "MOUSEINPUT")
+            {
+                MouseInputNode* mouse_node = new MouseInputNode(Input, 
+                                                        std::stoi(GetLineBetween(line, "[KEY=", "]")),
+                                                        GetLineBetween(line, "[INPUTTYPE=", "]"));
+                all_script_nodes.push_back(mouse_node);
+            }
+            else if (node_type == "APPLYFORCE")
+            {
+                if (_Node->Type != Node::Type::PHYSICSBODY)
+                {
+                    ScriptError("APPLYFORCE ScriptNode only works with PhysicsBody Node.", file_path);
                     return;
                 }
-                ApplyForceNode* a = new ApplyForceNode((PhysicsBody*)n, Vector2(std::stof(GetLineBetween(ln, "[FORCEX=", "]")), std::stof(GetLineBetween(ln, "[FORCEY=", "]"))));
+                ApplyForceNode* apply_force_node = new ApplyForceNode((PhysicsBody*)_Node, Vector2(std::stof(GetLineBetween(line, "[FORCEX=", "]")), std::stof(GetLineBetween(line, "[FORCEY=", "]"))));
 
-                ALLSCRIPNODES.push_back(a);
+                all_script_nodes.push_back(apply_force_node);
 
-                if (GetLineBetween(ln, "[CONNECTEDID=", "]") != "NULL")
-                    ALLSCRIPNODES[std::stoi(GetLineBetween(ln, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(a); 
-            } else if(NodeType == "SETVELOCITY"){
-                if (n->Type != NodeType::PHYSICSBODY) {
-                    ScriptError("APPLYFORCE ScriptNode only works with PhysicsBody Node.", FilePath);
+                if (GetLineBetween(line, "[CONNECTEDID=", "]") != "NULL")
+                    all_script_nodes[std::stoi(GetLineBetween(line, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(apply_force_node); 
+            }
+            else if (node_type == "SETVELOCITY")
+            {
+                if (_Node->Type != Node::Type::PHYSICSBODY)
+                {
+                    ScriptError("APPLYFORCE ScriptNode only works with PhysicsBody Node.", file_path);
                     return;
                 }
-                SetVelocityNode* a = new SetVelocityNode((PhysicsBody*)n, Vector2(std::stof(GetLineBetween(ln, "[VELOCITYX=", "]")), std::stof(GetLineBetween(ln, "[VELOCITYY=", "]"))));
+                SetVelocityNode* set_velocity_node = new SetVelocityNode((PhysicsBody*)_Node, Vector2(std::stof(GetLineBetween(line, "[VELOCITYX=", "]")), std::stof(GetLineBetween(line, "[VELOCITYY=", "]"))));
 
-                ALLSCRIPNODES.push_back(a);
+                all_script_nodes.push_back(set_velocity_node);
 
-                if (GetLineBetween(ln, "[CONNECTEDID=", "]") != "NULL")
-                    ALLSCRIPNODES[std::stoi(GetLineBetween(ln, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(a); 
+                if (GetLineBetween(line, "[CONNECTEDID=", "]") != "NULL")
+                    all_script_nodes[std::stoi(GetLineBetween(line, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(set_velocity_node); 
             }
         }
-
-        ScriptFile.close();
+        script_file.close();
     }
 }
 
-void SetNode(Node* n, const std::string& Line, InputManager* i) {
-    if (IsLineExist(Line, "[POSITION(")) {
+void SetNode(Node* _Node, const std::string& Line, InputManager* Input)
+{
+    if (IsLineExist(Line, "[POSITION(")) 
+    {
         std::string pose = GetLineBetween(Line, "[POSITION(", ")]");
-        n->Position = Vector2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
+        _Node->Position = Vector2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
     }
-    if (IsLineExist(Line, "[SIZE(")) {
+    if (IsLineExist(Line, "[SIZE("))
+    {
         std::string size = GetLineBetween(Line, "[SIZE(", ")]");
-        n->Size = Vector2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
+        _Node->Size = Vector2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
     }
-    if (IsLineExist(Line, "[ANGLE(")) {
+    if (IsLineExist(Line, "[ANGLE("))
+    {
         std::string angle = GetLineBetween(Line, "[ANGLE(", ")]");
-        n->Angle = std::stof(angle);
+        _Node->Angle = std::stof(angle);
     }
     
-    n->Name = GetLineBetween(Line, "[NAME=", "]");
+    _Node->Name = GetLineBetween(Line, "[NAME=", "]");
 
-    SetScript(n, Line, i);
+    SetScript(_Node, Line, Input);
 }
 
-void SetChild(Node* n, std::vector<Node*> AN, const std::string& Line, int IndexOffset){
-    if (IsLineExist(Line, "[CHILDINDEX=")) {
-        std::string ci = GetLineBetween(Line, "[CHILDINDEX=(", ")]");
-        if (ci.find(",") != std::string::npos) {
-            for (size_t i = 0; i < ci.size(); i++) {
-                if (ci[i] != ',') {
-                    int cti = ci[i] - '0';
-                    n->AddChild(AN[cti + IndexOffset]);
+void SetChild(Node* _Node, std::vector<Node*> AllNodes, const std::string& Line, int IndexOffset)
+{
+    if (IsLineExist(Line, "[CHILDINDEX="))
+    {
+        std::string child_index = GetLineBetween(Line, "[CHILDINDEX=(", ")]");
+        if (IsLineExist(child_index, ","))
+        {
+            for (int i = 0; i < static_cast<int>(child_index.size()); i++)
+            {
+                if (child_index[i] != ',')
+                {
+                    int cti = child_index[i] - '0';
+                    _Node->AddChild(AllNodes[cti + IndexOffset]);
                 }
             }
-        } else {
-            n->AddChild(AN[std::stoi(ci) + IndexOffset]);
+        }
+        else
+        {
+            _Node->AddChild(AllNodes[std::stoi(child_index) + IndexOffset]);
         }
     }
 }

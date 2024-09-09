@@ -1,6 +1,5 @@
 #include "SceneView.h"
 #include "imgui.h"
-//#include <cstdint>
 #include "App.h"
 
 SceneView::SceneView() {
@@ -11,29 +10,32 @@ SceneView::~SceneView() {
 
 }
 
-void SceneView::SceneViewSpace(const std::vector<Node>& nodes, int& selectednode) {
+void SceneView::SceneViewSpace(const std::vector<Node>& Nodes, int& SelectedNode)
+{
     ImGui::Begin("Scene");
 
-    CreateTreeNodes(nodes, selectednode);
+    CreateTreeNodes(Nodes, SelectedNode);
     
     ImGui::End();
 }
 
-void SceneView::CreateTreeNodes(const std::vector<Node>& nodes, int& selectednode, int startpoint, int length, bool isnodeschild) {
+void SceneView::CreateTreeNodes(const std::vector<Node>& Nodes, int& SelectedNode, int StartPoint, int Length, bool IsNodesChild)
+{
     static int selection_mask = (1 << 2);
 
-    size_t looplength = nodes.size();
+    int loop_length = static_cast<int>(Nodes.size());
 
-    size_t loopstart = 0;
+    int loop_start = 0;
     
-    if (length != -1)
-        looplength = length;
-    if (startpoint != 0)
-        loopstart = startpoint;
+    if (Length != -1)
+        loop_length = Length;
+    if (StartPoint != 0)
+        loop_start = StartPoint;
 
     ImGui::BeginChild("NodeTree", ImVec2(0, 0), ImGuiChildFlags_AutoResizeY);
         
-    for (size_t i = loopstart; i < (size_t)(loopstart + looplength); i++) {
+    for (int i = loop_start; i < loop_start + loop_length; i++)
+    {
         ImGui::PushID(i + 1);
         ImGui::BeginGroup();
 
@@ -42,30 +44,33 @@ void SceneView::CreateTreeNodes(const std::vector<Node>& nodes, int& selectednod
         if (is_selected)
             node_flags |= ImGuiTreeNodeFlags_Selected;
 
-        if (nodes[i].ChildCount == 0)
+        if (Nodes[i].ChildCount == 0)
             node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
         bool node_open = false;
 
-        if (!nodes[i].IsChild || isnodeschild)
-            node_open = ImGui::TreeNodeEx((void*)(int*)&i, node_flags, nodes[i].Name.c_str());
+        if (!Nodes[i].IsChild || IsNodesChild)
+            node_open = ImGui::TreeNodeEx((void*)(int*)&i, node_flags, Nodes[i].Name.c_str());
         
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-            selectednode = i;
+            SelectedNode = i;
 
-        if (ImGui::BeginDragDropSource()) {
-            ImGui::SetDragDropPayload("SCENEVIEW_TREENODE", &selectednode, sizeof(selectednode), ImGuiCond_Once);
+        if (ImGui::BeginDragDropSource())
+        {
+            ImGui::SetDragDropPayload("SCENEVIEW_TREENODE", &SelectedNode, sizeof(SelectedNode), ImGuiCond_Once);
             ImGui::Text("This is a drag and drop source");
             ImGui::EndDragDropSource();
         }
-        if (ImGui::BeginDragDropTarget()) {
+        if (ImGui::BeginDragDropTarget())
+        {
             if (const ImGuiPayload* p = ImGui::AcceptDragDropPayload("SCENEVIEW_TREENODE"))
                 std::cout << *(int*)p->Data << " " << i << '\n';
             ImGui::EndDragDropTarget();
         }
 
-        if (node_open && nodes[i].ChildCount != 0) {
-            CreateTreeNodes(nodes, selectednode, i - nodes[i].ChildCount, nodes[i].ChildCount, true);
+        if (node_open && Nodes[i].ChildCount != 0)
+        {
+            CreateTreeNodes(Nodes, SelectedNode, i - Nodes[i].ChildCount, Nodes[i].ChildCount, true);
             ImGui::TreePop();
         }
 
@@ -75,10 +80,11 @@ void SceneView::CreateTreeNodes(const std::vector<Node>& nodes, int& selectednod
     
     ImGui::EndChild();
 
-    if (selectednode != -1) {
+    if (SelectedNode != -1)
+    {
         if (ImGui::GetIO().KeyCtrl)
-            selection_mask ^= (1 << selectednode);
+            selection_mask ^= (1 << SelectedNode);
         else 
-            selection_mask = (1 << selectednode);
+            selection_mask = (1 << SelectedNode);
     }
 }

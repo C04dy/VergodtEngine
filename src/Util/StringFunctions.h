@@ -6,14 +6,14 @@
 #include <string>
 
 template <typename T>
-void Log(T log);
+void Log(T Log);
 bool IsLineExist(const std::string& Text, const std::string& WhichLine);
 std::string GetLineBetween(const std::string& Text, const std::string& Start, const std::string& Finish);
 std::string GetLineBetween(const std::string& Text, int Start, const std::string& Finish);
 std::string GetLineBetween(const std::string& Text, const std::string& Start);
-int HowMuchIsInsideString(const std::string& s, char c);
+int HowMuchIsInsideString(const std::string& Text, char WhichChar);
 int KeyToInt(const std::string& Key);
 int InputTypeToInt(const std::string& Type);
-std::string RemoveSpaceAndUpperCase(const std::string& str);
+std::string RemoveSpaceAndUpperCase(std::string Text);
 
 #endif

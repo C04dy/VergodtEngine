@@ -4,164 +4,203 @@
 #include <ctime>
 #include "Util/SceneFileFunctions.h"
 
-void Scene::AddNodesToScene(const std::string& SceneFilePath) {
-    std::string Line;
-    std::ifstream SceneFile(SceneFilePath);
+void Scene::AddNodesToScene(const std::string& SceneFilePath)
+{
+    std::string line;
+    std::ifstream scene_file(SceneFilePath);
 
-    if (SceneFile.fail()) {
+    if (scene_file.fail())
+    {
         std::cout << "Scene File did not found.\n";
         return;
     }
 
-    int IndexOffset = Nodes.size();
+    int index_offset = static_cast<int>(m_Nodes.size());
 
-    while (std::getline(SceneFile, Line)) {
-        if (Line.at(0) != '#') {
-            std::string CurNodeType = GetLineBetween(Line, "[NODETYPE=", "]");
-            if(CurNodeType == "NODE"){
-                Node* n = new Node();
+    while (std::getline(scene_file, line))
+    {
+        if (line.at(0) != '#')
+        {
+            std::string current_node_type = GetLineBetween(line, "[NODETYPE=", "]");
+            if (current_node_type == "NODE")
+            {
+                Node* node = new Node();
 
-                n->Type = NodeType::NODE;
+                node->Type = Node::Type::NODE;
 
-                SetNode(n, Line, Input);
+                SetNode(node, line, m_Input);
  
-                SetChild(n, Nodes, Line, IndexOffset);
+                SetChild(node, m_Nodes, line, index_offset);
 
-                Nodes.push_back(n);
-            }else if(CurNodeType == "CAMERA"){
-                Cam.Type = NodeType::CAM;
-                SetNode(&Cam, Line, Input);
+                m_Nodes.push_back(node);
+            }
+            else if (current_node_type == "CAMERA")
+            {
+                m_MainCamera.Type = Node::Type::CAM;
+                SetNode(&m_MainCamera, line, m_Input);
 
-                Nodes.push_back(&Cam);
-            }else if(CurNodeType == "SPRITE"){
-                std::string AssetFilePath = GetLineBetween(Line, "[ASSET=", "]");
+                m_Nodes.push_back(&m_MainCamera);
+            }
+            else if (current_node_type == "SPRITE")
+            {
+                std::string asset_file_path = GetLineBetween(line, "[ASSET=", "]");
 
-                Sprite* s = new Sprite();
+                Sprite* sprite = new Sprite();
 
-                s->Type = NodeType::SPRITE;
+                sprite->Type = Node::Type::SPRITE;
 
-                s->InitSprite(AssetFilePath, &Cam, Renderer);
+                sprite->InitSprite(asset_file_path, &m_MainCamera, m_Renderer);
 
-                SetNode(s, Line, Input);
+                SetNode(sprite, line, m_Input);
 
-                SetChild(s, Nodes, Line, IndexOffset);
+                SetChild(sprite, m_Nodes, line, index_offset);
 
-                Nodes.push_back(s);
-            }else if(CurNodeType == "PHYSICSBODY"){        
-                PhysicsBody* p = new PhysicsBody;
+                m_Nodes.push_back(sprite);
+            }
+            else if (current_node_type == "PHYSICSBODY")
+            {
+                PhysicsBody* physics_body = new PhysicsBody;
 
-                p->Type = NodeType::PHYSICSBODY;
+                physics_body->Type = Node::Type::PHYSICSBODY;
 
-                SetNode(p, Line, Input);
+                SetNode(physics_body, line, m_Input);
 
-                SetChild(p, Nodes, Line, IndexOffset);
+                SetChild(physics_body, m_Nodes, line, index_offset);
 
-                b2BodyType t = b2BodyType::b2_staticBody;
+                b2BodyType body_type = b2BodyType::b2_staticBody;
                 
-                std::string type = GetLineBetween(Line, "[PHYSICSTYPE=", "]");
+                std::string type = GetLineBetween(line, "[PHYSICSTYPE=", "]");
 
-                if(type == "DYNAMIC"){
-                    t = b2BodyType::b2_dynamicBody;
-                }else if(type == "STATIC"){
-                    t = b2BodyType::b2_staticBody;
-                }else if(type == "KINEMATIC"){
-                    t = b2BodyType::b2_kinematicBody;
+                if (type == "DYNAMIC")
+                {
+                    body_type = b2BodyType::b2_dynamicBody;
+                }
+                else if (type == "STATIC")
+                {
+                    body_type = b2BodyType::b2_staticBody;
+                }
+                else if (type == "KINEMATIC")
+                {
+                    body_type = b2BodyType::b2_kinematicBody;
                 }
 
-                float fr = std::stof(GetLineBetween(Line, "[FRICTION=", "]"));
-                float dn = std::stof(GetLineBetween(Line, "[DENSITY=", "]"));
+                float friction = std::stof(GetLineBetween(line, "[FRICTION=", "]"));
+                float density = std::stof(GetLineBetween(line, "[DENSITY=", "]"));
 
-                std::string colllidertype = GetLineBetween(Line ,"[COLLIDER=", "]");
+                std::string colllider_type = GetLineBetween(line ,"[COLLIDER=", "]");
 
-                if(colllidertype == "BOX"){
-                    std::string sz = GetLineBetween(Line, "[COLLIDERSIZE(", ")");
+                if (colllider_type == "BOX")
+                {
+                    std::string size = GetLineBetween(line, "[COLLIDERSIZE(", ")");
 
-                    p->InitPhysicsBodyBox(PhysicsWorld, t, Vector2(std::stof(GetLineBetween(sz, 0, ",")), std::stof(GetLineBetween(sz, ","))), fr, dn);
-                }else if(colllidertype == "CIRCLE"){
-                    float rad = std::stof(GetLineBetween(Line, "[RADIUS=", "]"));
+                    physics_body->InitPhysicsBodyBox(m_PhysicsWorld, body_type, Vector2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ","))), friction, density);
+                }
+                else if (colllider_type == "CIRCLE")
+                {
+                    float radius = std::stof(GetLineBetween(line, "[RADIUS=", "]"));
 
-                    p->InitPhysicsBodyCircle(PhysicsWorld, t, rad, fr, dn);
-                }else if(colllidertype == "POLYGON"){
-                    int32 polycount = std::stoi(GetLineBetween(Line, "[POLYGONCOUNT=", "]"));
+                    physics_body->InitPhysicsBodyCircle(m_PhysicsWorld, body_type, radius, friction, density);
+                }
+                else if (colllider_type == "POLYGON")
+                {
+                    int32 polygon_count = std::stoi(GetLineBetween(line, "[POLYGONCOUNT=", "]"));
 
-                    Vector2 poly[polycount];
+                    Vector2 polygons[polygon_count];
 
-                    std::string polys = GetLineBetween(Line, "[POLYGONS=", "]");
+                    std::string polygon_sizes = GetLineBetween(line, "[POLYGONS=", "]");
 
-                    for (int i = 0; i < polycount; i++)
+                    for (int i = 0; i < polygon_count; i++)
                     {
-                        std::string curpoly = GetLineBetween(polys, std::to_string(i + 1) + "=(", ")");
+                        std::string current_polygon = GetLineBetween(polygon_sizes, std::to_string(i + 1) + "=(", ")");
 
-                        poly[i].x = std::stof(GetLineBetween(curpoly, 0, ","));
-                        poly[i].y = std::stof(GetLineBetween(curpoly, ","));
+                        polygons[i].x = std::stof(GetLineBetween(current_polygon, 0, ","));
+                        polygons[i].y = std::stof(GetLineBetween(current_polygon, ","));
                     }
                     
-                    p->InitPhysicsBodyPolygon(PhysicsWorld, t, poly, polycount, fr, dn);
+                    physics_body->InitPhysicsBodyPolygon(m_PhysicsWorld, body_type, polygons, polygon_count, friction, density);
                 }
 
-                Nodes.push_back(p);
+                m_Nodes.push_back(physics_body);
             }
         }
     }
-    SceneFile.close();
+    scene_file.close();
 }
 
-void Scene::UpdateChilds() {
-    for (Node* n : Nodes) {
-        n->UpdateChild();
+void Scene::UpdateChilds()
+{
+    for (Node* node : m_Nodes)
+    {
+        node->UpdateChild();
     }
 }
 
-void Scene::Start(){
+void Scene::Start()
+{
     AddNodesToScene("../Assets/FlappyBird/FlappyBird.vscene");
     //AddNodesToScene("../Assets/test.vscene");
 
     UpdateChilds();
 
-    for (Node* n : Nodes) {
-        if (n->Script != nullptr) {
-            n->Script->StartScript();
+    for (Node* node : m_Nodes)
+    {
+        if (node->Script != nullptr)
+        {
+            node->Script->StartScript();
         }
     }
 }
 
-void Scene::Update(double dt){    
+void Scene::Update(double Delta)
+{
     UpdateChilds();
-    for (Node* n : Nodes) {
-        switch (n->Type)
+    for (Node* node : m_Nodes)
+    {
+        switch (node->Type)
         {
-        case NodeType::PHYSICSBODY:
-            ((PhysicsBody*)n)->UpdatePhysicsNode();
+        case Node::Type::PHYSICSBODY:
+            ((PhysicsBody*)node)->UpdatePhysicsNode();
+            break;
+        default:
             break;
         }
-        if (n->Script != nullptr) {
-            n->Script->UpdateScript();
+        if (node->Script != nullptr)
+        {
+            node->Script->UpdateScript();
         }
     }
 }
 
-void Scene::Draw(){
-    for (Node* n : Nodes) {
-        switch (n->Type)
+void Scene::Draw()
+{
+    for (Node* node : m_Nodes)
+    {
+        switch (node->Type)
         {
-        case NodeType::SPRITE:
-            ((Sprite*)n)->DrawImage();
+        case Node::Type::SPRITE:
+            ((Sprite*)node)->DrawImage();
+            break;
+        default:
             break;
         }
     }
 }
 
-void Scene::Clean(){
-    for (Node* n : Nodes) {
-        switch (n->Type)
+void Scene::Clean()
+{
+    for (Node* node : m_Nodes)
+    {
+        switch (node->Type)
         {
-        case NodeType::SPRITE:
-        ((Sprite*)n)->DeleteTexture();
+        case Node::Type::SPRITE:
+        ((Sprite*)node)->DeleteTexture();
             break;
-        case NodeType::PHYSICSBODY:
-        ((PhysicsBody*)n)->DeletePhysicsBody();
+        case Node::Type::PHYSICSBODY:
+        ((PhysicsBody*)node)->DeletePhysicsBody();
+            break;
+        default:
             break;
         }
     }
-    Nodes.clear();
+    m_Nodes.clear();
 }

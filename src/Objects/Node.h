@@ -9,17 +9,18 @@
 
 #include "VisualScripting/ScriptingNodes.h"
 
-enum class NodeType {
-	NODE,
-	SPRITE,
-	PHYSICSBODY,
-	CAM
-};
-
 class InputManager;
 
 class Node
 {
+public:
+	enum class Type
+	{
+		NODE = 0,
+		SPRITE = 1,
+		PHYSICSBODY = 2,
+		CAM = 3
+	};
 public:
 	Vector2 Position = Vector2(0, 0);
 	Vector2 LocalPosition = Vector2(0, 0);
@@ -32,11 +33,11 @@ public:
 
 	std::string Name;
 
-	NodeType Type = NodeType::NODE;
+	Type Type = Type::NODE;
 
 	VisualScript* Script = nullptr;
 private:
-	std::vector<Node*> m_childNodes;
+	std::vector<Node*> m_ChildNodes;
 };
 
 #endif

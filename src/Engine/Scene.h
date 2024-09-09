@@ -15,43 +15,42 @@ class Scene
 {
 public:
 	void Start();
-	void Update(double dt);
+	void Update(double Delta);
 	void Draw();
 	void Clean();
 
 	void UpdateChilds();
 
 	void AddNodesToScene(const std::string& SceneFilePath);
-	void RemoveNodeFromScene(Node* n);
+	void RemoveNodeFromScene(Node* _Node);
 
-	void SetRenderer(SDL_Renderer* _Renderer) { Renderer = _Renderer; }
-	void SetPhysicsWorld(b2World* _PhysicsWorld) { PhysicsWorld = _PhysicsWorld; }
+	void SetRenderer(SDL_Renderer* Renderer) { Renderer = Renderer; }
+	void SetPhysicsWorld(b2World* PhysicsWorld) { PhysicsWorld = PhysicsWorld; }
 
-	std::string GetGameName() { return m_gamename; }
-	void SetGameName(const std::string& GameName) { m_gamename = GameName; }
+	std::string GetGameName() { return m_GameName; }
+	void SetGameName(const std::string& GameName) { m_GameName = GameName; }
 
-	int GetWindowWidth() { return m_windowwidth; }
-	int GetWindowHeight() { return m_windowheight; }
+	int GetWindowWidth() { return m_WindowWidth; }
+	int GetWindowHeight() { return m_WindowHeight; }
 
-	void SetWindowsWidth(int Width) { m_windowwidth = Width; }
-	void SetWindowsHeight(int Height) { m_windowheight = Height; }
+	void SetWindowsWidth(int Width) { m_WindowWidth = Width; }
+	void SetWindowsHeight(int Height) { m_WindowHeight = Height; }
 
-	void SetInput(InputManager* _Input) { Input = _Input; }
-	InputManager* GetInput() { return Input; }
-protected:
-	SDL_Renderer* Renderer;
-
-	b2World* PhysicsWorld;
-
-	InputManager* Input;
+	void SetInput(InputManager* Input) { m_Input = Input; }
+	InputManager* GetInput() { return m_Input; }
 private:
-	std::string m_gamename = "VergodtEngineGame";
+	// these will be moved somewhere else
+	std::string m_GameName = "VergodtEngineGame";
 
-	int m_windowwidth = 1280, m_windowheight = 720;
+	int m_WindowWidth = 1280, m_WindowHeight = 720;
 private:
-	bool Hi = false;
+	SDL_Renderer* m_Renderer;
 
-	Camera Cam;
+	b2World* m_PhysicsWorld;
 
-	std::vector<Node*> Nodes;
+	InputManager* m_Input;
+
+	Camera m_MainCamera;
+
+	std::vector<Node*> m_Nodes;
 };
