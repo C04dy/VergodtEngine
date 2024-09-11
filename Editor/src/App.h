@@ -59,11 +59,32 @@ public:
         default:
             break;
         }
+
+        ID = s_id;
+        s_id += 1;
     }
+
+    bool isEqual(const Node& Other) const
+    {
+        return (Other.ID == ID);
+    }
+
+    bool operator==(const Node& Other)
+    {
+        return isEqual(Other);
+    }
+    bool operator==(const Node* Other)
+    {
+        return isEqual(*Other);
+    }
+private:
+    static int s_id;
 public:
+    int ID;
+    
     Type NodeType = Type::NODE;
 
-    std::string Name = "Node", Script = "None";
+    std::string Name = "NodeName", Script = "None";
 
     ImVec2 Position = ImVec2(0, 0), Size = ImVec2(1, 1);
 
@@ -73,7 +94,7 @@ public:
 
     bool IsChild = false;
 
-    int ChildCount = 0;
+    std::vector<int> ChildIDs;
 };
 
 class App

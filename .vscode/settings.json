@@ -95,6 +95,19 @@
         "complex": "cpp",
         "print": "cpp",
         "cfenv": "cpp",
-        "__tree": "cpp"
+        "__tree": "cpp",
+        "barrier": "cpp",
+        "coroutine": "cpp",
+        "csetjmp": "cpp",
+        "cuchar": "cpp",
+        "expected": "cpp",
+        "regex": "cpp",
+        "generator": "cpp",
+        "latch": "cpp",
+        "scoped_allocator": "cpp",
+        "spanstream": "cpp",
+        "stacktrace": "cpp",
+        "syncstream": "cpp",
+        "typeindex": "cpp"
     }
 }

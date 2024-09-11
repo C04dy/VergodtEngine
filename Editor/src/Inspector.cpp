@@ -50,34 +50,34 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
         ImGui::PushID(0);
         ImGui::Text("Position");
         ImVec2 old_position = Nodes[SelectedNode].Position;
-        if (ImGui::InputFloat("X", &Nodes[SelectedNode].Position.x) && Nodes[SelectedNode].ChildCount != 0)
+        if (ImGui::InputFloat("X", &Nodes[SelectedNode].Position.x) && static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
         {
-            ChangeChildNodesPosition(Nodes, SelectedNode - Nodes[SelectedNode].ChildCount, Nodes[SelectedNode].ChildCount, SelectedNode, old_position);
+            ChangeChildNodesPosition(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_position);
         }
-        if (ImGui::InputFloat("Y", &Nodes[SelectedNode].Position.y) && Nodes[SelectedNode].ChildCount != 0)
+        if (ImGui::InputFloat("Y", &Nodes[SelectedNode].Position.y) && static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
         {
-            ChangeChildNodesPosition(Nodes, SelectedNode - Nodes[SelectedNode].ChildCount, Nodes[SelectedNode].ChildCount, SelectedNode, old_position);
+            ChangeChildNodesPosition(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_position);
         }
         ImGui::PopID();
 
         ImGui::PushID(1);
         ImGui::Text("Size");
         ImVec2 old_size = Nodes[SelectedNode].Size;
-        if (ImGui::InputFloat("X", &Nodes[SelectedNode].Size.x) && Nodes[SelectedNode].ChildCount != 0)
+        if (ImGui::InputFloat("X", &Nodes[SelectedNode].Size.x) && static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
         {
-            ChangeChildNodesSize(Nodes, SelectedNode - Nodes[SelectedNode].ChildCount, Nodes[SelectedNode].ChildCount, SelectedNode, old_size);
+            ChangeChildNodesSize(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_size);
         }
-        if (ImGui::InputFloat("Y", &Nodes[SelectedNode].Size.y) && Nodes[SelectedNode].ChildCount != 0)
+        if (ImGui::InputFloat("Y", &Nodes[SelectedNode].Size.y) && static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
         {
-            ChangeChildNodesSize(Nodes, SelectedNode - Nodes[SelectedNode].ChildCount, Nodes[SelectedNode].ChildCount, SelectedNode, old_size);
+            ChangeChildNodesSize(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_size);
         }
         ImGui::PopID();
 
         ImGui::Text("Angle");
         float old_angle = Nodes[SelectedNode].Angle;
-        if (ImGui::InputFloat(" ", &Nodes[SelectedNode].Angle) && Nodes[SelectedNode].ChildCount != 0)
+        if (ImGui::InputFloat(" ", &Nodes[SelectedNode].Angle) && static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
         {
-            ChangeChildNodesAngle(Nodes, SelectedNode - Nodes[SelectedNode].ChildCount, Nodes[SelectedNode].ChildCount, SelectedNode, old_angle);
+            ChangeChildNodesAngle(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_angle);
         }
 
         switch (Nodes[SelectedNode].NodeType)
@@ -107,6 +107,9 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
                 Nodes[SelectedNode].Script = CreateFileDialog({"VergodtScript File"}, {"verscript"});
             }
         }
+
+        ImGui::Text(std::to_string(SelectedNode).c_str());
+        ImGui::Text(std::to_string(static_cast<int>(Nodes[SelectedNode].ChildIDs.size())).c_str());
     }
 
     ImGui::End();
@@ -120,9 +123,9 @@ void Inspector::ChangeChildNodesPosition(std::vector<Node>& Nodes, int StartPose
         Nodes[i].Position.x += (Nodes[CurrentNode].Position.x - old_positionition.x) * int(IsX);
         Nodes[i].Position.y += (Nodes[CurrentNode].Position.y - old_positionition.y) * int(!IsX);
 
-        if (Nodes[i].ChildCount != 0)
+        if (static_cast<int>(Nodes[i].ChildIDs.size()) != 0)
         {
-            ChangeChildNodesPosition(Nodes, i - Nodes[i].ChildCount, Nodes[i].ChildCount, i, old_positionition);
+            ChangeChildNodesPosition(Nodes, i - static_cast<int>(Nodes[i].ChildIDs.size()), static_cast<int>(Nodes[i].ChildIDs.size()), i, old_positionition);
         }
     }
 }
@@ -135,9 +138,9 @@ void Inspector::ChangeChildNodesSize(std::vector<Node>& Nodes, int StartPose, in
         Nodes[i].Size.x += (Nodes[CurrentNode].Size.x - OldSize.x) * int(IsX);
         Nodes[i].Size.y += (Nodes[CurrentNode].Size.y - OldSize.y) * int(!IsX);
 
-        if (Nodes[i].ChildCount != 0)
+        if (static_cast<int>(Nodes[i].ChildIDs.size()) != 0)
         {
-            ChangeChildNodesSize(Nodes, i - Nodes[i].ChildCount, Nodes[i].ChildCount, i, OldSize);
+            ChangeChildNodesSize(Nodes, i - static_cast<int>(Nodes[i].ChildIDs.size()), static_cast<int>(Nodes[i].ChildIDs.size()), i, OldSize);
         }
     }
 }
@@ -148,9 +151,9 @@ void Inspector::ChangeChildNodesAngle(std::vector<Node>& Nodes, int StartPose, i
     {
         Nodes[i].Angle += (Nodes[CurrentNode].Angle - OldAngle);
 
-        if (Nodes[i].ChildCount != 0)
+        if (static_cast<int>(Nodes[i].ChildIDs.size()) != 0)
         {
-            ChangeChildNodesAngle(Nodes, i - Nodes[i].ChildCount, Nodes[i].ChildCount, i, OldAngle);
+            ChangeChildNodesAngle(Nodes, i - static_cast<int>(Nodes[i].ChildIDs.size()), static_cast<int>(Nodes[i].ChildIDs.size()), i, OldAngle);
         }
     }
 }

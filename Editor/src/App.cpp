@@ -13,6 +13,8 @@
 #include <functional>
 #include <nfd.h>
 
+int Node::s_id = 0;
+
 App::~App()
 {
     NFD_Quit();
@@ -39,84 +41,83 @@ void App::LoadSceneFile(const std::string& FilePath)
         return;
     }
 
+    int line_count = 0;
     while (std::getline(scene_file, line))
     {
-        m_Nodes.push_back(Node());
+        if (line[0] != '#')
+        {
+            line_count += 1;
+            m_Nodes.push_back(Node());
 
-        std::string type = GetLineBetween(line, "[NODETYPE=", "]");
+            std::string type = GetLineBetween(line, "[NODETYPE=", "]");
 
-        if (type == "NODE")
-        {
-            m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::NODE;
-        }
-        else if (type == "PHYSICSBODY")
-        {
-            m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::PHYSICSBODY;
-        }
-        else if (type == "SPRITE")
-        {
-            m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::SPRITE;
-            if (IsLineExist(line, "[ASSET="))
+            if (type == "NODE")
             {
-                m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string(GetLineBetween(line, "[ASSET=", "]")), Node::NodeValue::Type::STRING));
+                m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::NODE;
             }
-            else
+            else if (type == "PHYSICSBODY")
             {
-                m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
+                m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::PHYSICSBODY;
             }
-        }
-        else if (type == "CAMERA")
-        {
-            m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::CAM;
-        }
-
-        if (IsLineExist(line, "[POSITION("))
-        {
-            std::string pose = GetLineBetween(line, "[POSITION(", ")]");
-            m_Nodes[m_Nodes.size() - 1].Position = ImVec2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
-        }
-        if (IsLineExist(line, "[SIZE("))
-        {
-            std::string size = GetLineBetween(line, "[SIZE(", ")]");
-            m_Nodes[m_Nodes.size() - 1].Size = ImVec2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
-        }
-
-        if (IsLineExist(line, "[ANGLE("))
-        {
-            m_Nodes[m_Nodes.size() - 1].Angle = std::stof(GetLineBetween(line, "[ANGLE(", ")]"));
-        }
-
-        if (IsLineExist(line, "[SCRIPT="))
-        {
-            m_Nodes[m_Nodes.size() - 1].Script = GetLineBetween(line, "[SCRIPT=", "]");
-        }
-
-        if (IsLineExist(line, "[CHILDINDEX="))
-        {
-            std::string ci = GetLineBetween(line, "[CHILDINDEX=(", ")]");
-            if (IsLineExist(ci, ",")) {
-                int childcount = 0;
-
-                for (int i = 0; i < static_cast<int>(ci.size()); i++)
+            else if (type == "SPRITE")
+            {
+                m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::SPRITE;
+                if (IsLineExist(line, "[ASSET="))
                 {
-                    if (ci[i] != ',')
-                    {
-                        childcount += 1;
+                    m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string(GetLineBetween(line, "[ASSET=", "]")), Node::NodeValue::Type::STRING));
+                }
+                else
+                {
+                    m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
+                }
+            }
+            else if (type == "CAMERA")
+            {
+                m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::CAM;
+            }
 
-                        m_Nodes[ci[i] - '0'].IsChild = true;
+            if (IsLineExist(line, "[POSITION("))
+            {
+                std::string pose = GetLineBetween(line, "[POSITION(", ")]");
+                m_Nodes[m_Nodes.size() - 1].Position = ImVec2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
+            }
+            if (IsLineExist(line, "[SIZE("))
+            {
+                std::string size = GetLineBetween(line, "[SIZE(", ")]");
+                m_Nodes[m_Nodes.size() - 1].Size = ImVec2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
+            }
+
+            if (IsLineExist(line, "[ANGLE("))
+            {
+                m_Nodes[m_Nodes.size() - 1].Angle = std::stof(GetLineBetween(line, "[ANGLE(", ")]"));
+            }
+
+            if (IsLineExist(line, "[SCRIPT="))
+            {
+                m_Nodes[m_Nodes.size() - 1].Script = GetLineBetween(line, "[SCRIPT=", "]");
+            }
+
+            if (IsLineExist(line, "[CHILDINDEX="))
+            {
+                std::string ci = GetLineBetween(line, "[CHILDINDEX=(", ")]");
+                if (IsLineExist(ci, ",")) {
+                    for (int i = 0; i < static_cast<int>(ci.size()); i++)
+                    {
+                        if (ci[i] != ',')
+                        {
+                            m_Nodes[ci[i] - '0'].IsChild = true;
+                            m_Nodes[m_Nodes.size() - 1].ChildIDs.push_back(ci[i] - '0');
+                        }
                     }
                 }
-
-                m_Nodes[m_Nodes.size() - 1].ChildCount = childcount;
+                else
+                {
+                    m_Nodes[m_Nodes.size() - 1].ChildIDs.push_back(std::stoi(ci));
+                    m_Nodes[std::stoi(ci)].IsChild = true;
+                }
             }
-            else
-            {
-                m_Nodes[m_Nodes.size() - 1].ChildCount = 1;
-                m_Nodes[std::stoi(ci)].IsChild = true;
-            }
+            m_Nodes[m_Nodes.size() - 1].Name = GetLineBetween(line, "[NAME=", "]");
         }
-
-        m_Nodes[m_Nodes.size() - 1].Name = GetLineBetween(line, "[NAME=", "]");
     }
 }
 

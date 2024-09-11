@@ -13,9 +13,10 @@ public:
     SceneView();
     ~SceneView();
 
-    void SceneViewSpace(const std::vector<Node>& Nodes, int& SelectedNode);
+    void SceneViewSpace(std::vector<Node>& Nodes, int& SelectedNode);
 private:
-    void CreateTreeNodes(const std::vector<Node>& Nodes, int& SelectedNode, int StartPoint = 0, int Length = -1, bool IsNodesChild = false);
+    void CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode);
+    void CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>& ChildNodes, int& SelectedNode, int CurrentParentIndex);
 };
 
 #endif
