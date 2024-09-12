@@ -16,7 +16,7 @@ public:
     void SceneViewSpace(std::vector<Node>& Nodes, int& SelectedNode);
 private:
     void CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode);
-    int CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>& ChildNodes, int& SelectedNode, int CurrentParentIndex);
+    void CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>& ChildNodes, int& SelectedNode, int CurrentParentIndex);
 };
 
 #endif

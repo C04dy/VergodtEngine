@@ -67,6 +67,8 @@ void SceneView::CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode)
                     int from = drag_index;
                     int to = i;
 
+                    bool was_child = false;
+
                     if (Nodes[from].IsChild)
                     {
                         int parent_index = 0;
@@ -89,6 +91,8 @@ void SceneView::CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode)
 
                         if (!Nodes[to].IsChild)
                             ImGui::TreePop();
+
+                        was_child = true;
                     }
 
                     if (from < to)
@@ -97,7 +101,8 @@ void SceneView::CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode)
                         std::rotate(Nodes.begin() + to, Nodes.begin() + from, Nodes.begin() + from + 1);
 
                     ImGui::EndGroup();
-                    ImGui::PopID();
+                    if (!was_child)
+                        ImGui::PopID();
                     break;
                 }
             }
@@ -111,8 +116,7 @@ void SceneView::CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode)
                     if (Nodes[j].ID == Nodes[i].ChildIDs[x])
                         Childs.push_back(&Nodes[j]);
 
-            if (CreateChildTreeNodes(Nodes, Childs, SelectedNode, i) == 1)
-                std::cout << 1;//break;
+            CreateChildTreeNodes(Nodes, Childs, SelectedNode, i);
 
             ImGui::TreePop();
         }
@@ -154,10 +158,8 @@ void SceneView::CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode)
     }
 }
 
-int SceneView::CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>& ChildNodes, int& SelectedNode, int CurrentParentIndex)
+void SceneView::CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>& ChildNodes, int& SelectedNode, int CurrentParentIndex)
 {
-    int return_value = 0;
-
     static int selection_mask = (1 << 2);
 
     ImGui::BeginChild("NodeTree", ImVec2(0, 0), ImGuiChildFlags_AutoResizeY);
@@ -203,7 +205,10 @@ int SceneView::CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>
                     }
                     else
                     {
-                        std::cout << "hi";
+                        bool returns = false;
+                        if (Nodes[drag_index].ParentID == Nodes[node_index].ParentID && Nodes[node_index].ChildIDs.size() > 0)
+                            returns = true;
+
                         int old_parent_index = -1;
                         for (int j = 0; j < static_cast<int>(Nodes.size()); j++)
                         {
@@ -218,12 +223,8 @@ int SceneView::CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>
                         Nodes[CurrentParentIndex].ChildIDs.push_back(Nodes[drag_index].ID);
                         Nodes[drag_index].IsChild = true;
 
-                        return_value = 1;
-
-                        if (old_parent_index == node_index)
-                        {
+                        if (old_parent_index == node_index || returns)
                             ImGui::TreePop();
-                        }
 
                         ImGui::EndGroup();
                         ImGui::PopID();
@@ -235,14 +236,14 @@ int SceneView::CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>
         }
         if (node_open && static_cast<int>(ChildNodes[i]->ChildIDs.size()) != 0)
         {
-            std::vector<Node*> Childs;
+            std::vector<Node*> Childs(Nodes[node_index].ChildIDs.size());
             for (int j = 0; j < static_cast<int>(Nodes.size()); j++)
                 for (int x = 0; x < static_cast<int>(Nodes[node_index].ChildIDs.size()); x++)
                     if (Nodes[j].ID == Nodes[node_index].ChildIDs[x])
-                        Childs.push_back(&Nodes[j]);
+                        Childs[x] = &Nodes[j];
 
             CreateChildTreeNodes(Nodes, Childs, SelectedNode, node_index);
-            
+
             ImGui::TreePop();
         }
         ImGui::InvisibleButton("UnderNode", ImVec2(ImGui::GetWindowSize().x, 5));
@@ -263,7 +264,6 @@ int SceneView::CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>
         ImGui::EndGroup();
         ImGui::PopID();
     }
-    
     ImGui::EndChild();
 
     if (SelectedNode != -1)
@@ -273,6 +273,4 @@ int SceneView::CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>
         else 
             selection_mask = (1 << SelectedNode);
     }
-
-    return return_value;
 }
