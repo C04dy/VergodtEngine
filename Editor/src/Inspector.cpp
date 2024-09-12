@@ -108,8 +108,8 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
             }
         }
 
-        ImGui::Text(std::to_string(SelectedNode).c_str());
-        ImGui::Text(std::to_string(static_cast<int>(Nodes[SelectedNode].ChildIDs.size())).c_str());
+        ImGui::Text(std::to_string(Nodes[SelectedNode].ID).c_str());
+        ImGui::Text(std::to_string(Nodes[SelectedNode].ParentID).c_str());
     }
 
     ImGui::End();

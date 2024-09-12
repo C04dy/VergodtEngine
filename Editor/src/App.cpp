@@ -105,8 +105,9 @@ void App::LoadSceneFile(const std::string& FilePath)
                     {
                         if (ci[i] != ',')
                         {
-                            m_Nodes[ci[i] - '0'].IsChild = true;
                             m_Nodes[m_Nodes.size() - 1].ChildIDs.push_back(ci[i] - '0');
+                            m_Nodes[ci[i] - '0'].IsChild = true;
+                            m_Nodes[ci[i] - '0'].ParentID = m_Nodes[m_Nodes.size() - 1].ID;
                         }
                     }
                 }
@@ -114,6 +115,7 @@ void App::LoadSceneFile(const std::string& FilePath)
                 {
                     m_Nodes[m_Nodes.size() - 1].ChildIDs.push_back(std::stoi(ci));
                     m_Nodes[std::stoi(ci)].IsChild = true;
+                    m_Nodes[std::stoi(ci)].ParentID = m_Nodes[m_Nodes.size() - 1].ID;
                 }
             }
             m_Nodes[m_Nodes.size() - 1].Name = GetLineBetween(line, "[NAME=", "]");

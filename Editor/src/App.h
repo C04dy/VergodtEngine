@@ -95,6 +95,8 @@ public:
     bool IsChild = false;
 
     std::vector<int> ChildIDs;
+
+    int ParentID = -1;
 };
 
 class App
