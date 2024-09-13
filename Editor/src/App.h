@@ -95,7 +95,8 @@ public:
     bool IsChild = false;
 
     std::vector<int> ChildIDs;
-
+    bool TreeOpen = false; // i didn't want to make a variable like this but i have no other solution
+    
     int ParentID = -1;
 };
 
