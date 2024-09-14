@@ -118,21 +118,24 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
                 }
                 else if (colllider_type == "POLYGON")
                 {
-                    int32 polygon_count = std::stoi(GetLineBetween(line, "[POLYGONCOUNT=", "]"));
+                    int32 point_count = std::stoi(GetLineBetween(line, "[POINTCOUNT=(", ")]"));
 
-                    Vector2 polygons[polygon_count];
+                    Vector2 polygons[point_count];
 
-                    std::string polygon_sizes = GetLineBetween(line, "[POLYGONS=", "]");
+                    std::string polygon_points = GetLineBetween(line, "[POINTS=", "]");
 
-                    for (int i = 0; i < polygon_count; i++)
+                    for (int i = 0; i < point_count; i++)
                     {
-                        std::string current_polygon = GetLineBetween(polygon_sizes, std::to_string(i + 1) + "=(", ")");
+                        polygons[i].x = std::stof(GetLineBetween(polygon_points, "(", ","));
+                        polygons[i].y = std::stof(GetLineBetween(polygon_points, ",", ")"));
 
-                        polygons[i].x = std::stof(GetLineBetween(current_polygon, 0, ","));
-                        polygons[i].y = std::stof(GetLineBetween(current_polygon, ","));
+                        if (i != point_count)
+                            polygon_points.erase(0, GetLineBetween(polygon_points, "(", ")").size() + 3);
+                        else
+                            polygon_points.erase(0, GetLineBetween(polygon_points, "(", ")").size() + 2);
                     }
                     
-                    collider->CreatePolygonShape(polygons, polygon_count);
+                    collider->CreatePolygonShape(polygons, point_count);
                 }
 
                 m_Nodes.push_back(collider);
