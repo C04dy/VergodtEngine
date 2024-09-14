@@ -8,9 +8,9 @@
 class Sprite : public Node
 {
 public:
-	void InitSprite(const std::string& FilePath, Camera* Camera, SDL_Renderer* Renderer);
+	~Sprite();
 
-	void DeleteTexture();
+	void InitSprite(const std::string& FilePath, Camera* Camera, SDL_Renderer* Renderer);
 
 	void LoadImage(const std::string& FilePath);
 

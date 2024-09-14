@@ -7,6 +7,7 @@
 #include "Objects/Camera.h"
 #include "Objects/Sprite.h"
 #include "Objects/PhysicsBody.h"
+#include "Objects/Collider.h"
 #include "Objects/Node.h"
 
 class b2World;
@@ -24,8 +25,8 @@ public:
 	void AddNodesToScene(const std::string& SceneFilePath);
 	void RemoveNodeFromScene(Node* _Node);
 
-	void SetRenderer(SDL_Renderer* Renderer) { Renderer = Renderer; }
-	void SetPhysicsWorld(b2World* PhysicsWorld) { PhysicsWorld = PhysicsWorld; }
+	void SetRenderer(SDL_Renderer* Renderer) { m_Renderer = Renderer; }
+	void SetPhysicsWorld(b2World* PhysicsWorld) { m_PhysicsWorld = PhysicsWorld; }
 
 	std::string GetGameName() { return m_GameName; }
 	void SetGameName(const std::string& GameName) { m_GameName = GameName; }
@@ -44,11 +45,11 @@ private:
 
 	int m_WindowWidth = 1280, m_WindowHeight = 720;
 private:
-	SDL_Renderer* m_Renderer;
+	SDL_Renderer* m_Renderer = nullptr;
 
-	b2World* m_PhysicsWorld;
+	b2World* m_PhysicsWorld = nullptr;
 
-	InputManager* m_Input;
+	InputManager* m_Input = nullptr;
 
 	Camera m_MainCamera;
 

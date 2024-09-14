@@ -3,7 +3,12 @@
 #define RADIAN_IN_DEGREES	57.3f
 #define PIXEL_TO_METER      100.0f
 
-void PhysicsBody::InitPhysicsBodyBox(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 ColliderSize, float Friction, float Density)
+PhysicsBody::~PhysicsBody()
+{
+	DeletePhysicsBody();
+}
+
+void PhysicsBody::InitPhysicsBody(std::vector<Node*>& Nodes, b2World* PhysicsWorld, b2BodyType BodyType, float Friction, float Density)
 {
 	b2BodyDef body_def;
 	body_def.type = BodyType;
@@ -12,65 +17,41 @@ void PhysicsBody::InitPhysicsBodyBox(b2World* PhysicsWorld, b2BodyType BodyType,
 	body_def.position.y = Position.y / PIXEL_TO_METER;
 	m_Body = PhysicsWorld->CreateBody(&body_def);
 
-	b2PolygonShape shape;
+	m_Density = Density;
+	m_Friction = Friction;
 
-	shape.SetAsBox(((ColliderSize.x / 2) / PIXEL_TO_METER) * Size.x, ((ColliderSize.y / 2) / PIXEL_TO_METER) * Size.y);
-	
-	b2FixtureDef fixture_definition;
-	fixture_definition.shape = &shape;
-	fixture_definition.density = Density;
-	fixture_definition.friction = Friction;
+	for (Node* node : Nodes)
+		for (int child_id : m_ChildIDs)
+			if (child_id == node->ID && node->NodeType == Node::Type::COLLIDER)
+				SetCollider((Collider*)node);
 
-	m_Body->CreateFixture(&fixture_definition);
 
 	//b2Filter f;
 	//f.maskBits = 
 	//m_Body->GetFixtureList()[0].SetFilterData();
 }
 
-void PhysicsBody::InitPhysicsBodyCircle(b2World* PhysicsWorld, b2BodyType BodyType, float Radius, float Friction, float Density)
+void PhysicsBody::SetCollider(Collider* _Collider)
 {
-	b2BodyDef body_def;
-	body_def.type = BodyType;
-	body_def.angle = Angle / RADIAN_IN_DEGREES;
-	body_def.position.x = Position.x / PIXEL_TO_METER;
-	body_def.position.y = Position.y / PIXEL_TO_METER;
-	m_Body = PhysicsWorld->CreateBody(&body_def);
-
-	b2CircleShape shape;
-	shape.m_radius = Radius / PIXEL_TO_METER;
-	
 	b2FixtureDef fixture_definition;
-	fixture_definition.shape = &shape;
-	fixture_definition.density = Density;
-	fixture_definition.friction = Friction;
 
-	m_Body->CreateFixture(&fixture_definition);
-}
-
-void PhysicsBody::InitPhysicsBodyPolygon(b2World* PhysicsWorld, b2BodyType BodyType, Vector2 Polygons[], int32 PolygonCount, float Friction, float Density)
-{
-	b2BodyDef body_def;
-	body_def.type = BodyType;
-	body_def.angle = Angle / RADIAN_IN_DEGREES;
-	body_def.position.x = Position.x / PIXEL_TO_METER;
-	body_def.position.y = Position.y / PIXEL_TO_METER;
-	m_Body = PhysicsWorld->CreateBody(&body_def);
-
-	b2PolygonShape shape;
-
-	b2Vec2 polygon_points[PolygonCount];
-
-	for(int i = 0; i < PolygonCount; i++){
-		polygon_points[i] = b2Vec2(Polygons[i].x / PIXEL_TO_METER, Polygons[i].y / PIXEL_TO_METER);
+	switch (_Collider->ColliderType)
+	{
+	case Collider::Type::BOX:
+		fixture_definition.shape = (b2PolygonShape*)_Collider->Shape;
+		break;
+	case Collider::Type::CIRCLE:
+		fixture_definition.shape = (b2CircleShape*)_Collider->Shape;
+		break;
+	case Collider::Type::POLYGON:
+		fixture_definition.shape = (b2PolygonShape*)_Collider->Shape;
+		break;
+	default:
+		break;
 	}
-
-	shape.Set(polygon_points, PolygonCount);
-
-	b2FixtureDef fixture_definition;
-	fixture_definition.shape = &shape;
-	fixture_definition.density = Density;
-	fixture_definition.friction = Friction;
+	
+	fixture_definition.density = m_Density;
+	fixture_definition.friction = m_Friction;
 
 	m_Body->CreateFixture(&fixture_definition);
 }

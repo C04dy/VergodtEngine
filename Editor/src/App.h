@@ -23,7 +23,15 @@ public:
         NODE = 0,
         SPRITE = 1,
         CAM = 2,
-        PHYSICSBODY = 3
+        PHYSICSBODY = 3,
+        COLLIDER = 4
+    };
+
+    enum class ColliderType
+    {
+        BOX = 0,
+        CIRCLE = 1,
+        POLYGONS = 2
     };
 
     struct NodeValue
@@ -32,18 +40,64 @@ public:
         enum class Type
         {
             NULLTYPE = 0,
-            STRING = 1
+            STRING = 1,
+            INT = 2,
+            FLOAT = 3,
+            VECTOR2 = 4,
+            VECTORARRAY = 5
         };
 
-        NodeValue(void* value, Type type)
+        NodeValue(void* _Value, Type _Type)
         {
-            Value = value;
-            ValueType = type;
+            Value = _Value;
+            ValueType = _Type;
+        }
+
+        NodeValue(void* _Value, Type _Type, const std::vector<std::string>& _ComboValues)
+        {
+            Value = _Value;
+            ValueType = _Type;
+
+            ComboValues = _ComboValues;
+        }
+
+        NodeValue(std::vector<void*> _Value)
+        {
+            VectorValues = _Value;
+            ValueType = Type::VECTORARRAY;
+        }
+
+        ~NodeValue()
+        {
+            switch (ValueType)
+            {
+            case Type::FLOAT:
+                delete (float*)Value;
+                break;
+            case Type::INT:
+                delete (int*)Value;
+                break;
+            case Type::STRING:
+                delete (std::string*)Value;
+                break;
+            case Type::VECTOR2:
+                delete (ImVec2*)Value;
+                break;
+            default:
+                break;
+            }
+
+            Value = nullptr;
+            ComboValues.clear();
         }
     public:
         void* Value = nullptr;
 
+        std::vector<void*> VectorValues;
+
         Type ValueType = Type::NULLTYPE;
+
+        std::vector<std::string> ComboValues;
     };
 public:
     Node(ImVec2 _Position = ImVec2(0, 0), Type _NodeType = Type::NODE)
@@ -54,14 +108,14 @@ public:
         switch (NodeType)
         {
         case Node::Type::SPRITE:
-            NodeValues.push_back(Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
+            NodeValues.push_back(new Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
             break;
         default:
             break;
         }
 
-        ID = s_id;
-        s_id += 1;
+        ID = s_IDs;
+        s_IDs += 1;
     }
 
     bool isEqual(const Node& Other) const
@@ -78,7 +132,7 @@ public:
         return isEqual(*Other);
     }
 private:
-    static int s_id;
+    static int s_IDs;
 public:
     int ID;
     
@@ -90,7 +144,7 @@ public:
 
     float Angle = 0;
 
-    std::vector<NodeValue> NodeValues;
+    std::vector<NodeValue*> NodeValues;
 
     bool IsChild = false;
 

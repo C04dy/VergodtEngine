@@ -13,7 +13,7 @@ class Scripting;
 class Inspector
 {
 public:
-    Inspector();
+    Inspector() = default;
 
     void InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scripting* ScriptingTab);
 private:

@@ -10,8 +10,7 @@ struct Node;
 class SceneView
 {
 public:
-    SceneView();
-    ~SceneView();
+    SceneView() = default;
 
     void SceneViewSpace(std::vector<Node>& Nodes, int& SelectedNode);
 private:

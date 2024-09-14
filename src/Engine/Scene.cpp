@@ -22,11 +22,12 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
         if (line.at(0) != '#')
         {
             std::string current_node_type = GetLineBetween(line, "[NODETYPE=", "]");
+            
             if (current_node_type == "NODE")
             {
                 Node* node = new Node();
 
-                node->Type = Node::Type::NODE;
+                node->NodeType = Node::Type::NODE;
 
                 SetNode(node, line, m_Input);
  
@@ -36,7 +37,7 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
             }
             else if (current_node_type == "CAMERA")
             {
-                m_MainCamera.Type = Node::Type::CAM;
+                m_MainCamera.NodeType = Node::Type::CAM;
                 SetNode(&m_MainCamera, line, m_Input);
 
                 m_Nodes.push_back(&m_MainCamera);
@@ -47,7 +48,7 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
 
                 Sprite* sprite = new Sprite();
 
-                sprite->Type = Node::Type::SPRITE;
+                sprite->NodeType = Node::Type::SPRITE;
 
                 sprite->InitSprite(asset_file_path, &m_MainCamera, m_Renderer);
 
@@ -61,7 +62,7 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
             {
                 PhysicsBody* physics_body = new PhysicsBody;
 
-                physics_body->Type = Node::Type::PHYSICSBODY;
+                physics_body->NodeType = Node::Type::PHYSICSBODY;
 
                 SetNode(physics_body, line, m_Input);
 
@@ -87,19 +88,33 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
                 float friction = std::stof(GetLineBetween(line, "[FRICTION=", "]"));
                 float density = std::stof(GetLineBetween(line, "[DENSITY=", "]"));
 
-                std::string colllider_type = GetLineBetween(line ,"[COLLIDER=", "]");
+                physics_body->InitPhysicsBody(m_Nodes, m_PhysicsWorld, body_type, friction, density);
+
+                m_Nodes.push_back(physics_body);
+            }
+            else if (current_node_type == "COLLIDER")
+            {
+                Collider* collider = new Collider;
+
+                collider->NodeType = Node::Type::COLLIDER;
+
+                SetNode(collider, line, m_Input);
+
+                SetChild(collider, m_Nodes, line, index_offset);
+
+                std::string colllider_type = GetLineBetween(line, "[COLLIDERTYPE=", "]");
 
                 if (colllider_type == "BOX")
                 {
                     std::string size = GetLineBetween(line, "[COLLIDERSIZE(", ")");
 
-                    physics_body->InitPhysicsBodyBox(m_PhysicsWorld, body_type, Vector2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ","))), friction, density);
+                    collider->CreateBoxShape(Vector2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ","))));
                 }
                 else if (colllider_type == "CIRCLE")
                 {
                     float radius = std::stof(GetLineBetween(line, "[RADIUS=", "]"));
 
-                    physics_body->InitPhysicsBodyCircle(m_PhysicsWorld, body_type, radius, friction, density);
+                    collider->CreateCircleShape(radius);
                 }
                 else if (colllider_type == "POLYGON")
                 {
@@ -117,13 +132,14 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
                         polygons[i].y = std::stof(GetLineBetween(current_polygon, ","));
                     }
                     
-                    physics_body->InitPhysicsBodyPolygon(m_PhysicsWorld, body_type, polygons, polygon_count, friction, density);
+                    collider->CreatePolygonShape(polygons, polygon_count);
                 }
 
-                m_Nodes.push_back(physics_body);
+                m_Nodes.push_back(collider);
             }
         }
     }
+    
     scene_file.close();
 }
 
@@ -131,7 +147,7 @@ void Scene::UpdateChilds()
 {
     for (Node* node : m_Nodes)
     {
-        node->UpdateChild();
+        node->UpdateChild(m_Nodes);
     }
 }
 
@@ -156,7 +172,7 @@ void Scene::Update(double Delta)
     UpdateChilds();
     for (Node* node : m_Nodes)
     {
-        switch (node->Type)
+        switch (node->NodeType)
         {
         case Node::Type::PHYSICSBODY:
             ((PhysicsBody*)node)->UpdatePhysicsNode();
@@ -175,7 +191,7 @@ void Scene::Draw()
 {
     for (Node* node : m_Nodes)
     {
-        switch (node->Type)
+        switch (node->NodeType)
         {
         case Node::Type::SPRITE:
             ((Sprite*)node)->DrawImage();
@@ -188,19 +204,5 @@ void Scene::Draw()
 
 void Scene::Clean()
 {
-    for (Node* node : m_Nodes)
-    {
-        switch (node->Type)
-        {
-        case Node::Type::SPRITE:
-        ((Sprite*)node)->DeleteTexture();
-            break;
-        case Node::Type::PHYSICSBODY:
-        ((PhysicsBody*)node)->DeletePhysicsBody();
-            break;
-        default:
-            break;
-        }
-    }
     m_Nodes.clear();
 }

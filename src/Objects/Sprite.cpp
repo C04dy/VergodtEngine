@@ -1,16 +1,16 @@
 #include "Sprite.h"
 
+Sprite::~Sprite()
+{
+    SDL_DestroyTexture(m_Texture);
+}
+
 void Sprite::InitSprite(const std::string& FilePath, Camera* Camera, SDL_Renderer* Renderer)
 {
     m_Renderer = Renderer;
-    Type = Node::Type::SPRITE;
+    NodeType = Node::Type::SPRITE;
     SetCam(Camera);
     LoadImage(FilePath);
-}
-
-void Sprite::DeleteTexture()
-{
-    SDL_DestroyTexture(m_Texture);
 }
 
 void Sprite::LoadImage(const std::string& FilePath)
@@ -53,6 +53,6 @@ void Sprite::SetCam(Camera* Camera)
 
 void Sprite::ChangeTexture(const std::string& FilePath)
 {
-    DeleteTexture();
+    SDL_DestroyTexture(m_Texture);
     LoadImage(FilePath);
 }

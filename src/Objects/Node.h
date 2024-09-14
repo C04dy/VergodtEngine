@@ -19,25 +19,34 @@ public:
 		NODE = 0,
 		SPRITE = 1,
 		PHYSICSBODY = 2,
-		CAM = 3
+		CAM = 3,
+		COLLIDER = 4
 	};
 public:
+	void AddChild(Node* Child);
+
+	void UpdateChild(std::vector<Node*>& Nodes);
+
+	void SetID();
+public:
+	int ID;
+
 	Vector2 Position = Vector2(0, 0);
 	Vector2 LocalPosition = Vector2(0, 0);
 	Vector2 Size = Vector2(1, 1);
 	float Angle = 0;
 
-	void AddChild(Node* Child);
-
-	void UpdateChild();
-
 	std::string Name;
 
-	Type Type = Type::NODE;
+	Type NodeType = Type::NODE;
 
 	VisualScript* Script = nullptr;
-private:
-	std::vector<Node*> m_ChildNodes;
+
+	int ParentID = -1;
+protected:
+	std::vector<int> m_ChildIDs;
+
+	static int s_IDs;
 };
 
 #endif

@@ -2,15 +2,7 @@
 #include "imgui.h"
 #include "App.h"
 //#include <algorithm>
-#include <bits/stdc++.h> 
-
-SceneView::SceneView() {
-
-}
-
-SceneView::~SceneView() {
-
-}
+#include <bits/stdc++.h>
 
 void SceneView::SceneViewSpace(std::vector<Node>& Nodes, int& SelectedNode)
 {

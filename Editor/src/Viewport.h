@@ -11,8 +11,7 @@ class SDL_Renderer;
 class Viewport
 {
 public:
-    Viewport();
-    ~Viewport();
+    Viewport() = default;
 
     void ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, int& SelectedNode);
 private:

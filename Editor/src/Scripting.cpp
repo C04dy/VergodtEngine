@@ -9,50 +9,45 @@
 // Used this example as a base here since i started using ImGui for the first time and started to learn it from here
 // https://gist.github.com/ocornut/7e9b3ec566a333d725d4
 
-void CreateKeyboardInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int Key, int Type)
+static void CreateKeyboardInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int Key, int Type)
 {
     Nodes.push_back(Scripting::ScriptingNode(Position, "KEYBOARDINPUT", 0, 1, "Keyboard Input"));
 
     Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValue::Type::INT, new int(Key), "Key"));
-    Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("None");
-    Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("A");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("None");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("A");
 
     Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValue::Type::INT, new int(Type), "Input Type"));
-    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("None");
-    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is Key Just Pressed");
-    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is Key Just Released");
-    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is Key Pressed");
-    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is Key Not Pressed");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboValues.push_back("None");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboValues.push_back("Is Key Just Pressed");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboValues.push_back("Is Key Just Released");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboValues.push_back("Is Key Pressed");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboValues.push_back("Is Key Not Pressed");
 }
 
-void CreateMouseInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int Key, int Type)
+static void CreateMouseInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int Key, int Type)
 {
     Nodes.push_back(Scripting::ScriptingNode(Position, "MOUSEINPUT", 0, 1, "Mouse Input"));
 
     Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValue::Type::INT, new int(Key), "Key"));
-    Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("None");
-    Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("Mouse Button Left");
-    Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("Mouse Button Middle");
-    Nodes[Nodes.size() - 1].NodeValues[0].ComboItems.push_back("Mouse Button Right");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("None");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("Mouse Button Left");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("Mouse Button Middle");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("Mouse Button Right");
 
     Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValue::Type::INT, new int(Type), "Input Type"));
-    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("None");
-    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is MouseKey Just Pressed");
-    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is MouseKey Just Released");
-    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is MouseKey Pressed");
-    Nodes[Nodes.size() - 1].NodeValues[1].ComboItems.push_back("Is MouseKey Not Pressed");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboValues.push_back("None");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboValues.push_back("Is MouseKey Just Pressed");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboValues.push_back("Is MouseKey Just Released");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboValues.push_back("Is MouseKey Pressed");
+    Nodes[Nodes.size() - 1].NodeValues[1].ComboValues.push_back("Is MouseKey Not Pressed");
 }
 
-void CreatePrintNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, const std::string& Message)
+static void CreatePrintNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, const std::string& Message)
 {
     Nodes.push_back(Scripting::ScriptingNode(Position, "PRINT", 1, 1, "Print"));
     
     Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValue::Type::STRING, new std::string(Message), "Message"));
-}
-
-Scripting::Scripting()
-{
-
 }
 
 void Scripting::SaveScript(const std::string& ScriptPath)
@@ -74,17 +69,17 @@ void Scripting::SaveScript(const std::string& ScriptPath)
         else if (IsLineExist(m_Scripts[m_CurrentScript].Nodes[i].Type, "KEYBOARDINPUT"))
         {
             line += "[INPUTTYPE=";
-            line += RemoveSpaceAndUpperCase(m_Scripts[m_CurrentScript].Nodes[i].NodeValues[1].ComboItems[*(int*)m_Scripts[m_CurrentScript].Nodes[i].NodeValues[1].Value]);
+            line += RemoveSpaceAndUpperCase(m_Scripts[m_CurrentScript].Nodes[i].NodeValues[1].ComboValues[*(int*)m_Scripts[m_CurrentScript].Nodes[i].NodeValues[1].Value]);
             line += "] ";
             
             line += "[KEY=";
-            line += m_Scripts[m_CurrentScript].Nodes[i].NodeValues[0].ComboItems[*(int*)m_Scripts[m_CurrentScript].Nodes[i].NodeValues[0].Value];
+            line += m_Scripts[m_CurrentScript].Nodes[i].NodeValues[0].ComboValues[*(int*)m_Scripts[m_CurrentScript].Nodes[i].NodeValues[0].Value];
             line += "] ";
         }
         else if (IsLineExist(m_Scripts[m_CurrentScript].Nodes[i].Type, "MOUSEINPUT"))
         {
             line += "[INPUTTYPE=";
-            line += RemoveSpaceAndUpperCase(m_Scripts[m_CurrentScript].Nodes[i].NodeValues[1].ComboItems[*(int*)m_Scripts[m_CurrentScript].Nodes[i].NodeValues[1].Value]);
+            line += RemoveSpaceAndUpperCase(m_Scripts[m_CurrentScript].Nodes[i].NodeValues[1].ComboValues[*(int*)m_Scripts[m_CurrentScript].Nodes[i].NodeValues[1].Value]);
             line += "] ";
             
             line += "[KEY=";
@@ -356,16 +351,18 @@ void Scripting::ScriptingSpace()
                 case ScriptingNodeValue::Type::INT: {
                     int int_value = *((int*)m_Scripts[m_CurrentScript].Nodes[i].NodeValues[j].Value);
 
-                    if (m_Scripts[m_CurrentScript].Nodes[i].NodeValues[j].ComboItems.size() != 0)
+                    if (m_Scripts[m_CurrentScript].Nodes[i].NodeValues[j].ComboValues.size() != 0)
                     {
-                        if (ImGui::BeginCombo(valuename, m_Scripts[m_CurrentScript].Nodes[i].NodeValues[j].ComboItems[int_value].c_str()))
+                        if (ImGui::BeginCombo(valuename, m_Scripts[m_CurrentScript].Nodes[i].NodeValues[j].ComboValues[int_value].c_str()))
                         {
-                            for (int x = 0; x < static_cast<int>(m_Scripts[m_CurrentScript].Nodes[i].NodeValues[j].ComboItems.size()); x++)
+                            for (int x = 0; x < static_cast<int>(m_Scripts[m_CurrentScript].Nodes[i].NodeValues[j].ComboValues.size()); x++)
                             {
                                 const bool isSelected = (int_value == x);
-                                if (ImGui::Selectable(m_Scripts[m_CurrentScript].Nodes[i].NodeValues[j].ComboItems[x].c_str(), isSelected))
+                                if (ImGui::Selectable(m_Scripts[m_CurrentScript].Nodes[i].NodeValues[j].ComboValues[x].c_str(), isSelected))
                                 {
                                     int_value = x;
+                                    delete (int*)m_Scripts[m_CurrentScript].Nodes[i].NodeValues[j].Value;
+                                    m_Scripts[m_CurrentScript].Nodes[i].NodeValues[j].Value = nullptr;
                                     m_Scripts[m_CurrentScript].Nodes[i].NodeValues[j].Value = new int(int_value);
                                     m_Scripts[m_CurrentScript].Saved = false;
                                 }
@@ -599,7 +596,7 @@ void Scripting::ScriptingSpace()
                         break;
                     }
                     m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedNode].NodeValues[i].Value = nullptr;
-                    m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedNode].NodeValues[i].ComboItems.clear();
+                    m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedNode].NodeValues[i].ComboValues.clear();
                 }
                 m_Scripts[m_CurrentScript].Nodes.erase(m_Scripts[m_CurrentScript].Nodes.begin() + m_Scripts[m_CurrentScript].SelectedNode);
                 for (int i = 0; i < static_cast<int>(m_Scripts[m_CurrentScript].Links.size()); i++)

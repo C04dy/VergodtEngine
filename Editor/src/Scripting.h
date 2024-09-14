@@ -34,7 +34,7 @@ public:
 
         std::string ValueName = "Val";
 
-        std::vector<std::string> ComboItems;
+        std::vector<std::string> ComboValues;
     };
 
     struct ScriptingNode
@@ -83,7 +83,7 @@ public:
         std::string ScriptName;
     };
 public:
-    Scripting();
+    Scripting() = default;
 
     void ScriptingSpace();
 

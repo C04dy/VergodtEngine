@@ -68,7 +68,7 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input)
             }
             else if (node_type == "APPLYFORCE")
             {
-                if (_Node->Type != Node::Type::PHYSICSBODY)
+                if (_Node->NodeType != Node::Type::PHYSICSBODY)
                 {
                     ScriptError("APPLYFORCE ScriptNode only works with PhysicsBody Node.", file_path);
                     return;
@@ -82,7 +82,7 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input)
             }
             else if (node_type == "SETVELOCITY")
             {
-                if (_Node->Type != Node::Type::PHYSICSBODY)
+                if (_Node->NodeType != Node::Type::PHYSICSBODY)
                 {
                     ScriptError("APPLYFORCE ScriptNode only works with PhysicsBody Node.", file_path);
                     return;
@@ -118,6 +118,8 @@ void SetNode(Node* _Node, const std::string& Line, InputManager* Input)
     }
     
     _Node->Name = GetLineBetween(Line, "[NAME=", "]");
+
+    _Node->SetID();
 
     SetScript(_Node, Line, Input);
 }

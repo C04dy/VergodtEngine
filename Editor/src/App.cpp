@@ -13,12 +13,15 @@
 #include <functional>
 #include <nfd.h>
 
-int Node::s_id = 0;
+int Node::s_IDs = 0;
 
 App::~App()
 {
+    for (Node node : m_Nodes)
+        node.NodeValues.clear();
+
     NFD_Quit();
-    
+
     ImGui_ImplSDLRenderer3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
@@ -64,16 +67,62 @@ void App::LoadSceneFile(const std::string& FilePath)
                 m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::SPRITE;
                 if (IsLineExist(line, "[ASSET="))
                 {
-                    m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string(GetLineBetween(line, "[ASSET=", "]")), Node::NodeValue::Type::STRING));
+                    m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new std::string(GetLineBetween(line, "[ASSET=", "]")), Node::NodeValue::Type::STRING));
                 }
                 else
                 {
-                    m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
+                    m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
                 }
             }
             else if (type == "CAMERA")
             {
                 m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::CAM;
+            }
+            else if (type == "COLLIDER")
+            {
+                m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::COLLIDER;
+
+
+                if (IsLineExist(line, "[COLLIDERTYPE="))
+                {
+                    std::string collider_type = GetLineBetween(line, "[COLLIDERTYPE=", "]");
+
+                    if (collider_type == "BOX")
+                    {
+                        m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new Node::ColliderType(Node::ColliderType::BOX), Node::NodeValue::Type::INT, { "Box", "Circle", "Polygon" }));
+
+                        std::string size = GetLineBetween(line, "[COLLIDERSIZE(", ")]");
+                        m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new ImVec2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ","))), Node::NodeValue::Type::VECTOR2));
+                    }
+                    else if (collider_type == "CIRCLE")
+                    {
+                        m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new Node::ColliderType(Node::ColliderType::CIRCLE), Node::NodeValue::Type::INT, { "Box", "Circle", "Polygon" }));
+                    }
+                    else if (collider_type == "POLYGON")
+                    {
+                        m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new Node::ColliderType(Node::ColliderType::POLYGONS), Node::NodeValue::Type::INT, { "Box", "Circle", "Polygon" }));
+
+                        std::vector<void*> points;
+
+                        int point_count = std::stoi(GetLineBetween(line, "[POINTCOUNT=(", ")]"));
+
+                        std::string polygon_points = GetLineBetween(line, "[POINTS=", "]");
+
+                        for (int i = 0; i < point_count; i++)
+                        {
+                            points.push_back(new ImVec2(std::stof(GetLineBetween(polygon_points, "(", ",")), std::stof(GetLineBetween(polygon_points, ",", ")"))));
+
+                            std::cout << polygon_points << '\n';
+                            if (i != point_count)
+                                polygon_points.erase(0, GetLineBetween(polygon_points, "(", ")").size() + 3);
+                            else
+                                polygon_points.erase(0, GetLineBetween(polygon_points, "(", ")").size() + 2);
+                            std::cout << polygon_points << '\n';
+                        }
+
+                        m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(points));
+                    }
+                }
             }
 
             if (IsLineExist(line, "[POSITION("))
@@ -185,14 +234,14 @@ void App::Init()
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != nullptr);
 
-    m_io->Fonts->AddFontFromFileTTF("../../Assets/JetBrainsMono-Medium.ttf", 15.0f);
-    m_io->IniFilename = "../../Assets/VergodtEngine.ini";
+    m_io->Fonts->AddFontFromFileTTF("../Assets/JetBrainsMono-Medium.ttf", 15.0f);
+    m_io->IniFilename = "../Assets/VergodtEngine.ini";
 
     NFD_Init();
     
     // Load Scene
 
-    LoadSceneFile("../../Assets/FlappyBird/FlappyBird.vscene");
+    LoadSceneFile("../Assets/FlappyBird/FlappyBird.vscene");
 
     // Main loop
     m_Running = true;
