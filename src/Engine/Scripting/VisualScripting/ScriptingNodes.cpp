@@ -205,38 +205,38 @@ void ConditionNode::SendSignal()
 
 // ADDFORCE NODE 
 
-ApplyForceNode::ApplyForceNode(PhysicsBody* Body, const Vector2& Force)
-{
-    m_Body = Body;
-    m_Force = Force;
-}
-
 ApplyForceNode::~ApplyForceNode()
 {
-    m_Body = nullptr;
+    m_BodyID = nullptr;
+}
+
+ApplyForceNode::ApplyForceNode(b2BodyId& BodyID, const Vector2& Force)
+{
+    m_BodyID = &BodyID;
+    m_Force = Force;
 }
 
 void ApplyForceNode::NodesFunction()
 {
-    m_Body->GetBody()->ApplyForceToCenter(m_Force, true);
+    b2Body_ApplyForceToCenter(*m_BodyID, m_Force, true);
 }
 
 // SETFORCE NODE 
 
-SetVelocityNode::SetVelocityNode(PhysicsBody* Body, const Vector2& Velocity)
-{
-    m_Body = Body;
-    m_Velocity = Velocity;
-}
-
 SetVelocityNode::~SetVelocityNode()
 {
-    m_Body = nullptr;
+    m_BodyID = nullptr;
+}
+
+SetVelocityNode::SetVelocityNode(b2BodyId& BodyID, const Vector2& Velocity)
+{
+    m_BodyID = &BodyID;
+    m_Velocity = Velocity;
 }
 
 void SetVelocityNode::NodesFunction()
 {
-    m_Body->GetBody()->SetLinearVelocity(m_Velocity);
+    b2Body_SetLinearVelocity(*m_BodyID, m_Velocity);
 }
 
 // VISUAL SCRIPT

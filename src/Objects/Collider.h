@@ -5,7 +5,6 @@
 
 #include "Node.h"
 
-class b2Shape;
 
 class Collider : public Node
 {
@@ -24,11 +23,12 @@ public:
 
     void CreateCircleShape(float Radius);
 
-    void CreatePolygonShape(Vector2 Polygons[], int32 PolygonCount);
+    void CreatePolygonShape(Vector2 Polygons[], int32_t PolygonCount);
 public:
     Type ColliderType = Type::NONE;
 
-    b2Shape* Shape = nullptr;
+    b2Polygon PolygonShape;
+    b2Circle CircleShape;
 };
 
 #endif

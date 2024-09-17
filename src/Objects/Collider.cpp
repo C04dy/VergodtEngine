@@ -6,38 +6,34 @@
 
 Collider::~Collider()
 {
-    delete Shape;
-    Shape = nullptr;
+
 }
 
 void Collider::CreateBoxShape(Vector2 ColliderSize)
 {
-    Shape = new b2PolygonShape();
-
-    ((b2PolygonShape*)Shape)->SetAsBox(((ColliderSize.x / 2) / PIXEL_TO_METER) * Size.x, ((ColliderSize.y / 2) / PIXEL_TO_METER) * Size.y);
-
+    PolygonShape = b2MakeBox(ColliderSize.x * Size.x, ColliderSize.y * Size.y);
+    
     ColliderType = Type::BOX;
 }
 
 void Collider::CreateCircleShape(float Radius)
 {
-    Shape = new b2CircleShape();
-
-    ((b2CircleShape*)Shape)->m_radius = Radius / PIXEL_TO_METER;
+    CircleShape.center = LocalPosition;
+    CircleShape.radius = Radius;
 
     ColliderType = Type::CIRCLE;
 }
 
-void Collider::CreatePolygonShape(Vector2 Polygons[], int32 PolygonCount)
+void Collider::CreatePolygonShape(Vector2 Polygons[], int32_t PolygonCount)
 {
-    Shape = new b2PolygonShape();
+    b2Vec2 points[PolygonCount];
 
-	b2Vec2 polygon_points[PolygonCount];
+    for (int i = 0; i < PolygonCount; i++)
+        points[i] = Polygons[i];
 
-	for (int i = 0; i < PolygonCount; i++)
-		polygon_points[i] = b2Vec2(Polygons[i].x / PIXEL_TO_METER, Polygons[i].y / PIXEL_TO_METER);
+    b2Hull h = b2ComputeHull(points, PolygonCount);
 
-    ((b2PolygonShape*)Shape)->Set(polygon_points, PolygonCount);
+    PolygonShape = b2MakePolygon(&h, 0.0f);
 
     ColliderType = Type::POLYGON;
 }

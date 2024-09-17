@@ -26,7 +26,7 @@ public:
 	void RemoveNodeFromScene(Node* _Node);
 
 	void SetRenderer(SDL_Renderer* Renderer) { m_Renderer = Renderer; }
-	void SetPhysicsWorld(b2World* PhysicsWorld) { m_PhysicsWorld = PhysicsWorld; }
+	void SetPhysicsWorldID(b2WorldId& PhysicsWorld) { m_PhysicsWorldID = PhysicsWorld; }
 
 	std::string GetGameName() { return m_GameName; }
 	void SetGameName(const std::string& GameName) { m_GameName = GameName; }
@@ -47,7 +47,7 @@ private:
 private:
 	SDL_Renderer* m_Renderer = nullptr;
 
-	b2World* m_PhysicsWorld = nullptr;
+	b2WorldId m_PhysicsWorldID;
 
 	InputManager* m_Input = nullptr;
 

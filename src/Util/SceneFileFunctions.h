@@ -73,7 +73,7 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input)
                     ScriptError("APPLYFORCE ScriptNode only works with PhysicsBody Node.", file_path);
                     return;
                 }
-                ApplyForceNode* apply_force_node = new ApplyForceNode((PhysicsBody*)_Node, Vector2(std::stof(GetLineBetween(line, "[FORCEX=", "]")), std::stof(GetLineBetween(line, "[FORCEY=", "]"))));
+                ApplyForceNode* apply_force_node = new ApplyForceNode(((PhysicsBody*)_Node)->BodyID, Vector2(std::stof(GetLineBetween(line, "[FORCEX=", "]")), std::stof(GetLineBetween(line, "[FORCEY=", "]"))));
 
                 all_script_nodes.push_back(apply_force_node);
 
@@ -87,7 +87,7 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input)
                     ScriptError("APPLYFORCE ScriptNode only works with PhysicsBody Node.", file_path);
                     return;
                 }
-                SetVelocityNode* set_velocity_node = new SetVelocityNode((PhysicsBody*)_Node, Vector2(std::stof(GetLineBetween(line, "[VELOCITYX=", "]")), std::stof(GetLineBetween(line, "[VELOCITYY=", "]"))));
+                SetVelocityNode* set_velocity_node = new SetVelocityNode(((PhysicsBody*)_Node)->BodyID, Vector2(std::stof(GetLineBetween(line, "[VELOCITYX=", "]")), std::stof(GetLineBetween(line, "[VELOCITYY=", "]"))));
 
                 all_script_nodes.push_back(set_velocity_node);
 

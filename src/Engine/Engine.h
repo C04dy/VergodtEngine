@@ -5,8 +5,6 @@
 #include <iostream>
 #include <string>
 
-class b2World;
-
 class Engine
 {
 public:
@@ -17,7 +15,5 @@ public:
 	void SetRunning(bool Running) { m_Running = Running; }
 private:
 	bool m_Running = true;
-
-	b2World* m_PhysicsWorld = nullptr;
 };
 

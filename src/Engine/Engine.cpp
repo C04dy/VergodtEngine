@@ -2,7 +2,7 @@
 #include "Scene.h"
 #include "Input.h"
 #include "Window.h"
-#include <box2d/b2_world.h>
+#include <box2d/box2d.h>
 
 void Engine::EngineStart()
 {
@@ -26,19 +26,21 @@ void Engine::EngineStart()
 
     SDL_Event event;
 
-	int32 velocity_iterations = 6;
-	int32 position_iterations = 2;
+	uint32_t velocity_iterations = 6;
+	uint32_t position_iterations = 2;
 
-    m_PhysicsWorld = new b2World({ 0.0f, 9.8f });
+    b2WorldDef world_def = b2DefaultWorldDef();
 
-    m_PhysicsWorld->SetWarmStarting(true);
-    m_PhysicsWorld->SetContinuousPhysics(true);
+    world_def.enableContinuous = true;
+    world_def.gravity = (b2Vec2){ 0.0f, 9.5f };
+
+    b2WorldId PhysicsWorldID = b2CreateWorld(&world_def);
 
     double end_time = 0;
     double delta = 0;
 
     scene.SetRenderer(window_pointer->GetRenderer());
-    scene.SetPhysicsWorld(m_PhysicsWorld);
+    scene.SetPhysicsWorldID(PhysicsWorldID);
     scene.SetInput(&input);
     scene.Start();
 
@@ -58,7 +60,7 @@ void Engine::EngineStart()
 
         scene.Update(delta);
 
-        m_PhysicsWorld->Step(delta, velocity_iterations, position_iterations);
+        b2World_Step(PhysicsWorldID, delta, 4);
 
         SDL_SetRenderDrawColor(window_pointer->GetRenderer(), 0, 0, 0, 255);
         SDL_RenderClear(window_pointer->GetRenderer());
@@ -68,8 +70,7 @@ void Engine::EngineStart()
 
     scene.Clean();
 
-    delete m_PhysicsWorld;
-    m_PhysicsWorld = nullptr;
+    b2DestroyWorld(PhysicsWorldID);
     delete window_pointer;
     window_pointer = nullptr;
 

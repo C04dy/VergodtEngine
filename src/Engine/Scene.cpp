@@ -89,7 +89,7 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
                 float friction = std::stof(GetLineBetween(line, "[FRICTION=", "]"));
                 float density = std::stof(GetLineBetween(line, "[DENSITY=", "]"));
 
-                ((PhysicsBody*)m_Nodes[m_Nodes.size() - 1])->InitPhysicsBody(m_Nodes, m_PhysicsWorld, body_type, friction, density);
+                ((PhysicsBody*)m_Nodes[m_Nodes.size() - 1])->InitPhysicsBody(m_Nodes, m_PhysicsWorldID, body_type, friction, density);
             }
             else if (current_node_type == "COLLIDER")
             {
@@ -117,7 +117,7 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
                 }
                 else if (colllider_type == "POLYGON")
                 {
-                    int32 point_count = std::stoi(GetLineBetween(line, "[POINTCOUNT=(", ")]"));
+                    int32_t point_count = std::stoi(GetLineBetween(line, "[POINTCOUNT=(", ")]"));
 
                     Vector2 polygons[point_count];
 

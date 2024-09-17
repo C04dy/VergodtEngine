@@ -104,13 +104,12 @@ class PhysicsBody;
 class ApplyForceNode : public ScriptingNode
 {
 public:
-    ApplyForceNode(PhysicsBody* Body, const Vector2& Force);
-
     ~ApplyForceNode();
+    ApplyForceNode(b2BodyId& BodyID, const Vector2& Force);
 
     void NodesFunction() override;
 private:
-    PhysicsBody* m_Body = nullptr;
+    b2BodyId* m_BodyID;
 
     Vector2 m_Force;
 };
@@ -118,13 +117,12 @@ private:
 class SetVelocityNode : public ScriptingNode
 {
 public:
-    SetVelocityNode(PhysicsBody* Body, const Vector2& Force);
-
     ~SetVelocityNode();
+    SetVelocityNode(b2BodyId& BodyID, const Vector2& Force);
 
     void NodesFunction() override;
 private:
-    PhysicsBody* m_Body = nullptr;
+    b2BodyId* m_BodyID = nullptr;
 
     Vector2 m_Velocity;
 };

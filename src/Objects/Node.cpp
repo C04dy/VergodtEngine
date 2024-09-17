@@ -26,7 +26,7 @@ void Node::AddChild(Node* Child)
 	switch (Child->NodeType)
 	{
 	case Type::PHYSICSBODY:
-		((PhysicsBody*)Child)->GetBody()->SetTransform(Child->Position / 100, Child->Angle);
+		b2Body_SetTransform(((PhysicsBody*)Child)->BodyID, Child->Position, b2MakeRot(Child->Angle));
 		break;
 	default:
 		break;

@@ -5,7 +5,7 @@ project(VergodtEngine)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_compile_options(-O3 -Wall -static-libgcc -static-libstdc++ -pg)
+add_compile_options(-O3 -Wall -static-libgcc -static-libstdc++ -pg -Wno-unused-variable)
 add_link_options(-pg)
 
 if (WIN32)
@@ -19,6 +19,10 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(BUILD_INSTALL OFF CACHE BOOL "" FORCE)
 set(DISABLE_DYNAMIC ON CACHE BOOL "" FORCE)
+set(SDL_STATIC ON)
+set(SDLIMAGE_BUILD_SHARED_LIBS OFF)
+set(BUILD_SHARED_LIBS OFF)
+
 
 add_subdirectory(vendor/box2d)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
@@ -32,4 +36,4 @@ add_executable(${PROJECT_NAME} ${SRCS})
 include_directories(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL_image/include ${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL/include 
                     ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/Math ${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Scripting)
 
-target_link_libraries(${PROJECT_NAME} SDL3::SDL3 SDL3_image-static box2d)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3-static SDL3_image-static box2d)

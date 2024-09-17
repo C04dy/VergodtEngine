@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <box2d/b2_math.h>
+#include <box2d/box2d.h>
 #include "iostream"
 
 class Vector2
@@ -31,7 +31,7 @@ public:
 
 	Vector2 AddToVec2(const Vector2& other);
 
-	operator b2Vec2() const { return b2Vec2(x, y); }
+	operator b2Vec2() const { return (b2Vec2) { x, y }; }
 
 	float x = 0.0f, y = 0.0f;
 };

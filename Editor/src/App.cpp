@@ -188,10 +188,7 @@ void App::LoadSceneFile(const std::string& FilePath)
                     {
                         m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new Node::ColliderType(Node::ColliderType::CIRCLE), Node::NodeValue::Type::INT, { "Box", "Circle", "Polygon" }));
 
-                        std::cout << "h1\n";
                         m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new float(std::stof(GetLineBetween(line, "[RADIUS=(", ")]"))), Node::NodeValue::Type::FLOAT));
-                        std::cout << "h2\n";
-
                     }
                     else if (collider_type == "POLYGON")
                     {
