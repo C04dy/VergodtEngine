@@ -183,10 +183,10 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
             }   break;
             case Node::ColliderType::CIRCLE: {
                 ImVec2 minrec(Nodes[i].Position.x + draw_list_offset.x, Nodes[i].Position.y + draw_list_offset.y);
-                draw_list->AddCircle(minrec, (*(float*)Nodes[i].NodeValues[1]->Value)* Nodes[i].Size.x, IM_COL32(255, 99, 71, 255), 0.0f, 5);
+                draw_list->AddEllipse(minrec, ImVec2((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.x, (*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y), IM_COL32(255, 99, 71, 255), 0.0f, 0, 5);
 
-                ImGui::SetCursorPos(ImVec2(Nodes[i].Position.x + offset.x, Nodes[i].Position.y + offset.y));
-                ImGui::InvisibleButton("COLLIDER", ImVec2(((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x), ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y)), ImGuiButtonFlags_MouseButtonLeft);
+                ImGui::SetCursorPos(ImVec2(Nodes[i].Position.x + offset.x - ((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.x / 2), Nodes[i].Position.y + offset.y - ((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y / 2)));
+                ImGui::InvisibleButton("COLLIDER", ImVec2((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.x, (*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y), ImGuiButtonFlags_MouseButtonLeft);
                 if (ImGui::IsItemActivated())
                     SelectedNode = i;
             }   break;

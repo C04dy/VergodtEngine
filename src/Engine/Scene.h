@@ -51,7 +51,7 @@ private:
 
 	InputManager* m_Input = nullptr;
 
-	Camera m_MainCamera;
+	Camera* m_MainCamera;
 
 	std::vector<Node*> m_Nodes;
 };

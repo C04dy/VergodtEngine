@@ -42,6 +42,8 @@ void Engine::EngineStart()
     scene.SetInput(&input);
     scene.Start();
 
+    //SetRunning(false);
+
     while (IsRunning())
     {
         float time = (float)(SDL_GetTicks()) / 1000.0f;
@@ -51,7 +53,7 @@ void Engine::EngineStart()
         if (input.DoInput(&event) == false)
         {
             SetRunning(false);
-            goto Quit;
+            break;
         }
 
         scene.Update(delta);
@@ -63,8 +65,6 @@ void Engine::EngineStart()
         scene.Draw();
         SDL_RenderPresent(window_pointer->GetRenderer());
     }
-    
-Quit:
 
     scene.Clean();
 

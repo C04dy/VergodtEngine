@@ -33,6 +33,94 @@ App::~App()
     SDL_Quit();
 }
 
+static std::string GetNodeTypeAsString(Node::Type NodeType)
+{
+    switch (NodeType)
+    {
+    case Node::Type::NODE:
+        return "NODE";
+        break;
+    case Node::Type::SPRITE:
+        return "SPRITE";
+        break;
+    case Node::Type::CAM:
+        return "CAM";
+        break;
+    case Node::Type::PHYSICSBODY:
+        return "PHYSICSBODY";
+        break;
+    case Node::Type::COLLIDER:
+        return "COLLIDER";
+        break;
+    }
+}
+
+void SaveNodes(std::string& Line, const std::vector<Node>& Nodes, bool IsChild = false)
+{
+    for (int i = 0; i < static_cast<int>(Nodes.size()); i++)
+    {
+        if (Nodes[i].IsChild && !IsChild)
+            continue;
+
+        Line += "[NODETYPE=";
+        Line += GetNodeTypeAsString(Nodes[i].NodeType);
+        Line += "] ";
+
+        Line += "[NAME=";
+        Line += Nodes[i].Name;
+        Line += "] ";
+
+        if (Nodes[i].Position.x != 0.0f || Nodes[i].Position.y != 0.0f)
+        {
+            Line += "[POSITION(";
+            Line += Nodes[i].Position.x;
+            Line += ',';
+            Line += Nodes[i].Position.y;
+            Line += ")] ";
+        }
+        if (Nodes[i].Size.x != 0.0f || Nodes[i].Size.y != 0.0f)
+        {
+            Line += "[SIZE(";
+            Line += Nodes[i].Size.x;
+            Line += ',';
+            Line += Nodes[i].Size.y;
+            Line += ")] ";
+        }
+        if (Nodes[i].Angle != 0.0f)
+        {
+            Line += "[ANGLE(";
+            Line += Nodes[i].Angle;
+            Line += ")] ";
+        }
+
+        switch (Nodes[i].NodeType)
+        {
+        case Node::Type::SPRITE:
+            Line += "[ASSET=";
+            Line += *(std::string*)Nodes[i].NodeValues[0]->Value;
+            Line += "] ";
+            break;
+        case Node::Type::PHYSICSBODY:
+            //Line += "[PHYSICSTYPE=";
+            //Line += *(std::string*)Nodes[i].NodeValues[0]->Value;
+            //Line += "] ";
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void App::SaveSceneFile()
+{
+    std::string line;
+
+    SaveNodes(line, m_Nodes);
+
+    std::ofstream write_file(m_CurrentScene);
+    write_file << line;
+}
+
 void App::LoadSceneFile(const std::string& FilePath)
 {
     std::string line;
@@ -44,10 +132,12 @@ void App::LoadSceneFile(const std::string& FilePath)
         return;
     }
 
+    m_CurrentScene = FilePath;
+
     int line_count = 0;
     while (std::getline(scene_file, line))
     {
-        if (line[0] != '#')
+        if (line[0] != '#' || line[0] != '$')
         {
             line_count += 1;
             m_Nodes.push_back(Node());
@@ -97,6 +187,11 @@ void App::LoadSceneFile(const std::string& FilePath)
                     else if (collider_type == "CIRCLE")
                     {
                         m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new Node::ColliderType(Node::ColliderType::CIRCLE), Node::NodeValue::Type::INT, { "Box", "Circle", "Polygon" }));
+
+                        std::cout << "h1\n";
+                        m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new float(std::stof(GetLineBetween(line, "[RADIUS=(", ")]"))), Node::NodeValue::Type::FLOAT));
+                        std::cout << "h2\n";
+
                     }
                     else if (collider_type == "POLYGON")
                     {
@@ -112,12 +207,10 @@ void App::LoadSceneFile(const std::string& FilePath)
                         {
                             points.push_back(new ImVec2(std::stof(GetLineBetween(polygon_points, "(", ",")), std::stof(GetLineBetween(polygon_points, ",", ")"))));
 
-                            std::cout << polygon_points << '\n';
                             if (i != point_count)
                                 polygon_points.erase(0, GetLineBetween(polygon_points, "(", ")").size() + 3);
                             else
                                 polygon_points.erase(0, GetLineBetween(polygon_points, "(", ")").size() + 2);
-                            std::cout << polygon_points << '\n';
                         }
 
                         m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(points));

@@ -33,7 +33,15 @@ public:
     std::string Message = "";
 };
 
-class KeyboardInputNode : public ScriptingNode
+class InputNode : public ScriptingNode
+{
+public:
+    ~InputNode();
+protected:
+    InputManager* m_Input = nullptr;
+};
+
+class KeyboardInputNode : public InputNode
 {
 public:
     enum class Type
@@ -51,12 +59,10 @@ public:
 private:
     SDL_Keycode m_KeyCode;
 
-    InputManager* m_Input = nullptr;
-
     Type m_InputType = Type::NONE;
 };
 
-class MouseInputNode : public ScriptingNode
+class MouseInputNode : public InputNode
 {
 public:
     enum class Type{
@@ -74,8 +80,6 @@ public:
     int X, Y;
 private:
     Uint8 m_MouseKey;
-
-    InputManager* m_Input = nullptr;
 
     Type m_InputType = Type::NONE;
 };
@@ -128,17 +132,21 @@ private:
 class VisualScript
 {
 public:
-    void InitVisualScript(StartNode* StartNode = nullptr, UpdateNode* UpdateNode = nullptr);
-
+    VisualScript();
     ~VisualScript();
 
     void StartScript();
     
     void UpdateScript();
-private:
-    StartNode* m_StartNode = nullptr;
 
-    UpdateNode* m_UpdateNode = nullptr;
+    void AddInputNode(InputNode* _InputNode);
+
+    StartNode* Start = nullptr;
+
+    UpdateNode* Update = nullptr;
+private:
+
+    std::vector<InputNode*> m_InputNodes;
 };
 
 #endif

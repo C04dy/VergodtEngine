@@ -17,56 +17,57 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
 
     int index_offset = static_cast<int>(m_Nodes.size());
 
+    float start_time = (float)(SDL_GetTicks()) / 1000.0f;
+
     while (std::getline(scene_file, line))
     {
-        if (line.at(0) != '#')
+        if (line.at(0) != '#' || line[0] != '$')
         {
             std::string current_node_type = GetLineBetween(line, "[NODETYPE=", "]");
-            
+
             if (current_node_type == "NODE")
             {
-                Node* node = new Node();
+                m_Nodes.emplace_back(new Node);
 
-                node->NodeType = Node::Type::NODE;
+                m_Nodes[m_Nodes.size() - 1]->NodeType = Node::Type::NODE;
 
-                SetNode(node, line, m_Input);
+                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input);
  
-                SetChild(node, m_Nodes, line, index_offset);
-
-                m_Nodes.push_back(node);
+                SetChild(m_Nodes[m_Nodes.size() - 1], m_Nodes, line, index_offset);
             }
             else if (current_node_type == "CAMERA")
             {
-                m_MainCamera.NodeType = Node::Type::CAM;
-                SetNode(&m_MainCamera, line, m_Input);
+                m_Nodes.emplace_back(new Camera);
+                
+                m_Nodes[m_Nodes.size() - 1]->NodeType = Node::Type::CAM;
 
-                m_Nodes.push_back(&m_MainCamera);
+                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input);
+
+                m_MainCamera = (Camera*)m_Nodes[m_Nodes.size() - 1];
             }
             else if (current_node_type == "SPRITE")
             {
+                m_Nodes.emplace_back(new Sprite);
+
                 std::string asset_file_path = GetLineBetween(line, "[ASSET=", "]");
 
-                Sprite* sprite = new Sprite();
+                m_Nodes[m_Nodes.size() - 1]->NodeType = Node::Type::SPRITE;
 
-                sprite->NodeType = Node::Type::SPRITE;
+                ((Sprite*)m_Nodes[m_Nodes.size() - 1])->InitSprite(asset_file_path, m_Renderer);
 
-                sprite->InitSprite(asset_file_path, &m_MainCamera, m_Renderer);
+                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input);
 
-                SetNode(sprite, line, m_Input);
-
-                SetChild(sprite, m_Nodes, line, index_offset);
-
-                m_Nodes.push_back(sprite);
+                SetChild(m_Nodes[m_Nodes.size() - 1], m_Nodes, line, index_offset);
             }
             else if (current_node_type == "PHYSICSBODY")
             {
-                PhysicsBody* physics_body = new PhysicsBody;
+                m_Nodes.emplace_back(new PhysicsBody);
 
-                physics_body->NodeType = Node::Type::PHYSICSBODY;
+                m_Nodes[m_Nodes.size() - 1]->NodeType = Node::Type::PHYSICSBODY;
 
-                SetNode(physics_body, line, m_Input);
+                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input);
 
-                SetChild(physics_body, m_Nodes, line, index_offset);
+                SetChild(m_Nodes[m_Nodes.size() - 1], m_Nodes, line, index_offset);
 
                 b2BodyType body_type = b2BodyType::b2_staticBody;
                 
@@ -88,19 +89,17 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
                 float friction = std::stof(GetLineBetween(line, "[FRICTION=", "]"));
                 float density = std::stof(GetLineBetween(line, "[DENSITY=", "]"));
 
-                physics_body->InitPhysicsBody(m_Nodes, m_PhysicsWorld, body_type, friction, density);
-
-                m_Nodes.push_back(physics_body);
+                ((PhysicsBody*)m_Nodes[m_Nodes.size() - 1])->InitPhysicsBody(m_Nodes, m_PhysicsWorld, body_type, friction, density);
             }
             else if (current_node_type == "COLLIDER")
             {
-                Collider* collider = new Collider;
+                m_Nodes.emplace_back(new Collider);
 
-                collider->NodeType = Node::Type::COLLIDER;
+                m_Nodes[m_Nodes.size() - 1]->NodeType = Node::Type::COLLIDER;
 
-                SetNode(collider, line, m_Input);
+                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input);
 
-                SetChild(collider, m_Nodes, line, index_offset);
+                SetChild(m_Nodes[m_Nodes.size() - 1], m_Nodes, line, index_offset);
 
                 std::string colllider_type = GetLineBetween(line, "[COLLIDERTYPE=", "]");
 
@@ -108,13 +107,13 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
                 {
                     std::string size = GetLineBetween(line, "[COLLIDERSIZE(", ")");
 
-                    collider->CreateBoxShape(Vector2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ","))));
+                    ((Collider*)m_Nodes[m_Nodes.size() - 1])->CreateBoxShape(Vector2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ","))));
                 }
                 else if (colllider_type == "CIRCLE")
                 {
-                    float radius = std::stof(GetLineBetween(line, "[RADIUS=", "]"));
+                    float radius = std::stof(GetLineBetween(line, "[RADIUS=(", ")]"));
 
-                    collider->CreateCircleShape(radius);
+                    ((Collider*)m_Nodes[m_Nodes.size() - 1])->CreateCircleShape(radius);
                 }
                 else if (colllider_type == "POLYGON")
                 {
@@ -135,13 +134,20 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
                             polygon_points.erase(0, GetLineBetween(polygon_points, "(", ")").size() + 2);
                     }
                     
-                    collider->CreatePolygonShape(polygons, point_count);
+                    ((Collider*)m_Nodes[m_Nodes.size() - 1])->CreatePolygonShape(polygons, point_count);
                 }
-
-                m_Nodes.push_back(collider);
             }
+            continue;
+        }
+        if (line.at(0) == '$')
+        {
+            m_Nodes.reserve( std::stoi( GetLineBetween(line, "$(", ")") ) );
         }
     }
+
+    float end_time = (float)(SDL_GetTicks()) / 1000.0f;
+
+    std::cout << end_time - start_time << '\n';
     
     scene_file.close();
 }
@@ -197,7 +203,7 @@ void Scene::Draw()
         switch (node->NodeType)
         {
         case Node::Type::SPRITE:
-            ((Sprite*)node)->DrawImage();
+            ((Sprite*)node)->DrawImage(m_MainCamera);
             break;
         default:
             break;
@@ -207,5 +213,11 @@ void Scene::Draw()
 
 void Scene::Clean()
 {
+    for (Node* n : m_Nodes)
+    {
+        delete n;
+        n = nullptr;
+    }
     m_Nodes.clear();
+    m_MainCamera = nullptr;
 }

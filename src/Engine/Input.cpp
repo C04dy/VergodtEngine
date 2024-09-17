@@ -2,6 +2,12 @@
 #include "Scripting/VisualScripting/ScriptingNodes.h"
 #include <iostream>
 
+InputManager::~InputManager()
+{
+    m_KeyboardInputNodes.clear();
+    m_MouseInputNodes.clear();
+}
+
 bool InputManager::DoInput(SDL_Event* Event)
 {
     m_IsKeyDown = false;

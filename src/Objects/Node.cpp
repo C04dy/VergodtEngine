@@ -3,6 +3,15 @@
 
 int Node::s_IDs = 0;
 
+Node::~Node()
+{
+	if (Script != nullptr)
+	{
+		delete Script;
+		Script = nullptr;
+	}
+}
+
 void Node::AddChild(Node* Child)
 {
 	m_ChildIDs.push_back(Child->ID);

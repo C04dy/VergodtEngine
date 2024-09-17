@@ -38,6 +38,11 @@ MouseInputNode::Type GetMouseInputType(const std::string& Type)
 
 ScriptingNode::~ScriptingNode()
 {
+    for (ScriptingNode* s : ConnectedNodes)
+    {
+        delete s;
+        s = nullptr;
+    }
     ConnectedNodes.clear();
 }
 
@@ -60,6 +65,13 @@ void ScriptingNode::ReciveSignal()
 void PrintNode::NodesFunction()
 {
     std::cout << Message << '\n';
+}
+
+// INPUT NODE
+
+InputNode::~InputNode()
+{
+    m_Input = nullptr;
 }
 
 // KEYBOARD INPUT NODE
@@ -149,9 +161,20 @@ ConditionNode::ConditionNode(bool* Condition)
 
 ConditionNode::~ConditionNode()
 {
-    ConnectedNodes.clear();
+    for (ScriptingNode* s : ConnectedNodesToFalse)
+    {
+        delete s;
+        s = nullptr;
+    }
+    for (ScriptingNode* s : ConnectedNodesToTrue)
+    {
+        delete s;
+        s = nullptr;
+    }
+
     ConnectedNodesToFalse.clear();
     ConnectedNodesToTrue.clear();
+    delete m_Condition;
     m_Condition = nullptr;
 }
 
@@ -218,26 +241,38 @@ void SetVelocityNode::NodesFunction()
 
 // VISUAL SCRIPT
 
-void VisualScript::InitVisualScript(StartNode* StartNode, UpdateNode* UpdateNode)
+VisualScript::VisualScript()
 {
-    m_StartNode = StartNode;
-    m_UpdateNode = UpdateNode;
+    Start = new StartNode;
+    Update = new UpdateNode;
 }
 
 VisualScript::~VisualScript()
 {
-    delete m_StartNode;
-    m_StartNode = nullptr;
-    delete m_UpdateNode;
-    m_UpdateNode = nullptr;
+    delete Start;
+    Start = nullptr;
+    delete Update;
+    Update = nullptr;
+
+    for (InputNode* i : m_InputNodes)
+    {
+        delete i;
+        i = nullptr;
+    }
+    m_InputNodes.clear();
 }
 
 void VisualScript::StartScript()
 {
-    m_StartNode->ReciveSignal();
+    Start->ReciveSignal();
 }
 
 void VisualScript::UpdateScript()
 {
-    m_UpdateNode->ReciveSignal();
+    Update->ReciveSignal();
+}
+
+void VisualScript::AddInputNode(InputNode* _InputNode)
+{
+    m_InputNodes.push_back(_InputNode);
 }

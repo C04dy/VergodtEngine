@@ -13,6 +13,8 @@ class MouseInputNode;
 class InputManager
 {
 public:
+    ~InputManager();
+    
     bool DoInput(SDL_Event* Event);
 
     void SetKeyDown(SDL_Keycode KeyCode);
@@ -45,7 +47,6 @@ public:
     bool IsKeyboardKeyDown() { return m_IsKeyDown; }
 
     Vector2 GetMousePos() { return m_Mousepos; }
-
 private:
     const Uint8* m_KeyStates = nullptr;
     SDL_Keycode m_Key = 0;

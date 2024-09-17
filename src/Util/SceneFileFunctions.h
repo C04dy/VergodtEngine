@@ -21,11 +21,7 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input)
             return;
         }
 
-        StartNode* start_node = new StartNode;
-        UpdateNode* update_node = new UpdateNode;
         _Node->Script = new VisualScript;
-
-        _Node->Script->InitVisualScript(start_node, update_node);
 
         std::vector<ScriptingNode*> all_script_nodes;
 
@@ -35,11 +31,11 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input)
 
             if (node_type == "START")
             {
-                all_script_nodes.push_back(start_node);
+                all_script_nodes.push_back(_Node->Script->Start);
             }
             else if (node_type == "UPDATE")
             {
-                all_script_nodes.push_back(update_node);
+                all_script_nodes.push_back(_Node->Script->Update);
             }
             else if (node_type == "PRINT")
             {
@@ -58,6 +54,8 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input)
                                                             GetLineBetween(line, "[KEY=", "]"),
                                                             GetLineBetween(line, "[INPUTTYPE=", "]"));
                 all_script_nodes.push_back(keyboard_node);
+
+                _Node->Script->AddInputNode(keyboard_node);
             }
             else if (node_type == "MOUSEINPUT")
             {
@@ -65,6 +63,8 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input)
                                                         std::stoi(GetLineBetween(line, "[KEY=", "]")),
                                                         GetLineBetween(line, "[INPUTTYPE=", "]"));
                 all_script_nodes.push_back(mouse_node);
+
+                _Node->Script->AddInputNode(mouse_node);
             }
             else if (node_type == "APPLYFORCE")
             {
@@ -95,6 +95,8 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input)
                     all_script_nodes[std::stoi(GetLineBetween(line, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(set_velocity_node); 
             }
         }
+
+        all_script_nodes.clear();
         script_file.close();
     }
 }
@@ -124,7 +126,7 @@ void SetNode(Node* _Node, const std::string& Line, InputManager* Input)
     SetScript(_Node, Line, Input);
 }
 
-void SetChild(Node* _Node, std::vector<Node*> AllNodes, const std::string& Line, int IndexOffset)
+void SetChild(Node* _Node, std::vector<Node*>& AllNodes, const std::string& Line, int IndexOffset)
 {
     if (IsLineExist(Line, "[CHILDINDEX="))
     {

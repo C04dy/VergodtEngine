@@ -69,24 +69,7 @@ public:
 
         ~NodeValue()
         {
-            switch (ValueType)
-            {
-            case Type::FLOAT:
-                delete (float*)Value;
-                break;
-            case Type::INT:
-                delete (int*)Value;
-                break;
-            case Type::STRING:
-                delete (std::string*)Value;
-                break;
-            case Type::VECTOR2:
-                delete (ImVec2*)Value;
-                break;
-            default:
-                break;
-            }
-
+            delete Value;
             Value = nullptr;
             ComboValues.clear();
         }
@@ -166,6 +149,8 @@ public:
     bool IsAppRunning() { return m_Running; }
 
     void LoadSceneFile(const std::string& FilePath);
+
+    void SaveSceneFile();
 private:
     void DockSpace();
 private:
@@ -186,6 +171,8 @@ private:
     SceneView m_SceneView;
 
     std::vector<Node> m_Nodes;
+
+    std::string m_CurrentScene;
 };
 
 #endif

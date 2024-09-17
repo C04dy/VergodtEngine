@@ -5,5 +5,7 @@
 class Camera : public Node
 {
 public:
+    ~Camera() {}
+    
     bool IsActive = false;
 };

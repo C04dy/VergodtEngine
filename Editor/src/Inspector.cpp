@@ -208,6 +208,8 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
                 Nodes[SelectedNode].Script = CreateFileDialog({"VergodtScript File"}, {"verscript"});
             }
         }
+
+        ImGui::Text(std::to_string(SelectedNode).c_str());
     }
 
     ImGui::End();

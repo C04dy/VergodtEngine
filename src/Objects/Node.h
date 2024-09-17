@@ -23,6 +23,8 @@ public:
 		COLLIDER = 4
 	};
 public:
+	virtual ~Node();
+	
 	void AddChild(Node* Child);
 
 	void UpdateChild(std::vector<Node*>& Nodes);
@@ -36,7 +38,7 @@ public:
 	Vector2 Size = Vector2(1, 1);
 	float Angle = 0;
 
-	std::string Name;
+	std::string Name = "Node";
 
 	Type NodeType = Type::NODE;
 
