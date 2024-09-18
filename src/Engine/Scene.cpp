@@ -7,7 +7,7 @@
 void Scene::AddNodesToScene(const std::string& SceneFilePath)
 {
     std::string line;
-    std::ifstream scene_file(SceneFilePath);
+    std::ifstream scene_file(m_Project->GetProjectLocation() + SceneFilePath);
 
     if (scene_file.fail())
     {
@@ -17,11 +17,9 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
 
     int index_offset = static_cast<int>(m_Nodes.size());
 
-    float start_time = (float)(SDL_GetTicks()) / 1000.0f;
-
     while (std::getline(scene_file, line))
     {
-        if (line.at(0) != '#' || line[0] != '$')
+        if (line.at(0) != '#')
         {
             std::string current_node_type = GetLineBetween(line, "[NODETYPE=", "]");
 
@@ -31,7 +29,7 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
 
                 m_Nodes[m_Nodes.size() - 1]->NodeType = Node::Type::NODE;
 
-                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input);
+                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input, m_Project->GetProjectLocation());
  
                 SetChild(m_Nodes[m_Nodes.size() - 1], m_Nodes, line, index_offset);
             }
@@ -41,7 +39,7 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
                 
                 m_Nodes[m_Nodes.size() - 1]->NodeType = Node::Type::CAM;
 
-                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input);
+                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input, m_Project->GetProjectLocation());
 
                 m_MainCamera = (Camera*)m_Nodes[m_Nodes.size() - 1];
             }
@@ -53,9 +51,9 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
 
                 m_Nodes[m_Nodes.size() - 1]->NodeType = Node::Type::SPRITE;
 
-                ((Sprite*)m_Nodes[m_Nodes.size() - 1])->InitSprite(asset_file_path, m_Renderer);
+                ((Sprite*)m_Nodes[m_Nodes.size() - 1])->InitSprite(m_Project->GetProjectLocation() + asset_file_path, m_Renderer);
 
-                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input);
+                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input, m_Project->GetProjectLocation());
 
                 SetChild(m_Nodes[m_Nodes.size() - 1], m_Nodes, line, index_offset);
             }
@@ -65,7 +63,7 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
 
                 m_Nodes[m_Nodes.size() - 1]->NodeType = Node::Type::PHYSICSBODY;
 
-                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input);
+                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input, m_Project->GetProjectLocation());
 
                 SetChild(m_Nodes[m_Nodes.size() - 1], m_Nodes, line, index_offset);
 
@@ -97,7 +95,7 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
 
                 m_Nodes[m_Nodes.size() - 1]->NodeType = Node::Type::COLLIDER;
 
-                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input);
+                SetNode(m_Nodes[m_Nodes.size() - 1], line, m_Input, m_Project->GetProjectLocation());
 
                 SetChild(m_Nodes[m_Nodes.size() - 1], m_Nodes, line, index_offset);
 
@@ -137,17 +135,8 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
                     ((Collider*)m_Nodes[m_Nodes.size() - 1])->CreatePolygonShape(polygons, point_count);
                 }
             }
-            continue;
-        }
-        if (line.at(0) == '$')
-        {
-            m_Nodes.reserve( std::stoi( GetLineBetween(line, "$(", ")") ) );
         }
     }
-
-    float end_time = (float)(SDL_GetTicks()) / 1000.0f;
-
-    std::cout << end_time - start_time << '\n';
     
     scene_file.close();
 }
@@ -162,8 +151,7 @@ void Scene::UpdateChilds()
 
 void Scene::Start()
 {
-    AddNodesToScene("../Assets/FlappyBird/FlappyBird.vscene");
-    //AddNodesToScene("../Assets/test.vscene");
+    AddNodesToScene(m_Project->GetCurrentScene());
 
     UpdateChilds();
 

@@ -7,7 +7,7 @@
 #include "imgui_internal.h"
 #include "App.h"
 
-static bool IsMouseHoveringPolyline(ImVec2 Points[], int PointCount, float LineThickness)
+static bool IsMouseHoveringPolyline(const ImVec2 Points[], int PointCount, float LineThickness)
 {
     int crossings = 0;
 
@@ -21,6 +21,16 @@ static bool IsMouseHoveringPolyline(ImVec2 Points[], int PointCount, float LineT
     }
 
     return (crossings % 2) != 0;
+}
+
+static float DistanceBetween(ImVec2 a, ImVec2 b)
+{
+    return std::sqrt(std::powf(a.x - b.x, 2.0f) + std::powf(a.y - b.y, 2.0f));
+}
+
+static bool IsMouseHoveringCircle(float Radius, const ImVec2& Position)
+{
+    return DistanceBetween(Position, ImGui::GetMousePos()) < Radius;
 }
 
 static bool LoadTextureFromFile(const std::string& FilePath, SDL_Texture** Texture, float& Width, float& Height, SDL_Renderer* Renderer)
@@ -50,11 +60,24 @@ static bool LoadTextureFromFile(const std::string& FilePath, SDL_Texture** Textu
     return true;
 }
 
-void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, int& SelectedNode)
+static void DeleteChildNodes(std::vector<Node>& Nodes, std::vector<int>& ChildNodes, std::vector<int>& IDsToDelete)
+{
+    for (int i = 0; i < static_cast<int>(ChildNodes.size()); i++)
+    {
+        IDsToDelete.push_back(ChildNodes[i]);
+        for (int j = 0; j < static_cast<int>(Nodes.size()); j++)
+            if (Nodes[j].ID == ChildNodes[i])
+                DeleteChildNodes(Nodes, Nodes[j].ChildIDs, IDsToDelete);
+    }
+}
+
+void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, int& SelectedNode, bool& Saved, Project& CurrentProject)
 {
     ImGuiIO& io = ImGui::GetIO();
 
-    if (!ImGui::Begin("Viewport"))
+    
+    ImGuiWindowFlags flags = Saved ? ImGuiWindowFlags_None : ImGuiWindowFlags_UnsavedDocument;
+    if (!ImGui::Begin("Viewport", NULL, flags))
     {
         ImGui::End();
         return;
@@ -114,7 +137,7 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 ImGui::EndGroup();
 
             }
-            else if (LoadTextureFromFile(*(std::string*)Nodes[i].NodeValues[0]->Value, &texture, textrue_width, textrue_height, Renderer))
+            else if (LoadTextureFromFile(CurrentProject.GetProjectLocation() + *(std::string*)Nodes[i].NodeValues[0]->Value, &texture, textrue_width, textrue_height, Renderer))
             {
                 ImVec2 uv_min = ImVec2(0.0f, 0.0f);
                 ImVec2 uv_max = ImVec2(1.0f, 1.0f);
@@ -173,21 +196,167 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
             case Node::ColliderType::BOX: {
                 ImVec2 minrec(Nodes[i].Position.x + draw_list_offset.x , Nodes[i].Position.y + draw_list_offset.y);
 
-                draw_list->AddRect(ImVec2(minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))
-                                ,  ImVec2(minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2) + 2.5f, minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2) + 2.5f), IM_COL32(255, 99, 71, 255), 0.0f, ImDrawFlags_None, 5);
+                draw_list->AddRect(ImVec2(minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)),
+                                   ImVec2(minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2) + 2.5f, minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2) + 2.5f), IM_COL32(255, 99, 71, 255), 0.0f, ImDrawFlags_None, 5);
+
+
+                static int selected_point = -1;
+                draw_list->AddCircleFilled(ImVec2(minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y), 5.0f, IM_COL32(210, 215, 211, 255));
+                if (IsMouseHoveringCircle(10, ImVec2(minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y)) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                {
+                    selected_point = 1;
+                }
+                if (selected_point == 1 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                {
+                    float new_x = ((minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2)) - ImGui::GetMousePos().x) / 2;
+                    ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x += new_x;
+                    Nodes[i].Position.x -= new_x / 2;
+                    Saved = false;
+                }
+
+                draw_list->AddCircleFilled(ImVec2(minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)), 5.0f, IM_COL32(210, 215, 211, 255));
+                if (IsMouseHoveringCircle(10, ImVec2(minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                {
+                    selected_point = 2;
+                }
+                if (selected_point == 2 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                {
+                    float new_x = ((minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2)) - ImGui::GetMousePos().x) / 2;
+                    ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x += new_x;
+                    Nodes[i].Position.x -= new_x / 2;
+
+                    float new_y = ((minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)) - ImGui::GetMousePos().y) / 2;
+                    ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y += new_y;
+                    Nodes[i].Position.y -= new_y / 2;
+                    Saved = false;
+                }
+                
+                draw_list->AddCircleFilled(ImVec2(minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)), 5.0f, IM_COL32(210, 215, 211, 255));
+                if (IsMouseHoveringCircle(10, ImVec2(minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                {
+                    selected_point = 3;
+                }
+                if (selected_point == 3 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                {
+                    float new_x = ((minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2)) - ImGui::GetMousePos().x) / 2;
+                    ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x += new_x;
+                    Nodes[i].Position.x -= new_x / 2;
+
+                    float new_y = ((minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)) - ImGui::GetMousePos().y) / 2;
+                    ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y -= new_y;
+                    Nodes[i].Position.y -= new_y / 2;
+                    Saved = false;
+                }
+                
+                draw_list->AddCircleFilled(ImVec2(minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y), 5.0f, IM_COL32(210, 215, 211, 255));
+                if (IsMouseHoveringCircle(10, ImVec2(minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y)) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                {
+                    selected_point = 4;
+                }
+                if (selected_point == 4 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                {
+                    float new_x = ((minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2)) - ImGui::GetMousePos().x) / 2;
+                    ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x -= new_x;
+                    Nodes[i].Position.x -= new_x / 2;
+                    Saved = false;
+                }
+                
+                draw_list->AddCircleFilled(ImVec2(minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)), 5.0f, IM_COL32(210, 215, 211, 255));
+                if (IsMouseHoveringCircle(10, ImVec2(minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                {
+                    selected_point = 5;
+                }
+                if (selected_point == 5 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                {
+                    float new_x = ((minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2)) - ImGui::GetMousePos().x) / 2;
+                    ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x -= new_x;
+                    Nodes[i].Position.x -= new_x / 2;
+
+                    float new_y = ((minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)) - ImGui::GetMousePos().y) / 2;
+                    ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y += new_y;
+                    Nodes[i].Position.y -= new_y / 2;
+                    Saved = false;
+                }
+
+                draw_list->AddCircleFilled(ImVec2(minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)), 5.0f, IM_COL32(210, 215, 211, 255));
+                if (IsMouseHoveringCircle(10, ImVec2(minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                {
+                    selected_point = 6;
+                }
+                if (selected_point == 6 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                {
+                    float new_x = ((minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2)) - ImGui::GetMousePos().x) / 2;
+                    ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x -= new_x;
+                    Nodes[i].Position.x -= new_x / 2;
+
+                    float new_y = ((minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)) - ImGui::GetMousePos().y) / 2;
+                    ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y -= new_y;
+                    Nodes[i].Position.y -= new_y / 2;
+                    Saved = false;
+                }
+                
+                draw_list->AddCircleFilled(ImVec2(minrec.x, minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)), 5.0f, IM_COL32(210, 215, 211, 255));
+                if (IsMouseHoveringCircle(10, ImVec2(minrec.x, minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                {
+                    selected_point = 7;
+                }
+                if (selected_point == 7 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                {
+                    float new_y = ((minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)) - ImGui::GetMousePos().y) / 2;
+                    ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y += new_y;
+                    Nodes[i].Position.y -= new_y / 2;
+                    Saved = false;
+                }
+
+                draw_list->AddCircleFilled(ImVec2(minrec.x, minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)), 5.0f, IM_COL32(210, 215, 211, 255));
+                if (IsMouseHoveringCircle(10, ImVec2(minrec.x, minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                {
+                    selected_point = 8;
+                }
+                if (selected_point == 8 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                {
+                    float new_y = ((minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)) - ImGui::GetMousePos().y) / 2;
+                    ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y -= new_y;
+                    Nodes[i].Position.y -= new_y / 2;
+                    Saved = false;
+                }
+
+                if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && selected_point != -1)
+                    selected_point = -1;
+
 
                 ImGui::SetCursorPos(ImVec2(Nodes[i].Position.x + offset.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), Nodes[i].Position.y + offset.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)));
-                ImGui::InvisibleButton("COLLIDER", ImVec2(((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x), ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y)), ImGuiButtonFlags_MouseButtonLeft);
-                if (ImGui::IsItemActivated())
+                ImVec2 button_size = ImVec2(((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x), ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y));
+                if (button_size.x == 0)
+                    button_size.x = 1;
+                if (button_size.y == 0)
+                    button_size.y = 1;
+                ImGui::InvisibleButton("COLLIDER", button_size, ImGuiButtonFlags_MouseButtonLeft);
+                if (ImGui::IsItemActivated() && selected_point == -1)
                     SelectedNode = i;
             }   break;
             case Node::ColliderType::CIRCLE: {
                 ImVec2 minrec(Nodes[i].Position.x + draw_list_offset.x, Nodes[i].Position.y + draw_list_offset.y);
                 draw_list->AddEllipse(minrec, ImVec2((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.x, (*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y), IM_COL32(255, 99, 71, 255), 0.0f, 0, 5);
 
-                ImGui::SetCursorPos(ImVec2(Nodes[i].Position.x + offset.x - ((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.x / 2), Nodes[i].Position.y + offset.y - ((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y / 2)));
-                ImGui::InvisibleButton("COLLIDER", ImVec2((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.x, (*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y), ImGuiButtonFlags_MouseButtonLeft);
-                if (ImGui::IsItemActivated())
+                draw_list->AddCircleFilled(ImVec2(minrec.x , minrec.y - ((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y) - 2.5f), 5.0f, IM_COL32(210, 215, 211, 255));
+
+                static bool resizing = false;
+                if (IsMouseHoveringCircle(5.0f, ImVec2(minrec.x , minrec.y - ((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y) - 2.5f)) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    resizing = true;
+                if (resizing && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                {
+                    float* radius = (float*)Nodes[i].NodeValues[1]->Value;
+
+                    float new_y = ((minrec.y - ((*radius * Nodes[i].Size.y)) - 2.5f) - ImGui::GetMousePos().y) / 2;
+                    *radius += new_y;
+                    Nodes[i].Position.y -= new_y;
+                    Saved = false;
+                }
+                if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && resizing)
+                    resizing = false;
+
+                if (IsMouseHoveringCircle((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.x, minrec) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !resizing)
                     SelectedNode = i;
             }   break;
             case Node::ColliderType::POLYGONS: {
@@ -205,18 +374,12 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 bool hovering_any_point = false;
                 for (int j = 0; j < static_cast<int>(Nodes[i].NodeValues[1]->VectorValues.size()); j++)
                 {
-                    ImGui::PushID(j);
-
-                    ImGui::SetCursorPos(ImVec2((*(ImVec2*)Nodes[i].NodeValues[1]->VectorValues[j]).x + Nodes[i].Position.x + offset.x,
-                                               -(*(ImVec2*)Nodes[i].NodeValues[1]->VectorValues[j]).y + Nodes[i].Position.y + offset.y));
-                    ImGui::InvisibleButton("point", ImVec2(10.0f, 10.0f), ImGuiButtonFlags_MouseButtonLeft);
-                    if (ImGui::IsItemActivated())
+                    if (IsMouseHoveringCircle(10, ImVec2((*(ImVec2*)Nodes[i].NodeValues[1]->VectorValues[j]).x + Nodes[i].Position.x + draw_list_offset.x, -(*(ImVec2*)Nodes[i].NodeValues[1]->VectorValues[j]).y + Nodes[i].Position.y + draw_list_offset.y)) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
                         hovered_point = j;
                         hovering_any_point = true;
                     }
                     draw_list->AddCircleFilled(ImVec2((*(ImVec2*)Nodes[i].NodeValues[1]->VectorValues[j]).x + Nodes[i].Position.x + draw_list_offset.x, -(*(ImVec2*)Nodes[i].NodeValues[1]->VectorValues[j]).y + Nodes[i].Position.y + draw_list_offset.y), 5.0f, IM_COL32(210, 215, 211, 255));
-                    ImGui::PopID();
                 }
                 if (!hovering_any_point && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     hovered_point = -1;
@@ -225,6 +388,7 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 {
                     ((ImVec2*)Nodes[i].NodeValues[1]->VectorValues[hovered_point])->x += io.MouseDelta.x;
                     ((ImVec2*)Nodes[i].NodeValues[1]->VectorValues[hovered_point])->y -= io.MouseDelta.y;
+                    Saved = false;
                 }
 
 
@@ -242,7 +406,14 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
     }
 
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-        ImGui::OpenPopup("Nodes");
+    {
+        std::cout << SelectedNode;
+        if (SelectedNode != -1)
+            ImGui::OpenPopup("NodeMenu");
+        else
+            ImGui::OpenPopup("Nodes");
+    }
+
 
     if (ImGui::BeginPopup("Nodes"))
     {
@@ -250,17 +421,44 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
         ImVec2 scene_pos;
         scene_pos.x = ImGui::GetMousePosOnOpeningCurrentPopup().x - draw_list_offset.x;
         scene_pos.y = ImGui::GetMousePosOnOpeningCurrentPopup().y - draw_list_offset.y;
-        if (ImGui::MenuItem("Node")) { Nodes.push_back(Node(scene_pos)); }
-        if (ImGui::MenuItem("Sprite")) { Nodes.push_back(Node(scene_pos, Node::Type::SPRITE)); }
-        if (ImGui::MenuItem("Camera")) { Nodes.push_back(Node(scene_pos, Node::Type::CAM)); }
-        if (ImGui::MenuItem("PhysicsBody")) { Nodes.push_back(Node(scene_pos, Node::Type::PHYSICSBODY)); }
-        if (ImGui::MenuItem("Collider"))
+        if (ImGui::MenuItem("Node")) { Nodes.push_back(Node(scene_pos)); Saved = false; }
+        if (ImGui::MenuItem("Sprite")) { Nodes.push_back(Node(scene_pos, Node::Type::SPRITE)); Saved = false; }
+        if (ImGui::MenuItem("Camera")) { Nodes.push_back(Node(scene_pos, Node::Type::CAM)); Saved = false; }
+        if (ImGui::MenuItem("PhysicsBody")) { Nodes.push_back(Node(scene_pos, Node::Type::PHYSICSBODY)); Saved = false; }
+        if (ImGui::MenuItem("Collider")) { Nodes.push_back(Node(scene_pos, Node::Type::COLLIDER)); Saved = false; }
+        ImGui::PopID();
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("NodeMenu"))
+    {
+        ImGui::PushID(10);
+        if (ImGui::MenuItem("Delete Node"))
         {
-            Nodes.push_back(Node(scene_pos, Node::Type::COLLIDER));
+            std::vector<int> IDs_to_delete;
+            IDs_to_delete.push_back(Nodes[SelectedNode].ID);
+            DeleteChildNodes(Nodes, Nodes[SelectedNode].ChildIDs, IDs_to_delete);
+            while (IDs_to_delete.size() > 0)
+            {
+                for (int i = 0; i < static_cast<int>(Nodes.size()); i++)
+                {
+                    for (int j = 0; j < static_cast<int>(IDs_to_delete.size()); j++)
+                    {
+                        if (Nodes[i].ID == IDs_to_delete[j])
+                        {
+                            for (int x = 0; x < static_cast<int>(Nodes[i].NodeValues.size()); x++)
+                            {
+                                delete Nodes[i].NodeValues[x];
+                                Nodes[i].NodeValues[x] = nullptr;
+                            }
+                            Nodes.erase(Nodes.begin() + i);
+                            IDs_to_delete.erase(IDs_to_delete.begin() + j);
+                        }
+                    }
+                }
+            }
 
-            Nodes[Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new Node::ColliderType(Node::ColliderType::BOX), Node::NodeValue::Type::INT, { "Box", "Circle", "Polygon" }));
-
-            Nodes[Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new ImVec2(0.0f, 0.0f), Node::NodeValue::Type::VECTOR2));
+            SelectedNode = -1;
         }
         ImGui::PopID();
         ImGui::EndPopup();
@@ -273,6 +471,7 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
     {
         Nodes[SelectedNode].Position.x += io.MouseDelta.x;
         Nodes[SelectedNode].Position.y += io.MouseDelta.y;
+        Saved = false;
     }
 
     if (ImGui::IsWindowHovered() && !ImGui::IsAnyItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Middle))

@@ -1,16 +1,17 @@
 #include "Engine.h"
 #include "Scene.h"
+#include "Project.h"
 #include "Input.h"
 #include "Window.h"
 #include <box2d/box2d.h>
 
-void Engine::EngineStart()
+void Engine::EngineStart(int argc, char** argv)
 {
     Scene scene;
 
     InputManager input; 
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS) < 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS) == SDL_FALSE)
     {
         std::cout << "SDL_Init failed";
         throw std::runtime_error(SDL_GetError());
@@ -22,12 +23,15 @@ void Engine::EngineStart()
         throw std::runtime_error(SDL_GetError());
     }
 
-    Window* window_pointer = new Window(scene.GetGameName(), scene.GetWindowWidth(), scene.GetWindowHeight(), true);
+#ifdef NDEBUG
+        Project project;
+#else
+        Project project(argc, argv);
+#endif
+
+    Window* window_pointer = new Window(project.GetGameName(), project.GetWindowWidth(), project.GetWindowHeight(), true);
 
     SDL_Event event;
-
-	uint32_t velocity_iterations = 6;
-	uint32_t position_iterations = 2;
 
     b2WorldDef world_def = b2DefaultWorldDef();
 
@@ -40,6 +44,7 @@ void Engine::EngineStart()
     double delta = 0;
 
     scene.SetRenderer(window_pointer->GetRenderer());
+    scene.SetProject(&project);
     scene.SetPhysicsWorldID(PhysicsWorldID);
     scene.SetInput(&input);
     scene.Start();

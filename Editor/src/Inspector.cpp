@@ -1,37 +1,10 @@
 #include "Inspector.h"
 #include <iostream>
 #include <string>
-#include "nfd.h"
 #include "App.h"
+#include "StringFunctions.h"
 
-static std::string CreateFileDialog(const std::vector<std::string>& FileTypes, const std::vector<std::string>& FileExtensions)
-{
-    nfdu8char_t* out_path;
-
-    nfdu8filteritem_t filters[FileTypes.size()];
-
-    for (int i = 0; i < static_cast<int>(FileTypes.size()); i++)
-    {
-        filters[i] = { FileTypes[i].c_str(), FileExtensions[i].c_str() };
-    }
-
-    nfdopendialogu8args_t args = { 0 };
-    args.filterList = filters;
-    args.filterCount = 2;
-    nfdresult_t result = NFD_OpenDialogU8_With(&out_path, &args);
-    if (result == NFD_OKAY)
-    {
-        NFD_FreePathU8(out_path);
-        return out_path;
-    }
-    else if (result != NFD_CANCEL)
-    {
-        std::cout << "Error file did not opened: " << NFD_GetError() << '\n';
-    }
-    return "None";
-}
-
-void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scripting* ScriptingTab)
+void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scripting& ScriptingTab, bool& Saved, Project& CurrentProject)
 {
     ImGui::Begin("Inspector");
 
@@ -44,106 +17,143 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
             ImGui::Text("Texture");
             if (ImGui::Button((*(std::string*)Nodes[SelectedNode].NodeValues[0]->Value).c_str()))
             {
-                delete (std::string*)Nodes[SelectedNode].NodeValues[0]->Value;
-                Nodes[SelectedNode].NodeValues[0]->Value = nullptr;
-                Nodes[SelectedNode].NodeValues[0]->Value = new std::string(CreateFileDialog({ "Image File" }, { "png,jpg,avif,jxl,tif,webp" }));
+                std::string new_path = CreateFileDialog({ "Image File" }, { "png,jpg,avif,jxl,tif,webp" });
+                if (new_path != "None")
+                    *(std::string*)Nodes[SelectedNode].NodeValues[0]->Value = RemoveFromLine(new_path, CurrentProject.GetProjectLocation());
+                Saved = false;
             }
             ImGui::PopID();
             break;
-        case Node::Type::COLLIDER:
+        case Node::Type::COLLIDER: {
             ImGui::PushID(-2);
-            if (Nodes[SelectedNode].NodeValues.size() != 0)
+            Node::ColliderType collider_type = *(Node::ColliderType*)Nodes[SelectedNode].NodeValues[0]->Value;
+            if (ImGui::BeginCombo("Collider Type", Nodes[SelectedNode].NodeValues[0]->ComboValues[(int)collider_type].c_str()))
             {
-                Node::ColliderType collider_type = *(Node::ColliderType*)Nodes[SelectedNode].NodeValues[0]->Value;
-                if (ImGui::BeginCombo("Collider Type", Nodes[SelectedNode].NodeValues[0]->ComboValues[(int)collider_type].c_str()))
+                for (int i = 0; i < static_cast<int>(Nodes[SelectedNode].NodeValues[0]->ComboValues.size()); i++)
                 {
-                    for (int i = 0; i < static_cast<int>(Nodes[SelectedNode].NodeValues[0]->ComboValues.size()); i++)
+                    const bool isSelected = (collider_type == (Node::ColliderType)i);
+                    if (ImGui::Selectable(Nodes[SelectedNode].NodeValues[0]->ComboValues[i].c_str(), isSelected))
                     {
-                        const bool isSelected = (collider_type == (Node::ColliderType)i);
-                        if (ImGui::Selectable(Nodes[SelectedNode].NodeValues[0]->ComboValues[i].c_str(), isSelected))
+                        Node::ColliderType old_collider_type = *(Node::ColliderType*)Nodes[SelectedNode].NodeValues[0]->Value;
+                        collider_type = (Node::ColliderType)i;
+                        *(Node::ColliderType*)Nodes[SelectedNode].NodeValues[0]->Value = collider_type;
+
+                        switch (old_collider_type)
                         {
-                            collider_type = (Node::ColliderType)i;
-                            Node::ColliderType old_collider_type = *(Node::ColliderType*)Nodes[SelectedNode].NodeValues[0]->Value;
-
-                            delete (Node::ColliderType*)Nodes[SelectedNode].NodeValues[0]->Value;
-                            Nodes[SelectedNode].NodeValues[0]->Value = nullptr;
-                            Nodes[SelectedNode].NodeValues[0]->Value = new Node::ColliderType(collider_type);
-
-                            switch (old_collider_type)
-                            {
-                            case Node::ColliderType::BOX:
-                                delete (ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value;
-                                Nodes[SelectedNode].NodeValues[1]->Value = nullptr;
-                                break;
-                            case Node::ColliderType::CIRCLE:
-                                delete (float*)Nodes[SelectedNode].NodeValues[1]->Value;
-                                Nodes[SelectedNode].NodeValues[1]->Value = nullptr;
-                                break;
-                            case Node::ColliderType::POLYGONS:
-                                Nodes[SelectedNode].NodeValues[1]->VectorValues.clear();
-                                break;
-                            }
-
-                            switch (collider_type)
-                            {
-                            case Node::ColliderType::BOX:
-                                Nodes[SelectedNode].NodeValues[1]->Value = new ImVec2(10.0f, 10.0f);
-                                break;
-                            case Node::ColliderType::CIRCLE:
-                                Nodes[SelectedNode].NodeValues[1]->Value = new float(10.0f);
-                                break;
-                            case Node::ColliderType::POLYGONS:
-                                Nodes[SelectedNode].NodeValues[1]->VectorValues.push_back(new ImVec2(0.0f, 0.0f));
-                                break;
-                            }
+                        case Node::ColliderType::BOX:
+                            delete (ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value;
+                            Nodes[SelectedNode].NodeValues[1]->Value = nullptr;
+                            break;
+                        case Node::ColliderType::CIRCLE:
+                            delete (float*)Nodes[SelectedNode].NodeValues[1]->Value;
+                            Nodes[SelectedNode].NodeValues[1]->Value = nullptr;
+                            break;
+                        case Node::ColliderType::POLYGONS:
+                            Nodes[SelectedNode].NodeValues[1]->VectorValues.clear();
+                            break;
                         }
-                        if (isSelected)
+
+                        switch (collider_type)
                         {
-                            ImGui::SetItemDefaultFocus();
+                        case Node::ColliderType::BOX:
+                            Nodes[SelectedNode].NodeValues[1]->Value = new ImVec2(10.0f, 10.0f);
+                            Nodes[SelectedNode].NodeValues[1]->ValueType = Node::NodeValue::Type::VECTOR2;
+                            break;
+                        case Node::ColliderType::CIRCLE:
+                            Nodes[SelectedNode].NodeValues[1]->Value = new float(10.0f);
+                            Nodes[SelectedNode].NodeValues[1]->ValueType = Node::NodeValue::Type::FLOAT;
+                            break;
+                        case Node::ColliderType::POLYGONS:
+                            Nodes[SelectedNode].NodeValues[1]->VectorValues.push_back(new ImVec2(10.0f, 10.0f));
+                            Nodes[SelectedNode].NodeValues[1]->ValueType = Node::NodeValue::Type::VECTORARRAY;
+                            Nodes[SelectedNode].NodeValues[1]->VectorValueType = Node::NodeValue::Type::VECTOR2;
+                            break;
                         }
+                        Saved = false;
                     }
-                    ImGui::EndCombo();
+                    if (isSelected)
+                    {
+                        ImGui::SetItemDefaultFocus();
+                    }
                 }
+                ImGui::EndCombo();
+            }
 
-                switch (*(int*)Nodes[SelectedNode].NodeValues[0]->Value)
+            switch (*(int*)Nodes[SelectedNode].NodeValues[0]->Value)
+            {
+            case (int)Node::ColliderType::BOX:
+                ImGui::Text("Collider Size");
+
+                ImGui::PushItemWidth((ImGui::GetWindowSize().x / 2) - 25);
+
+                if (ImGui::InputFloat("X", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value).x))
+                    Saved = false;
+                ImGui::SameLine();
+                if (ImGui::InputFloat("Y", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value).y))
+                    Saved = false;
+
+                ImGui::PopItemWidth();
+                break;
+            case (int)Node::ColliderType::CIRCLE:
+                ImGui::Text("Collider Radius");
+
+                if (ImGui::InputFloat(" ", ((float*)Nodes[SelectedNode].NodeValues[1]->Value)))
+                    Saved = false;
+                break;
+            case (int)Node::ColliderType::POLYGONS:
+                for (int i = 0; i < static_cast<int>(Nodes[SelectedNode].NodeValues[1]->VectorValues.size()); i++)
                 {
-                case (int)Node::ColliderType::BOX:
-                    ImGui::Text("Collider Size");
-
+                    ImGui::PushID(i);
                     ImGui::PushItemWidth((ImGui::GetWindowSize().x / 2) - 25);
+                    if (ImGui::InputFloat("X", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->VectorValues[i]).x))
+                        Saved = false;
 
-                    ImGui::InputFloat("X", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value).x);
                     ImGui::SameLine();
-                    ImGui::InputFloat("Y", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value).y);
-
+                    if (ImGui::InputFloat("Y", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->VectorValues[i]).y))
+                        Saved = false;
+                    
                     ImGui::PopItemWidth();
-                    break;
-                case (int)Node::ColliderType::CIRCLE:
-                    ImGui::Text("Collider Radius");
-
-                    ImGui::InputFloat(" ", &(*(float*)Nodes[SelectedNode].NodeValues[1]->Value));
-                    break;
-                case (int)Node::ColliderType::POLYGONS:
-                    for (int i = 0; i < static_cast<int>(Nodes[SelectedNode].NodeValues[1]->VectorValues.size()); i++)
-                    {
-                        ImGui::PushID(i);
-                        ImGui::PushItemWidth((ImGui::GetWindowSize().x / 2) - 25);
-                        ImGui::InputFloat("X", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->VectorValues[i]).x);
-                        ImGui::SameLine();
-                        ImGui::InputFloat("Y", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->VectorValues[i]).y);
-                        ImGui::PopItemWidth();
-                        ImGui::PopID();
-                    }
-
-                    if (ImGui::Button("Add"))
-                    {
-                        Nodes[SelectedNode].NodeValues[1]->VectorValues.push_back(new ImVec2(0.0f, 0.0f));
-                    }
-                    break;
+                    ImGui::PopID();
                 }
+
+                if (ImGui::Button("Add"))
+                {
+                    Nodes[SelectedNode].NodeValues[1]->VectorValues.push_back(new ImVec2(0.0f, 0.0f));
+                    Saved = false;
+                }
+                break;
             }
             ImGui::PopID();
-            break;
+        }    break;
+        case Node::Type::PHYSICSBODY: {
+            ImGui::PushID(-2);
+
+            Node::PhysicsbodyType physicsbody_type = *(Node::PhysicsbodyType*)Nodes[SelectedNode].NodeValues[0]->Value;
+            if (ImGui::BeginCombo("Physicsbody Type", Nodes[SelectedNode].NodeValues[0]->ComboValues[(int)physicsbody_type].c_str()))
+            {
+                for (int i = 0; i < static_cast<int>(Nodes[SelectedNode].NodeValues[0]->ComboValues.size()); i++)
+                {
+                    const bool isSelected = (physicsbody_type == (Node::PhysicsbodyType)i);
+                    if (ImGui::Selectable(Nodes[SelectedNode].NodeValues[0]->ComboValues[i].c_str(), isSelected))
+                    {
+                        *(Node::PhysicsbodyType*)Nodes[SelectedNode].NodeValues[0]->Value = (Node::PhysicsbodyType)i;
+                        Saved = false;
+                    }
+                    if (isSelected)
+                    {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+
+            if (ImGui::InputFloat("Friction", (float*)Nodes[SelectedNode].NodeValues[1]->Value))
+                Saved = false;
+            if (ImGui::InputFloat("Density", (float*)Nodes[SelectedNode].NodeValues[2]->Value))
+                Saved = false;
+
+            ImGui::PopID();
+        }   break;
         default:
             break;
         }
@@ -154,6 +164,7 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
         if (ImGui::InputText(" ", &node_name))
         {
             Nodes[SelectedNode].Name = node_name;
+            Saved = false;
         }
         ImGui::PopID();
 
@@ -161,14 +172,18 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
         ImGui::Text("Position");
         ImVec2 old_position = Nodes[SelectedNode].Position;
         ImGui::PushItemWidth((ImGui::GetWindowSize().x / 2) - 25);
-        if (ImGui::InputFloat("X", &Nodes[SelectedNode].Position.x) && static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
+        if (ImGui::InputFloat("X", &Nodes[SelectedNode].Position.x))
         {
-            ChangeChildNodesPosition(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_position);
+            if (static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
+                ChangeChildNodesPosition(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_position);
+            Saved = false;
         }
         ImGui::SameLine();
-        if (ImGui::InputFloat("Y", &Nodes[SelectedNode].Position.y) && static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
+        if (ImGui::InputFloat("Y", &Nodes[SelectedNode].Position.y))
         {
-            ChangeChildNodesPosition(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_position);
+            if (static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
+                ChangeChildNodesPosition(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_position);
+            Saved = false;
         }
         ImGui::PopItemWidth();
         ImGui::PopID();
@@ -177,23 +192,29 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
         ImGui::Text("Size");
         ImVec2 old_size = Nodes[SelectedNode].Size;
         ImGui::PushItemWidth((ImGui::GetWindowSize().x / 2) - 25);
-        if (ImGui::InputFloat("X", &Nodes[SelectedNode].Size.x) && static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
+        if (ImGui::InputFloat("X", &Nodes[SelectedNode].Size.x))
         {
-            ChangeChildNodesSize(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_size);
+            if (static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
+                ChangeChildNodesSize(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_size);
+            Saved = false;
         }
         ImGui::SameLine();
-        if (ImGui::InputFloat("Y", &Nodes[SelectedNode].Size.y) && static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
+        if (ImGui::InputFloat("Y", &Nodes[SelectedNode].Size.y))
         {
-            ChangeChildNodesSize(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_size);
+            if (static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
+                ChangeChildNodesSize(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_size);
+            Saved = false;
         }
         ImGui::PopItemWidth();
         ImGui::PopID();
 
         ImGui::Text("Angle");
         float old_angle = Nodes[SelectedNode].Angle;
-        if (ImGui::InputFloat(" ", &Nodes[SelectedNode].Angle) && static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
+        if (ImGui::InputFloat(" ", &Nodes[SelectedNode].Angle))
         {
-            ChangeChildNodesAngle(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_angle);
+            if (static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
+                ChangeChildNodesAngle(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_angle);
+            Saved = false;
         }
 
         ImGui::Text("Script");
@@ -201,15 +222,14 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
         {
             if (Nodes[SelectedNode].Script != "None")
             {
-                ScriptingTab->LoadScript(Nodes[SelectedNode].Script);
+                ScriptingTab.LoadScript(CurrentProject.GetProjectLocation() + Nodes[SelectedNode].Script);
             }
             else
             {
                 Nodes[SelectedNode].Script = CreateFileDialog({"VergodtScript File"}, {"verscript"});
             }
+            Saved = false;
         }
-
-        ImGui::Text(std::to_string(SelectedNode).c_str());
     }
 
     ImGui::End();

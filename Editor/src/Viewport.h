@@ -7,13 +7,14 @@
 
 struct Node;
 class SDL_Renderer;
+class Project;
 
 class Viewport
 {
 public:
     Viewport() = default;
 
-    void ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, int& SelectedNode);
+    void ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, int& SelectedNode, bool& Saved, Project& CurrentProject);
 private:
     ImVec2 m_Scrolling;
 };

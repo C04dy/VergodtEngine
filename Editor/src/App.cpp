@@ -12,14 +12,66 @@
 #include "StringFunctions.h"
 #include <functional>
 #include <nfd.h>
+#include <SDL3_image/SDL_image.h>
+#include "Viewport.h"
+#include "Scripting.h"
+#include "Inspector.h"
+#include "SceneView.h"
+#include "Project.h"
 
-int Node::s_IDs = 0;
+#ifdef _WIN32
+#include <windows.h>
+#include <thread>
+
+static void RunGame(const std::string& program, const std::string& args, std::string& ConsoleLine)
+{
+    std::array<char, 128> buffer;
+
+    std::string program_to_run = program + " " + args;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(program_to_run.c_str(), "r"), pclose);
+    if (!pipe)
+    {
+        throw std::runtime_error("popen() failed!");
+    }
+
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+    {
+        std::cout << buffer.data();
+    }
+}
+
+
+#else
+#include <unistd.h>
+
+static void RunGame(const std::string& program, const std::string& args, std::string& ConsoleLine)
+{
+    pid_t pid = fork();
+
+    if (pid == 0)
+    {
+        execvp(program, args);
+        std::cout << "Error: exec failed\n";
+        exit(EXIT_FAILURE);
+    }
+    else if (pid > 0)
+    {
+        int status;
+        waitpid(pid, &status, 0);
+        if (WIFEXITED(status))
+        {
+            std::cout << "Program exited with status: " << WEXITSTATUS(status) << "\n";
+        }
+    }
+    else
+    {
+        std::cout << "Error: fork failed\n";
+    }
+}
+#endif
 
 App::~App()
 {
-    for (Node node : m_Nodes)
-        node.NodeValues.clear();
-
     NFD_Quit();
 
     ImGui_ImplSDLRenderer3_Shutdown();
@@ -33,246 +85,22 @@ App::~App()
     SDL_Quit();
 }
 
-static std::string GetNodeTypeAsString(Node::Type NodeType)
-{
-    switch (NodeType)
-    {
-    case Node::Type::NODE:
-        return "NODE";
-        break;
-    case Node::Type::SPRITE:
-        return "SPRITE";
-        break;
-    case Node::Type::CAM:
-        return "CAM";
-        break;
-    case Node::Type::PHYSICSBODY:
-        return "PHYSICSBODY";
-        break;
-    case Node::Type::COLLIDER:
-        return "COLLIDER";
-        break;
-    }
-}
-
-void SaveNodes(std::string& Line, const std::vector<Node>& Nodes, bool IsChild = false)
-{
-    for (int i = 0; i < static_cast<int>(Nodes.size()); i++)
-    {
-        if (Nodes[i].IsChild && !IsChild)
-            continue;
-
-        Line += "[NODETYPE=";
-        Line += GetNodeTypeAsString(Nodes[i].NodeType);
-        Line += "] ";
-
-        Line += "[NAME=";
-        Line += Nodes[i].Name;
-        Line += "] ";
-
-        if (Nodes[i].Position.x != 0.0f || Nodes[i].Position.y != 0.0f)
-        {
-            Line += "[POSITION(";
-            Line += Nodes[i].Position.x;
-            Line += ',';
-            Line += Nodes[i].Position.y;
-            Line += ")] ";
-        }
-        if (Nodes[i].Size.x != 0.0f || Nodes[i].Size.y != 0.0f)
-        {
-            Line += "[SIZE(";
-            Line += Nodes[i].Size.x;
-            Line += ',';
-            Line += Nodes[i].Size.y;
-            Line += ")] ";
-        }
-        if (Nodes[i].Angle != 0.0f)
-        {
-            Line += "[ANGLE(";
-            Line += Nodes[i].Angle;
-            Line += ")] ";
-        }
-
-        switch (Nodes[i].NodeType)
-        {
-        case Node::Type::SPRITE:
-            Line += "[ASSET=";
-            Line += *(std::string*)Nodes[i].NodeValues[0]->Value;
-            Line += "] ";
-            break;
-        case Node::Type::PHYSICSBODY:
-            //Line += "[PHYSICSTYPE=";
-            //Line += *(std::string*)Nodes[i].NodeValues[0]->Value;
-            //Line += "] ";
-            break;
-        default:
-            break;
-        }
-    }
-}
-
-void App::SaveSceneFile()
-{
-    std::string line;
-
-    SaveNodes(line, m_Nodes);
-
-    std::ofstream write_file(m_CurrentScene);
-    write_file << line;
-}
-
-void App::LoadSceneFile(const std::string& FilePath)
-{
-    std::string line;
-    std::ifstream scene_file(FilePath);
-
-    if (scene_file.fail())
-    {
-        std::cout << "Scene File did not found.\n";
-        return;
-    }
-
-    m_CurrentScene = FilePath;
-
-    int line_count = 0;
-    while (std::getline(scene_file, line))
-    {
-        if (line[0] != '#' || line[0] != '$')
-        {
-            line_count += 1;
-            m_Nodes.push_back(Node());
-
-            std::string type = GetLineBetween(line, "[NODETYPE=", "]");
-
-            if (type == "NODE")
-            {
-                m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::NODE;
-            }
-            else if (type == "PHYSICSBODY")
-            {
-                m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::PHYSICSBODY;
-            }
-            else if (type == "SPRITE")
-            {
-                m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::SPRITE;
-                if (IsLineExist(line, "[ASSET="))
-                {
-                    m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new std::string(GetLineBetween(line, "[ASSET=", "]")), Node::NodeValue::Type::STRING));
-                }
-                else
-                {
-                    m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new std::string("None"), Node::NodeValue::Type::STRING));
-                }
-            }
-            else if (type == "CAMERA")
-            {
-                m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::CAM;
-            }
-            else if (type == "COLLIDER")
-            {
-                m_Nodes[m_Nodes.size() - 1].NodeType = Node::Type::COLLIDER;
-
-
-                if (IsLineExist(line, "[COLLIDERTYPE="))
-                {
-                    std::string collider_type = GetLineBetween(line, "[COLLIDERTYPE=", "]");
-
-                    if (collider_type == "BOX")
-                    {
-                        m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new Node::ColliderType(Node::ColliderType::BOX), Node::NodeValue::Type::INT, { "Box", "Circle", "Polygon" }));
-
-                        std::string size = GetLineBetween(line, "[COLLIDERSIZE(", ")]");
-                        m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new ImVec2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ","))), Node::NodeValue::Type::VECTOR2));
-                    }
-                    else if (collider_type == "CIRCLE")
-                    {
-                        m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new Node::ColliderType(Node::ColliderType::CIRCLE), Node::NodeValue::Type::INT, { "Box", "Circle", "Polygon" }));
-
-                        m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new float(std::stof(GetLineBetween(line, "[RADIUS=(", ")]"))), Node::NodeValue::Type::FLOAT));
-                    }
-                    else if (collider_type == "POLYGON")
-                    {
-                        m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new Node::ColliderType(Node::ColliderType::POLYGONS), Node::NodeValue::Type::INT, { "Box", "Circle", "Polygon" }));
-
-                        std::vector<void*> points;
-
-                        int point_count = std::stoi(GetLineBetween(line, "[POINTCOUNT=(", ")]"));
-
-                        std::string polygon_points = GetLineBetween(line, "[POINTS=", "]");
-
-                        for (int i = 0; i < point_count; i++)
-                        {
-                            points.push_back(new ImVec2(std::stof(GetLineBetween(polygon_points, "(", ",")), std::stof(GetLineBetween(polygon_points, ",", ")"))));
-
-                            if (i != point_count)
-                                polygon_points.erase(0, GetLineBetween(polygon_points, "(", ")").size() + 3);
-                            else
-                                polygon_points.erase(0, GetLineBetween(polygon_points, "(", ")").size() + 2);
-                        }
-
-                        m_Nodes[m_Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(points));
-                    }
-                }
-            }
-
-            if (IsLineExist(line, "[POSITION("))
-            {
-                std::string pose = GetLineBetween(line, "[POSITION(", ")]");
-                m_Nodes[m_Nodes.size() - 1].Position = ImVec2(std::stof(GetLineBetween(pose, 0, ",")), std::stof(GetLineBetween(pose, ",")));
-            }
-            if (IsLineExist(line, "[SIZE("))
-            {
-                std::string size = GetLineBetween(line, "[SIZE(", ")]");
-                m_Nodes[m_Nodes.size() - 1].Size = ImVec2(std::stof(GetLineBetween(size, 0, ",")), std::stof(GetLineBetween(size, ",")));
-            }
-
-            if (IsLineExist(line, "[ANGLE("))
-            {
-                m_Nodes[m_Nodes.size() - 1].Angle = std::stof(GetLineBetween(line, "[ANGLE(", ")]"));
-            }
-
-            if (IsLineExist(line, "[SCRIPT="))
-            {
-                m_Nodes[m_Nodes.size() - 1].Script = GetLineBetween(line, "[SCRIPT=", "]");
-            }
-
-            if (IsLineExist(line, "[CHILDINDEX="))
-            {
-                std::string ci = GetLineBetween(line, "[CHILDINDEX=(", ")]");
-                if (IsLineExist(ci, ",")) {
-                    for (int i = 0; i < static_cast<int>(ci.size()); i++)
-                    {
-                        if (ci[i] != ',')
-                        {
-                            m_Nodes[m_Nodes.size() - 1].ChildIDs.push_back(ci[i] - '0');
-                            m_Nodes[ci[i] - '0'].IsChild = true;
-                            m_Nodes[ci[i] - '0'].ParentID = m_Nodes[m_Nodes.size() - 1].ID;
-                        }
-                    }
-                }
-                else
-                {
-                    m_Nodes[m_Nodes.size() - 1].ChildIDs.push_back(std::stoi(ci));
-                    m_Nodes[std::stoi(ci)].IsChild = true;
-                    m_Nodes[std::stoi(ci)].ParentID = m_Nodes[m_Nodes.size() - 1].ID;
-                }
-            }
-            m_Nodes[m_Nodes.size() - 1].Name = GetLineBetween(line, "[NAME=", "]");
-        }
-    }
-}
-
 void App::Init()
 {
     // Setup SDL
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD) != 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD) == SDL_FALSE)
     {
         std::cout << "SDL_Init failed : ";
         throw std::runtime_error(SDL_GetError());
     }
+    if (IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_AVIF | IMG_INIT_JXL | IMG_INIT_TIF | IMG_INIT_WEBP) < 0)
+    {
+        std::cout << "IMG_Init failed";
+        throw std::runtime_error(SDL_GetError());
+    }
 
     // Create window with SDL_Renderer graphics context
-    Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
+    Uint32 window_flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
     m_Window = SDL_CreateWindow("VergodtEngine Editor", 1280, 720, window_flags);
     if (m_Window == nullptr)
     {
@@ -331,7 +159,8 @@ void App::Init()
     
     // Load Scene
 
-    LoadSceneFile("../Assets/FlappyBird/FlappyBird.vscene");
+    //m_Project.LoadSceneFile("../Assets/FlappyBird/FlappyBird.vscene");
+    //m_Project.SaveSceneFile();
 
     // Main loop
     m_Running = true;
@@ -339,7 +168,7 @@ void App::Init()
 
 int App::Run() {
     int selected_node = -1;
-
+    std::string ConsoleLine;
 #ifdef __EMSCRIPTEN__
     // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
     // You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
@@ -376,17 +205,41 @@ int App::Run() {
         ImGui::NewFrame();
 
         // Do stuff here
-        bool sdw = true; ImGui::ShowDemoWindow(&sdw);
+        //bool sdw = true; ImGui::ShowDemoWindow(&sdw);
 
         DockSpace();
 
-        m_Scripting.ScriptingSpace();
+        if (!m_Project.ProjectInitilized)
+        {
+            if (m_Project.InitilizeProject())
+                SDL_MaximizeWindow(m_Window);
+        }
+        else
+        {
+            m_Scripting.ScriptingSpace();
 
-        m_Viewport.ViewportSpace(m_Renderer, m_Nodes, selected_node);
+            m_Viewport.ViewportSpace(m_Renderer, m_Project.Nodes, selected_node, m_Project.SavedProject, m_Project);
 
-        m_SceneView.SceneViewSpace(m_Nodes, selected_node);
+            m_SceneView.SceneViewSpace(m_Project.Nodes, selected_node, m_Project.SavedProject);
 
-        m_Inspector.InspectorSpace(m_Nodes, selected_node, &m_Scripting);
+            m_Inspector.InspectorSpace(m_Project.Nodes, selected_node, m_Scripting, m_Project.SavedProject, m_Project);
+
+            if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_S))
+            {
+                m_Project.SaveSceneFile();
+                m_Project.SavedProject = true;
+            }
+
+            ImGui::Begin("Debug");
+            if (ImGui::Button("Play"))
+            {
+                std::thread childThread(RunGame, "VergodtEngine.exe", m_Project.GetProjectLocation() + m_Project.GetProjectFile(), std::ref(ConsoleLine));
+                //RunGame("VergodtEngine.exe", m_Project.GetProjectLocation() + m_Project.GetProjectFile(), ConsoleLine);
+                childThread.detach();
+            }
+            std::cout << ConsoleLine;
+            ImGui::End();
+        }
 
         // Rendering
         ImGui::Render();

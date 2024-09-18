@@ -8,7 +8,7 @@
 class Engine
 {
 public:
-	void EngineStart();
+	void EngineStart(int argc = 0, char** argv = nullptr);
 
 	bool IsRunning() { return m_Running; }
 

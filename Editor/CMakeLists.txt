@@ -14,4 +14,4 @@ set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAK
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../vendor/nativefiledialog-extended ${CMAKE_BINARY_DIR}/vendor/nativefiledialog-extended)
 
-target_link_libraries(${PROJECT_NAME} SDL3::SDL3 SDL3_image-static nfd)
+target_link_libraries(${PROJECT_NAME} SDL3::SDL3-static SDL3_image-static nfd)

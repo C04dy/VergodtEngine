@@ -213,9 +213,8 @@ void Scripting::ScriptingSpace()
         return;
     }
 
-    ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_S, ImGuiInputFlags_Tooltip);
-        if (ImGui::Button("Save") && m_Scripts.size() != 0)
-            SaveScript(m_Scripts[m_CurrentScript].CurrentScriptPath);
+    if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_S) && m_Scripts.size() != 0)
+        SaveScript(m_Scripts[m_CurrentScript].CurrentScriptPath);
 
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))

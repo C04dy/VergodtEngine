@@ -5,7 +5,7 @@
 
 Window::Window(const std::string& Title, int Width, int Height, bool UseVsync)
 {
-    if (SDL_CreateWindowAndRenderer(Title.c_str(), Width, Height, SDL_WINDOW_VULKAN, &m_Window, &m_Renderer) < 0)
+    if (SDL_CreateWindowAndRenderer(Title.c_str(), Width, Height, SDL_WINDOW_VULKAN, &m_Window, &m_Renderer) == SDL_FALSE)
     {
         std::cout << "SDL_CreateWindowAndRenderer failed :";
         throw std::runtime_error(SDL_GetError());

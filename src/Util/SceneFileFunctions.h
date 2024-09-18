@@ -7,12 +7,12 @@ void ScriptError(const std::string& Message, const std::string& ScriptPath)
     std::cout << "Script File Error\n" << Message << '\n' << "Script File Path = " << ScriptPath << '\n';
 }
 
-void SetScript(Node* _Node, const std::string& Line, InputManager* Input)
+void SetScript(Node* _Node, const std::string& Line, InputManager* Input, const std::string& ProjectLocation)
 {
     if (IsLineExist(Line, "[SCRIPT="))
     {
         std::string line;
-        std::string file_path = GetLineBetween(Line, "[SCRIPT=", "]");
+        std::string file_path = ProjectLocation + GetLineBetween(Line, "[SCRIPT=", "]");
         std::ifstream script_file(file_path);
 
         if (script_file.fail())
@@ -101,7 +101,7 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input)
     }
 }
 
-void SetNode(Node* _Node, const std::string& Line, InputManager* Input)
+void SetNode(Node* _Node, const std::string& Line, InputManager* Input, const std::string& ProjectLocation)
 {
     if (IsLineExist(Line, "[POSITION(")) 
     {
@@ -123,7 +123,7 @@ void SetNode(Node* _Node, const std::string& Line, InputManager* Input)
 
     _Node->SetID();
 
-    SetScript(_Node, Line, Input);
+    SetScript(_Node, Line, Input, ProjectLocation);
 }
 
 void SetChild(Node* _Node, std::vector<Node*>& AllNodes, const std::string& Line, int IndexOffset)

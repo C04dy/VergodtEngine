@@ -34,6 +34,30 @@ std::string GetLineBetween(const std::string& Text, const std::string& Start)
     return Text.substr(Text.find(Start) + (Start.length()), Text.length() - Text.find(Start));
 }
 
+std::string GetLineBetweenTillLast(const std::string& Text, const std::string& Last)
+{
+    return Text.substr(0, Text.find_last_of(Last));
+}
+
+std::string GetLineBetweenAfterLast(const std::string& Text, const std::string& Last)
+{
+    return Text.substr(Text.find_last_of(Last) + (Last.length()), Text.length() - Text.find_last_of(Last));
+}
+
+std::string RemoveFromLine(const std::string& Text, const std::string& TextToRemove)
+{
+    std::string result = Text;
+    size_t pos = result.find(TextToRemove);
+
+    while (pos != std::string::npos)
+    {
+        result.erase(pos, TextToRemove.length());
+        pos = result.find(TextToRemove);
+    }
+
+    return result;
+}
+
 int HowMuchIsInsideString(const std::string& Text, char WhichChar)
 {
     int count = 0;
