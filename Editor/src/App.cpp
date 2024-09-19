@@ -18,6 +18,7 @@
 #include "Inspector.h"
 #include "SceneView.h"
 #include "Project.h"
+#include "process.hpp"
 
 App::~App()
 {
@@ -182,9 +183,16 @@ int App::Run() {
             ImGui::Begin("Debug");
             if (ImGui::Button("Play"))
             {
-                
+                // i will fix this surely someday..
+                TinyProcessLib::Process process1("VergodtEngine.exe " + m_Project.GetProjectLocation() + m_Project.GetProjectFile(), "",
+                    [](const char* bytes, size_t n)
+                    {
+                        std::cout << "Game output: " << std::string(bytes, n);
+                    },
+                    nullptr,
+                    false
+                );
             }
-            std::cout << ConsoleLine;
             ImGui::End();
         }
 

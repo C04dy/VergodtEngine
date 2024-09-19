@@ -12,6 +12,9 @@ include_directories(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/imgui 
 
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../vendor/nativefiledialog-extended ${CMAKE_BINARY_DIR}/vendor/nativefiledialog-extended)
+set(BUILD_TESTING OFF)
 
-target_link_libraries(${PROJECT_NAME} SDL3::SDL3-static SDL3_image-static nfd)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../vendor/nativefiledialog-extended ${CMAKE_BINARY_DIR}/vendor/nativefiledialog-extended)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../vendor/tiny-process-library ${CMAKE_BINARY_DIR}/vendor/tiny-process-library)
+
+target_link_libraries(${PROJECT_NAME} SDL3::SDL3-static SDL3_image-static nfd tiny-process-library)
