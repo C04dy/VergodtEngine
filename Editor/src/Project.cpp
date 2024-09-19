@@ -313,7 +313,7 @@ static void SaveNodes(std::string& Line, const std::vector<Node>& Nodes, std::ve
                 Line += ")] ";
                 break;
             case Node::ColliderType::CIRCLE:
-                Line += "[RADIUS(";
+                Line += "[RADIUS=(";
                 Line += std::to_string((*(float*)Nodes[i].NodeValues[1]->Value));
                 Line += ")] ";
                 break;
@@ -355,7 +355,8 @@ void Project::SaveSceneFile()
     SaveNodes(line, Nodes, Nodes, saved_nodes);
     saved_nodes.clear();
 
-    std::ofstream write_file("../Assets/test.vscene");
+    std::ofstream write_file(m_ProjectLocation + m_CurrentScene);
+    std::cout << m_CurrentScene;
     write_file << line;
 }
 
@@ -412,13 +413,14 @@ void Project::LoadSceneFile(const std::string& FilePath)
         return;
     }
 
-    m_CurrentScene = FilePath;
+    m_CurrentScene = RemoveFromLine(FilePath, m_ProjectLocation);
 
     int line_count = 0;
     while (std::getline(scene_file, line))
     {
         if (line[0] != '#')
         {
+            
             line_count += 1;
             Nodes.push_back(Node());
 
@@ -482,7 +484,6 @@ void Project::LoadSceneFile(const std::string& FilePath)
                 else if (collider_type == "CIRCLE")
                 {
                     Nodes[Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new Node::ColliderType(Node::ColliderType::CIRCLE), Node::NodeValue::Type::INT, { "Box", "Circle", "Polygon" }));
-
                     Nodes[Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new float(std::stof(GetLineBetween(line, "[RADIUS=(", ")]"))), Node::NodeValue::Type::FLOAT));
                 }
                 else if (collider_type == "POLYGON")
@@ -524,7 +525,6 @@ void Project::LoadSceneFile(const std::string& FilePath)
             {
                 Nodes[Nodes.size() - 1].Angle = std::stof(GetLineBetween(line, "[ANGLE(", ")]"));
             }
-
             if (IsLineExist(line, "[SCRIPT="))
             {
                 Nodes[Nodes.size() - 1].Script = GetLineBetween(line, "[SCRIPT=", "]");

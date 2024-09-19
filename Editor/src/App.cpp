@@ -19,57 +19,6 @@
 #include "SceneView.h"
 #include "Project.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#include <thread>
-
-static void RunGame(const std::string& program, const std::string& args, std::string& ConsoleLine)
-{
-    std::array<char, 128> buffer;
-
-    std::string program_to_run = program + " " + args;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(program_to_run.c_str(), "r"), pclose);
-    if (!pipe)
-    {
-        throw std::runtime_error("popen() failed!");
-    }
-
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
-    {
-        std::cout << buffer.data();
-    }
-}
-
-
-#else
-#include <unistd.h>
-
-static void RunGame(const std::string& program, const std::string& args, std::string& ConsoleLine)
-{
-    pid_t pid = fork();
-
-    if (pid == 0)
-    {
-        execvp(program, args);
-        std::cout << "Error: exec failed\n";
-        exit(EXIT_FAILURE);
-    }
-    else if (pid > 0)
-    {
-        int status;
-        waitpid(pid, &status, 0);
-        if (WIFEXITED(status))
-        {
-            std::cout << "Program exited with status: " << WEXITSTATUS(status) << "\n";
-        }
-    }
-    else
-    {
-        std::cout << "Error: fork failed\n";
-    }
-}
-#endif
-
 App::~App()
 {
     NFD_Quit();
@@ -233,9 +182,7 @@ int App::Run() {
             ImGui::Begin("Debug");
             if (ImGui::Button("Play"))
             {
-                std::thread childThread(RunGame, "VergodtEngine.exe", m_Project.GetProjectLocation() + m_Project.GetProjectFile(), std::ref(ConsoleLine));
-                //RunGame("VergodtEngine.exe", m_Project.GetProjectLocation() + m_Project.GetProjectFile(), ConsoleLine);
-                childThread.detach();
+                
             }
             std::cout << ConsoleLine;
             ImGui::End();

@@ -227,8 +227,25 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
             else
             {
                 Nodes[SelectedNode].Script = CreateFileDialog({"VergodtScript File"}, {"verscript"});
+                Nodes[SelectedNode].Script = RemoveFromLine(Nodes[SelectedNode].Script, CurrentProject.GetProjectLocation());
             }
             Saved = false;
+        }
+        if (Nodes[SelectedNode].Script != "None")
+        {
+            ImGui::SameLine();
+            if (ImGui::Button("Remove"))
+            {
+                Nodes[SelectedNode].Script = "None";
+                Saved = false;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Change"))
+            {
+                Nodes[SelectedNode].Script = CreateFileDialog({ "VergodtScript File" }, { "verscript" });
+                Nodes[SelectedNode].Script = RemoveFromLine(Nodes[SelectedNode].Script, CurrentProject.GetProjectLocation());
+                Saved = false;
+            }
         }
     }
 

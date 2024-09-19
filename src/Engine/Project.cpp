@@ -4,17 +4,14 @@
 
 Project::Project(int argc, char** argv)
 {
-    if (argc == 0)
-    {
+#ifdef NDEBUG
         m_ProjectLocation = "../Assets/FlappyBird/";
         m_ProjectFile = "FlappyBird.verproj";
-    }
-    else
-    {
+#else
         m_ProjectLocation = argv[1];
         m_ProjectFile = GetLineBetweenAfterLast(m_ProjectLocation, "\\");
         m_ProjectLocation = RemoveFromLine(m_ProjectLocation, m_ProjectFile);
-    }
+#endif
 
     std::string line;
     std::ifstream project_file("../Assets/FlappyBird/FlappyBird.verproj");
