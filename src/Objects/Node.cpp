@@ -15,7 +15,8 @@ Node::~Node()
 void Node::AddChild(Node* Child)
 {
 	m_ChildIDs.push_back(Child->ID);
-	Child->LocalPosition = Position - Child->Position;
+	Child->LocalPosition = Child->Position - Position;
+	Child->LocalSize = Child->Size / Size;
 
 	Child->Position = Position + Child->LocalPosition;
 	Child->Size = Size;
@@ -42,7 +43,7 @@ void Node::UpdateChild(std::vector<Node*>& Nodes)
 			if (node->ID == child_id)
 			{
 				node->Position = Position + node->LocalPosition;
-				node->Size = Size;
+				node->Size = Size * node->LocalSize;
 				node->Angle = Angle;
 			}
 		}

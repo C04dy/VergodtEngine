@@ -76,6 +76,9 @@ void SceneView::CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode, boo
                         if (it != Nodes[parent_index].ChildIDs.end())
                             Nodes[parent_index].ChildIDs.erase(it);
 
+                        if (Nodes[to].ID == Nodes[from].ParentID)
+                            ImGui::PopID();
+                        
                         Nodes[from].ParentID = -1;
                         Nodes[from].IsChild = false;
 

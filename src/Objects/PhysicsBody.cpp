@@ -40,18 +40,23 @@ void PhysicsBody::SetCollider(Collider* _Collider)
 	switch (_Collider->ColliderType)
 	{
 	case Collider::Type::BOX: {
-		b2Vec2 p = { -_Collider->LocalPosition.x / PIXEL_TO_METER, -_Collider->LocalPosition.y / PIXEL_TO_METER };
-		b2Polygon box_shape = b2MakeOffsetBox(_Collider->BoxColliderSize.x, _Collider->BoxColliderSize.y, p, b2MakeRot(_Collider->Angle));
+		b2Vec2 box_offset = { _Collider->LocalPosition.x / PIXEL_TO_METER, _Collider->LocalPosition.y / PIXEL_TO_METER };
+		b2Polygon box_shape = b2MakeOffsetBox(_Collider->BoxColliderSize.x, _Collider->BoxColliderSize.y, box_offset, b2MakeRot(_Collider->Angle));
 		
 		b2CreatePolygonShape(BodyID, &shape_definition, &box_shape);
 	}	break;
 	case Collider::Type::CIRCLE: {
 		b2Circle circle_shape;
 		circle_shape.radius = _Collider->CircleRadius;
-		circle_shape.center = _Collider->LocalPosition / PIXEL_TO_METER;
+		circle_shape.center = { _Collider->LocalPosition.x / PIXEL_TO_METER, _Collider->LocalPosition.y / PIXEL_TO_METER };
 		b2CreateCircleShape(BodyID, &shape_definition, &circle_shape);
 	}	break;
 	case Collider::Type::POLYGON: {
+		//b2Transform polygon_transform;
+		//polygon_transform.p = { _Collider->LocalPosition.x / PIXEL_TO_METER, _Collider->LocalPosition.y / PIXEL_TO_METER };
+		//polygon_transform.q = b2MakeRot(_Collider->Angle);
+		
+		//b2Polygon polygon_shape = b2MakeOffsetPolygon(&_Collider->PolygonHull, 0, polygon_transform);
 		b2Polygon polygon_shape = b2MakePolygon(&_Collider->PolygonHull, 0);
 		b2CreatePolygonShape(BodyID, &shape_definition, &polygon_shape);
 	}	break;

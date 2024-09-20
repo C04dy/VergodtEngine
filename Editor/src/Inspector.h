@@ -18,11 +18,11 @@ public:
 
     void InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scripting& ScriptingTab, bool& Saved, Project& CurrentProject);
 private:
-    void ChangeChildNodesPosition(std::vector<Node>& Nodes, int StartPose, int Lentgth, int CurrentNode, const ImVec2& OldPosition);
+    void ChangeChildNodesPosition(std::vector<Node>& Nodes, int CurrentNode, const ImVec2& OldPosition);
 
-    void ChangeChildNodesSize(std::vector<Node>& Nodes, int StartPose, int Lentgth, int CurrentNode, const ImVec2& OldSize);
+    void ChangeChildNodesSize(std::vector<Node>& Nodes, int CurrentNode, const ImVec2& OldSize);
 
-    void ChangeChildNodesAngle(std::vector<Node>& Nodes, int StartPose, int Lentgth, int CurrentNode, float OldAngle);
+    void ChangeChildNodesAngle(std::vector<Node>& Nodes, int CurrentNode, float OldAngle);
 };
 
 #endif

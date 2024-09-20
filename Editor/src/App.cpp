@@ -184,14 +184,16 @@ int App::Run() {
             if (ImGui::Button("Play"))
             {
                 // i will fix this surely someday..
-                TinyProcessLib::Process process1("VergodtEngine.exe " + m_Project.GetProjectLocation() + m_Project.GetProjectFile(), "",
+                TinyProcessLib::Process process("VergodtEngine.exe " + m_Project.GetProjectLocation() + m_Project.GetProjectFile(), "",
                     [](const char* bytes, size_t n)
                     {
                         std::cout << "Game output: " << std::string(bytes, n);
                     },
-                    nullptr,
-                    false
+                    [](const char *bytes, size_t n) {
+                    }
                 );
+
+                int exit_status = process.get_exit_status();
             }
             ImGui::End();
         }

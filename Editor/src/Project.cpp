@@ -144,9 +144,9 @@ Project::~Project()
         {
             delete Nodes[i].NodeValues[j];
             Nodes[i].NodeValues[j] = nullptr;
-            if (Nodes[i].Texture != nullptr)
-                SDL_DestroyTexture(Nodes[i].Texture);
         }
+        if (Nodes[i].Texture != nullptr)
+            SDL_DestroyTexture(Nodes[i].Texture);
     }
 }
 

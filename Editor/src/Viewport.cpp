@@ -1,9 +1,11 @@
 #include "Viewport.h"
 #include <math.h>
 #include <string>
+#include <algorithm>
 #include <iostream>
 #include "imgui_internal.h"
 #include "App.h"
+#include "SDL3/SDL.h"
 
 static bool IsMouseHoveringPolyline(const ImVec2 Points[], int PointCount, float LineThickness)
 {
@@ -437,6 +439,21 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                                 delete Nodes[i].NodeValues[x];
                                 Nodes[i].NodeValues[x] = nullptr;
                             }
+                            if (Nodes[i].Texture != nullptr)
+                                SDL_DestroyTexture(Nodes[i].Texture);
+
+                            if (Nodes[SelectedNode].ParentID != -1)
+                            {
+                                for (int x = 0; x < static_cast<int>(Nodes.size()); x++)
+                                {
+                                    if (Nodes[SelectedNode].ParentID == Nodes[x].ID)
+                                    {
+                                        Nodes[x].ChildIDs.erase(std::find(Nodes[x].ChildIDs.begin(), Nodes[x].ChildIDs.end(), Nodes[SelectedNode].ID));
+                                        break;
+                                    }
+                                }
+                            }
+
                             Nodes.erase(Nodes.begin() + i);
                             IDs_to_delete.erase(IDs_to_delete.begin() + j);
                         }
@@ -445,6 +462,8 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
             }
 
             SelectedNode = -1;
+
+            Saved = false;
         }
         ImGui::PopID();
         ImGui::EndPopup();

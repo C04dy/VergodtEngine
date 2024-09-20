@@ -36,6 +36,7 @@ public:
 	Vector2 Position = Vector2(0, 0);
 	Vector2 LocalPosition = Vector2(0, 0);
 	Vector2 Size = Vector2(1, 1);
+	Vector2 LocalSize = Vector2(1, 1);
 	float Angle = 0;
 
 	std::string Name = "Node";

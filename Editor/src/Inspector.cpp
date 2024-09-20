@@ -178,14 +178,14 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
         if (ImGui::InputFloat("X", &Nodes[SelectedNode].Position.x))
         {
             if (static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
-                ChangeChildNodesPosition(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_position);
+                ChangeChildNodesPosition(Nodes, SelectedNode, old_position);
             Saved = false;
         }
         ImGui::SameLine();
         if (ImGui::InputFloat("Y", &Nodes[SelectedNode].Position.y))
         {
             if (static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
-                ChangeChildNodesPosition(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_position);
+                ChangeChildNodesPosition(Nodes, SelectedNode, old_position);
             Saved = false;
         }
         ImGui::PopItemWidth();
@@ -198,14 +198,14 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
         if (ImGui::InputFloat("X", &Nodes[SelectedNode].Size.x))
         {
             if (static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
-                ChangeChildNodesSize(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_size);
+                ChangeChildNodesSize(Nodes, SelectedNode, old_size);
             Saved = false;
         }
         ImGui::SameLine();
         if (ImGui::InputFloat("Y", &Nodes[SelectedNode].Size.y))
         {
             if (static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
-                ChangeChildNodesSize(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_size);
+                ChangeChildNodesSize(Nodes, SelectedNode, old_size);
             Saved = false;
         }
         ImGui::PopItemWidth();
@@ -216,7 +216,7 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
         if (ImGui::InputFloat(" ", &Nodes[SelectedNode].Angle))
         {
             if (static_cast<int>(Nodes[SelectedNode].ChildIDs.size()) != 0)
-                ChangeChildNodesAngle(Nodes, SelectedNode - static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), static_cast<int>(Nodes[SelectedNode].ChildIDs.size()), SelectedNode, old_angle);
+                ChangeChildNodesAngle(Nodes, SelectedNode, old_angle);
             Saved = false;
         }
 
@@ -255,45 +255,63 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
     ImGui::End();
 }
 
-void Inspector::ChangeChildNodesPosition(std::vector<Node>& Nodes, int StartPose, int Lentgth, int CurrentNode, const ImVec2& old_positionition)
+void Inspector::ChangeChildNodesPosition(std::vector<Node>& Nodes, int CurrentNode, const ImVec2& OldPosition)
 {
-    bool IsX = Nodes[CurrentNode].Position.x != old_positionition.x;
-    for (int i = StartPose; i < StartPose + Lentgth; i++)
+    bool IsX = Nodes[CurrentNode].Position.x != OldPosition.x;
+    for (int i = 0; i < static_cast<int>(Nodes.size()); i++)
     {
-        Nodes[i].Position.x += (Nodes[CurrentNode].Position.x - old_positionition.x) * int(IsX);
-        Nodes[i].Position.y += (Nodes[CurrentNode].Position.y - old_positionition.y) * int(!IsX);
-
-        if (static_cast<int>(Nodes[i].ChildIDs.size()) != 0)
+        for (int j = 0; j < static_cast<int>(Nodes[CurrentNode].ChildIDs.size()); j++)
         {
-            ChangeChildNodesPosition(Nodes, i - static_cast<int>(Nodes[i].ChildIDs.size()), static_cast<int>(Nodes[i].ChildIDs.size()), i, old_positionition);
+            if (Nodes[i].ID == Nodes[CurrentNode].ChildIDs[j])
+            {
+                Nodes[i].Position.x += (Nodes[CurrentNode].Position.x - OldPosition.x) * int(IsX);
+                Nodes[i].Position.y += (Nodes[CurrentNode].Position.y - OldPosition.y) * int(!IsX);
+
+                if (static_cast<int>(Nodes[i].ChildIDs.size()) != 0)
+                {
+                    ChangeChildNodesPosition(Nodes, i, OldPosition);
+                }
+            }
         }
     }
 }
 
-void Inspector::ChangeChildNodesSize(std::vector<Node>& Nodes, int StartPose, int Lentgth, int CurrentNode, const ImVec2& OldSize)
+void Inspector::ChangeChildNodesSize(std::vector<Node>& Nodes, int CurrentNode, const ImVec2& OldSize)
 {
     bool IsX = Nodes[CurrentNode].Size.x != OldSize.x;
-    for (int i = StartPose; i < StartPose + Lentgth; i++)
+    for (int i = 0; i < static_cast<int>(Nodes.size()); i++)
     {
-        Nodes[i].Size.x += (Nodes[CurrentNode].Size.x - OldSize.x) * int(IsX);
-        Nodes[i].Size.y += (Nodes[CurrentNode].Size.y - OldSize.y) * int(!IsX);
-
-        if (static_cast<int>(Nodes[i].ChildIDs.size()) != 0)
+        for (int j = 0; j < static_cast<int>(Nodes[CurrentNode].ChildIDs.size()); j++)
         {
-            ChangeChildNodesSize(Nodes, i - static_cast<int>(Nodes[i].ChildIDs.size()), static_cast<int>(Nodes[i].ChildIDs.size()), i, OldSize);
+            if (Nodes[i].ID == Nodes[CurrentNode].ChildIDs[j])
+            {
+                Nodes[i].Size.x += (Nodes[CurrentNode].Size.x - OldSize.x) * int(IsX);
+                Nodes[i].Size.y += (Nodes[CurrentNode].Size.y - OldSize.y) * int(!IsX);
+
+                if (static_cast<int>(Nodes[i].ChildIDs.size()) != 0)
+                {
+                    ChangeChildNodesSize(Nodes, i, OldSize);
+                }
+            }
         }
     }
 }
 
-void Inspector::ChangeChildNodesAngle(std::vector<Node>& Nodes, int StartPose, int Lentgth, int CurrentNode, float OldAngle)
+void Inspector::ChangeChildNodesAngle(std::vector<Node>& Nodes, int CurrentNode, float OldAngle)
 {
-    for (int i = StartPose; i < StartPose + Lentgth; i++)
+    for (int i = 0; i < static_cast<int>(Nodes.size()); i++)
     {
-        Nodes[i].Angle += (Nodes[CurrentNode].Angle - OldAngle);
-
-        if (static_cast<int>(Nodes[i].ChildIDs.size()) != 0)
+        for (int j = 0; j < static_cast<int>(Nodes[CurrentNode].ChildIDs.size()); j++)
         {
-            ChangeChildNodesAngle(Nodes, i - static_cast<int>(Nodes[i].ChildIDs.size()), static_cast<int>(Nodes[i].ChildIDs.size()), i, OldAngle);
+            if (Nodes[i].ID == Nodes[CurrentNode].ChildIDs[j])
+            {
+                Nodes[i].Angle += (Nodes[CurrentNode].Angle - OldAngle);
+
+                if (static_cast<int>(Nodes[i].ChildIDs.size()) != 0)
+                {
+                    ChangeChildNodesAngle(Nodes, i, OldAngle);
+                }
+            }
         }
     }
 }
