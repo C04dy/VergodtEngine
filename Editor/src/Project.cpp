@@ -3,6 +3,8 @@
 #include <fstream>
 #include "StringFunctions.h"
 #include "nfd.h"
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 
 int Node::s_IDs = 0;
 
@@ -142,6 +144,8 @@ Project::~Project()
         {
             delete Nodes[i].NodeValues[j];
             Nodes[i].NodeValues[j] = nullptr;
+            if (Nodes[i].Texture != nullptr)
+                SDL_DestroyTexture(Nodes[i].Texture);
         }
     }
 }
@@ -402,6 +406,34 @@ void Project::LoadProjectFile(const std::string& FilePath)
     project_file.close();
 }
 
+void Project::LoadTextureFromFile(const std::string& FilePath, Node& Sprite)
+{
+    SDL_Surface* surface = IMG_Load(FilePath.c_str());
+
+    if (surface == nullptr)
+    {
+        std::cout << "Failed to load texture: " << FilePath.c_str() << '\n';
+        return;
+    }
+
+    if (Sprite.Texture != nullptr)
+        SDL_DestroyTexture(Sprite.Texture);
+
+    Sprite.Texture = SDL_CreateTextureFromSurface(m_Renderer, surface);
+
+    if (Sprite.Texture == nullptr)
+    {
+        std::cout << "Failed to create texture from surface\n";
+        return;
+    }
+
+
+    Sprite.TextureWidth = surface->w;
+    Sprite.TextureHeight = surface->h;
+
+    SDL_DestroySurface(surface);
+}
+
 void Project::LoadSceneFile(const std::string& FilePath)
 {
     std::string line;
@@ -458,6 +490,8 @@ void Project::LoadSceneFile(const std::string& FilePath)
                 if (IsLineExist(line, "[ASSET="))
                 {
                     Nodes[Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new std::string(GetLineBetween(line, "[ASSET=", "]")), Node::NodeValue::Type::STRING));
+
+                    LoadTextureFromFile(m_ProjectLocation + GetLineBetween(line, "[ASSET=", "]"), Nodes[Nodes.size() - 1]);
                 }
                 else
                 {

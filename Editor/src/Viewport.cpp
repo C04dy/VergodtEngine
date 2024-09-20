@@ -2,8 +2,6 @@
 #include <math.h>
 #include <string>
 #include <iostream>
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
 #include "imgui_internal.h"
 #include "App.h"
 
@@ -31,33 +29,6 @@ static float DistanceBetween(ImVec2 a, ImVec2 b)
 static bool IsMouseHoveringCircle(float Radius, const ImVec2& Position)
 {
     return DistanceBetween(Position, ImGui::GetMousePos()) < Radius;
-}
-
-static bool LoadTextureFromFile(const std::string& FilePath, SDL_Texture** Texture, float& Width, float& Height, SDL_Renderer* Renderer)
-{
-    SDL_Surface* surface = IMG_Load(FilePath.c_str());
-
-    if (surface == nullptr)
-    {
-        std::cout << "Failed to load texture: " << FilePath.c_str() << '\n';
-        return false;
-    }
-
-    *Texture = SDL_CreateTextureFromSurface(Renderer, surface);
-
-    if (*Texture == nullptr)
-    {
-        std::cout << "Failed to create texture from surface\n";
-        return false;
-    }
-
-
-    Width = surface->w;
-    Height = surface->h;
-
-    SDL_DestroySurface(surface);
-
-    return true;
 }
 
 static void DeleteChildNodes(std::vector<Node>& Nodes, std::vector<int>& ChildNodes, std::vector<int>& IDsToDelete)
@@ -122,9 +93,7 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
         switch (Nodes[i].NodeType)
         {
         case Node::Type::SPRITE:
-            SDL_Texture* texture;
-            float textrue_width, textrue_height;
-            if (*(std::string*)Nodes[i].NodeValues[0]->Value == "None")
+            if (Nodes[i].Texture == nullptr)
             {
 
                 ImGui::SetCursorPos(ImVec2(Nodes[i].Position.x + offset.x, Nodes[i].Position.y + offset.y));
@@ -137,7 +106,7 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 ImGui::EndGroup();
 
             }
-            else if (LoadTextureFromFile(CurrentProject.GetProjectLocation() + *(std::string*)Nodes[i].NodeValues[0]->Value, &texture, textrue_width, textrue_height, Renderer))
+            else //LoadTextureFromFile(CurrentProject.GetProjectLocation() + *(std::string*)Nodes[i].NodeValues[0]->Value, &texture, Nodes[i].TextureWidth, Nodes[i].TextureHeight, Renderer))
             {
                 ImVec2 uv_min = ImVec2(0.0f, 0.0f);
                 ImVec2 uv_max = ImVec2(1.0f, 1.0f);
@@ -145,14 +114,14 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 ImVec4 border_col = ImGui::GetStyleColorVec4(ImGuiCol_Border);
                 if (i == SelectedNode) {
                     ImVec2 minrec(Nodes[i].Position.x + draw_list_offset.x, Nodes[i].Position.y + draw_list_offset.y);
-                    draw_list->AddRect(ImVec2(minrec.x - ((textrue_width * Nodes[i].Size.x) / 2), minrec.y - ((textrue_height * Nodes[i].Size.y) / 2))
-                                    ,  ImVec2(minrec.x + ((textrue_width * Nodes[i].Size.x) / 2) + 2.5f, minrec.y + ((textrue_height * Nodes[i].Size.y) / 2) + 2.5f), IM_COL32(255, 99, 71, 255), 0.0f, ImDrawFlags_None, 5);
+                    draw_list->AddRect(ImVec2(minrec.x - ((Nodes[i].TextureWidth * Nodes[i].Size.x) / 2), minrec.y - ((Nodes[i].TextureHeight * Nodes[i].Size.y) / 2))
+                                    ,  ImVec2(minrec.x + ((Nodes[i].TextureWidth * Nodes[i].Size.x) / 2) + 2.5f, minrec.y + ((Nodes[i].TextureHeight * Nodes[i].Size.y) / 2) + 2.5f), IM_COL32(255, 99, 71, 255), 0.0f, ImDrawFlags_None, 5);
                 }
                 ImGui::BeginGroup();
-                ImGui::SetCursorPos(ImVec2(Nodes[i].Position.x + offset.x - ((textrue_width * Nodes[i].Size.x) / 2), Nodes[i].Position.y + offset.y - ((textrue_height * Nodes[i].Size.y) / 2)));
-                ImGui::Image(texture, ImVec2(textrue_width * Nodes[i].Size.x, textrue_height * Nodes[i].Size.y), uv_min, uv_max, tint_col, border_col);
-                ImGui::SetCursorPos(ImVec2(Nodes[i].Position.x + offset.x - ((textrue_width * Nodes[i].Size.x) / 2), Nodes[i].Position.y + offset.y - ((textrue_height * Nodes[i].Size.y) / 2)));
-                ImGui::InvisibleButton("SPRITE", ImVec2(textrue_width * Nodes[i].Size.x, textrue_height * Nodes[i].Size.y), ImGuiButtonFlags_MouseButtonLeft);
+                ImGui::SetCursorPos(ImVec2(Nodes[i].Position.x + offset.x - ((Nodes[i].TextureWidth * Nodes[i].Size.x) / 2), Nodes[i].Position.y + offset.y - ((Nodes[i].TextureHeight * Nodes[i].Size.y) / 2)));
+                ImGui::Image(Nodes[i].Texture, ImVec2(Nodes[i].TextureWidth * Nodes[i].Size.x, Nodes[i].TextureHeight * Nodes[i].Size.y), uv_min, uv_max, tint_col, border_col);
+                ImGui::SetCursorPos(ImVec2(Nodes[i].Position.x + offset.x - ((Nodes[i].TextureWidth * Nodes[i].Size.x) / 2), Nodes[i].Position.y + offset.y - ((Nodes[i].TextureHeight * Nodes[i].Size.y) / 2)));
+                ImGui::InvisibleButton("SPRITE", ImVec2(Nodes[i].TextureWidth * Nodes[i].Size.x, Nodes[i].TextureHeight * Nodes[i].Size.y), ImGuiButtonFlags_MouseButtonLeft);
                 if (ImGui::IsItemActivated())
                     SelectedNode = i;
                 ImGui::EndGroup();

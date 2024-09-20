@@ -107,7 +107,7 @@ void App::Init()
 
     NFD_Init();
     
-    // Load Scene
+    m_Project.SetRenderer(m_Renderer);
 
     //m_Project.LoadSceneFile("../Assets/FlappyBird/FlappyBird.vscene");
     //m_Project.SaveSceneFile();

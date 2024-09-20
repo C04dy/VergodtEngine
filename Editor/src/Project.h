@@ -7,6 +7,9 @@
 #include <string>
 #include "imgui.h"
 
+struct SDL_Texture;
+struct SDL_Renderer;
+
 struct Node
 {
 public:
@@ -92,6 +95,10 @@ public:
     bool TreeOpen = false; // i didn't want to make a variable like this but i have no other solution
     
     int ParentID = -1;
+
+    SDL_Texture* Texture = nullptr;
+
+    float TextureWidth, TextureHeight;
 };
 
 std::string CreateFileDialog(const std::vector<std::string>& FileTypes, const std::vector<std::string>& FileExtensions);
@@ -104,6 +111,10 @@ public:
 
     void LoadSceneFile(const std::string& FilePath);
 
+    void LoadTextureFromFile(const std::string& FilePath, Node& Sprite);
+
+    void SetRenderer(SDL_Renderer* Renderer) { m_Renderer = Renderer; }
+    
     void SaveSceneFile();
 
     bool InitilizeProject();
@@ -125,6 +136,8 @@ private:
     std::string m_ProjectLocation = "None";
 
     std::string m_ProjectFile = "None";
+
+    SDL_Renderer* m_Renderer = nullptr;
 };
 
 #endif

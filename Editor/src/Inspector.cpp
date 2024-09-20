@@ -19,7 +19,10 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
             {
                 std::string new_path = CreateFileDialog({ "Image File" }, { "png,jpg,avif,jxl,tif,webp" });
                 if (new_path != "None")
+                {
                     *(std::string*)Nodes[SelectedNode].NodeValues[0]->Value = RemoveFromLine(new_path, CurrentProject.GetProjectLocation());
+                    CurrentProject.LoadTextureFromFile(new_path, Nodes[SelectedNode]);
+                }
                 Saved = false;
             }
             ImGui::PopID();
