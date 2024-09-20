@@ -201,12 +201,14 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
 
 
                 static int selected_point = -1;
+                static int selected_ID = -1;
                 draw_list->AddCircleFilled(ImVec2(minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y), 5.0f, IM_COL32(210, 215, 211, 255));
                 if (IsMouseHoveringCircle(10, ImVec2(minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y)) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
                     selected_point = 1;
+                    selected_ID = Nodes[i].ID;
                 }
-                if (selected_point == 1 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                if (selected_point == 1 && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && selected_ID == Nodes[i].ID)
                 {
                     float new_x = ((minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2)) - ImGui::GetMousePos().x) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x += new_x;
@@ -218,8 +220,9 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 if (IsMouseHoveringCircle(10, ImVec2(minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
                     selected_point = 2;
+                    selected_ID = Nodes[i].ID;
                 }
-                if (selected_point == 2 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                if (selected_point == 2 && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && selected_ID == Nodes[i].ID)
                 {
                     float new_x = ((minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2)) - ImGui::GetMousePos().x) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x += new_x;
@@ -235,8 +238,9 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 if (IsMouseHoveringCircle(10, ImVec2(minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
                     selected_point = 3;
+                    selected_ID = Nodes[i].ID;
                 }
-                if (selected_point == 3 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                if (selected_point == 3 && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && selected_ID == Nodes[i].ID)
                 {
                     float new_x = ((minrec.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2)) - ImGui::GetMousePos().x) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x += new_x;
@@ -252,8 +256,9 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 if (IsMouseHoveringCircle(10, ImVec2(minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y)) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
                     selected_point = 4;
+                    selected_ID = Nodes[i].ID;
                 }
-                if (selected_point == 4 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                if (selected_point == 4 && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && selected_ID == Nodes[i].ID)
                 {
                     float new_x = ((minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2)) - ImGui::GetMousePos().x) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x -= new_x;
@@ -265,8 +270,9 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 if (IsMouseHoveringCircle(10, ImVec2(minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
                     selected_point = 5;
+                    selected_ID = Nodes[i].ID;
                 }
-                if (selected_point == 5 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                if (selected_point == 5 && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && selected_ID == Nodes[i].ID)
                 {
                     float new_x = ((minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2)) - ImGui::GetMousePos().x) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x -= new_x;
@@ -282,8 +288,9 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 if (IsMouseHoveringCircle(10, ImVec2(minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
                     selected_point = 6;
+                    selected_ID = Nodes[i].ID;
                 }
-                if (selected_point == 6 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                if (selected_point == 6 && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && selected_ID == Nodes[i].ID)
                 {
                     float new_x = ((minrec.x + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2)) - ImGui::GetMousePos().x) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x -= new_x;
@@ -299,8 +306,9 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 if (IsMouseHoveringCircle(10, ImVec2(minrec.x, minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
                     selected_point = 7;
+                    selected_ID = Nodes[i].ID;
                 }
-                if (selected_point == 7 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                if (selected_point == 7 && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && selected_ID == Nodes[i].ID)
                 {
                     float new_y = ((minrec.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)) - ImGui::GetMousePos().y) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y += new_y;
@@ -312,8 +320,9 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 if (IsMouseHoveringCircle(10, ImVec2(minrec.x, minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2))) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
                     selected_point = 8;
+                    selected_ID = Nodes[i].ID;
                 }
-                if (selected_point == 8 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                if (selected_point == 8 && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && selected_ID == Nodes[i].ID)
                 {
                     float new_y = ((minrec.y + (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)) - ImGui::GetMousePos().y) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y -= new_y;
@@ -322,7 +331,10 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 }
 
                 if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && selected_point != -1)
+                {
                     selected_point = -1;
+                    selected_ID = -1;
+                }
 
 
                 ImGui::SetCursorPos(ImVec2(Nodes[i].Position.x + offset.x - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x) / 2), Nodes[i].Position.y + offset.y - (((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y) / 2)));
@@ -341,10 +353,10 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
 
                 draw_list->AddCircleFilled(ImVec2(minrec.x , minrec.y - ((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y) - 2.5f), 5.0f, IM_COL32(210, 215, 211, 255));
 
-                static bool resizing = false;
+                static int resizing = -1;
                 if (IsMouseHoveringCircle(5.0f, ImVec2(minrec.x , minrec.y - ((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y) - 2.5f)) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                    resizing = true;
-                if (resizing && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                    resizing = i;
+                if (resizing == i && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
                 {
                     float* radius = (float*)Nodes[i].NodeValues[1]->Value;
 
@@ -353,10 +365,10 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                     Nodes[i].Position.y -= new_y;
                     Saved = false;
                 }
-                if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && resizing)
-                    resizing = false;
+                if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && resizing != -1)
+                    resizing = -1;
 
-                if (IsMouseHoveringCircle((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.x, minrec) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !resizing)
+                if (IsMouseHoveringCircle((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.x, minrec) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && resizing == -1)
                     SelectedNode = i;
             }   break;
             case Node::ColliderType::POLYGONS: {
@@ -371,20 +383,25 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 draw_list->AddPolyline(points, static_cast<int>(Nodes[i].NodeValues[1]->VectorValues.size()), IM_COL32(255, 99, 71, 255), ImDrawFlags_Closed, 5);
 
                 static int hovered_point = -1;
+                static int hovered_ID = -1;
                 bool hovering_any_point = false;
                 for (int j = 0; j < static_cast<int>(Nodes[i].NodeValues[1]->VectorValues.size()); j++)
                 {
                     if (IsMouseHoveringCircle(10, ImVec2((*(ImVec2*)Nodes[i].NodeValues[1]->VectorValues[j]).x + Nodes[i].Position.x + draw_list_offset.x, -(*(ImVec2*)Nodes[i].NodeValues[1]->VectorValues[j]).y + Nodes[i].Position.y + draw_list_offset.y)) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
                         hovered_point = j;
+                        hovered_ID = Nodes[i].ID;
                         hovering_any_point = true;
                     }
                     draw_list->AddCircleFilled(ImVec2((*(ImVec2*)Nodes[i].NodeValues[1]->VectorValues[j]).x + Nodes[i].Position.x + draw_list_offset.x, -(*(ImVec2*)Nodes[i].NodeValues[1]->VectorValues[j]).y + Nodes[i].Position.y + draw_list_offset.y), 5.0f, IM_COL32(210, 215, 211, 255));
                 }
-                if (!hovering_any_point && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                if (!hovering_any_point && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+                {
                     hovered_point = -1;
+                    hovered_ID = -1;
+                }
 
-                if (hovered_point != -1 && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                if (hovered_point != -1 && hovered_ID == Nodes[i].ID && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
                 {
                     ((ImVec2*)Nodes[i].NodeValues[1]->VectorValues[hovered_point])->x += io.MouseDelta.x;
                     ((ImVec2*)Nodes[i].NodeValues[1]->VectorValues[hovered_point])->y -= io.MouseDelta.y;
@@ -392,7 +409,7 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 }
 
 
-                if (IsMouseHoveringPolyline(points, static_cast<int>(Nodes[i].NodeValues[1]->VectorValues.size()), 5.0f) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
+                if (IsMouseHoveringPolyline(points, static_cast<int>(Nodes[i].NodeValues[1]->VectorValues.size()), 5.0f) && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && hovered_point == -1)
                     SelectedNode = i;
             }   break;
             }

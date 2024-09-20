@@ -8,13 +8,15 @@ Project::Project(int argc, char** argv)
         m_ProjectLocation = "../Assets/FlappyBird/";
         m_ProjectFile = "FlappyBird.verproj";
 #else
-        m_ProjectLocation = argv[1];
-        m_ProjectFile = GetLineBetweenAfterLast(m_ProjectLocation, "\\");
-        m_ProjectLocation = RemoveFromLine(m_ProjectLocation, m_ProjectFile);
+        m_ProjectLocation = "../Assets/FlappyBird/";
+        m_ProjectFile = "FlappyBird.verproj";
+        //m_ProjectLocation = argv[1];
+        //m_ProjectFile = GetLineBetweenAfterLast(m_ProjectLocation, "\\");
+        //m_ProjectLocation = RemoveFromLine(m_ProjectLocation, m_ProjectFile);
 #endif
 
     std::string line;
-    std::ifstream project_file("../Assets/FlappyBird/FlappyBird.verproj");
+    std::ifstream project_file(m_ProjectLocation + m_ProjectFile);
     if (project_file.fail())
     {
         std::cout << "Project File did not found.\n";

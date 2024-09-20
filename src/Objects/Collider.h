@@ -27,8 +27,14 @@ public:
 public:
     Type ColliderType = Type::NONE;
 
-    b2Polygon PolygonShape;
-    b2Circle CircleShape;
+    //b2Polygon PolygonShape;
+    //b2Circle CircleShape;
+
+    b2Vec2 BoxColliderSize;
+
+    float CircleRadius;
+
+    b2Hull PolygonHull;
 };
 
 #endif
