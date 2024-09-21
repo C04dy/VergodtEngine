@@ -29,7 +29,11 @@ void Collider::CreatePolygonShape(Vector2 Polygons[], int32_t PolygonCount)
     for (int i = 0; i < PolygonCount; i++)
         points[i] = { -Polygons[i].x / PIXEL_TO_METER, -Polygons[i].y / PIXEL_TO_METER };
 
+    std::cout << PolygonCount;
     PolygonHull = b2ComputeHull(points, PolygonCount);
+
+    if (PolygonHull.count == 0)
+        std::cout << "Couldnt create polygon shape";
 
     ColliderType = Type::POLYGON;
 }

@@ -107,15 +107,23 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
                 for (int i = 0; i < static_cast<int>(Nodes[SelectedNode].NodeValues[1]->VectorValues.size()); i++)
                 {
                     ImGui::PushID(i);
-                    ImGui::PushItemWidth((ImGui::GetWindowSize().x / 2) - 25);
-                    if (ImGui::InputFloat("X", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->VectorValues[i]).x))
+                    ImGui::PushItemWidth((ImGui::GetWindowSize().x / 2) - 50);
+                    if (ImGui::InputFloat("X", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->VectorValues[i]).x, 0, 0, "%.3f"))
                         Saved = false;
 
                     ImGui::SameLine();
                     if (ImGui::InputFloat("Y", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->VectorValues[i]).y))
                         Saved = false;
                     
+
+                    ImGui::SameLine();
+                    if (ImGui::Button("Delete"))
+                    {
+                        Nodes[SelectedNode].NodeValues[1]->VectorValues.erase(Nodes[SelectedNode].NodeValues[1]->VectorValues.begin() + i);
+                        Saved = false;
+                    }
                     ImGui::PopItemWidth();
+
                     ImGui::PopID();
                 }
 

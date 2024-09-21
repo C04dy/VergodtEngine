@@ -108,7 +108,7 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 ImGui::EndGroup();
 
             }
-            else //LoadTextureFromFile(CurrentProject.GetProjectLocation() + *(std::string*)Nodes[i].NodeValues[0]->Value, &texture, Nodes[i].TextureWidth, Nodes[i].TextureHeight, Renderer))
+            else
             {
                 ImVec2 uv_min = ImVec2(0.0f, 0.0f);
                 ImVec2 uv_max = ImVec2(1.0f, 1.0f);
@@ -121,7 +121,9 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 }
                 ImGui::BeginGroup();
                 ImGui::SetCursorPos(ImVec2(Nodes[i].Position.x + offset.x - ((Nodes[i].TextureWidth * Nodes[i].Size.x) / 2), Nodes[i].Position.y + offset.y - ((Nodes[i].TextureHeight * Nodes[i].Size.y) / 2)));
+                
                 ImGui::Image(Nodes[i].Texture, ImVec2(Nodes[i].TextureWidth * Nodes[i].Size.x, Nodes[i].TextureHeight * Nodes[i].Size.y), uv_min, uv_max, tint_col, border_col);
+
                 ImGui::SetCursorPos(ImVec2(Nodes[i].Position.x + offset.x - ((Nodes[i].TextureWidth * Nodes[i].Size.x) / 2), Nodes[i].Position.y + offset.y - ((Nodes[i].TextureHeight * Nodes[i].Size.y) / 2)));
                 ImGui::InvisibleButton("SPRITE", ImVec2(Nodes[i].TextureWidth * Nodes[i].Size.x, Nodes[i].TextureHeight * Nodes[i].Size.y), ImGuiButtonFlags_MouseButtonLeft);
                 if (ImGui::IsItemActivated())

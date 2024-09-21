@@ -5,14 +5,18 @@
 Project::Project(int argc, char** argv)
 {
 #ifdef NDEBUG
-        m_ProjectLocation = "../Assets/FlappyBird/";
-        m_ProjectFile = "FlappyBird.verproj";
+    m_ProjectLocation = "../Assets/FlappyBird/";
+    m_ProjectFile = "FlappyBird.verproj";
 #else
-        m_ProjectLocation = "../Assets/FlappyBird/";
-        m_ProjectFile = "FlappyBird.verproj";
-        //m_ProjectLocation = argv[1];
-        //m_ProjectFile = GetLineBetweenAfterLast(m_ProjectLocation, "\\");
-        //m_ProjectLocation = RemoveFromLine(m_ProjectLocation, m_ProjectFile);
+    //m_ProjectLocation = "../Assets/FlappyBird/";
+    //m_ProjectFile = "FlappyBird.verproj";
+
+    if (argv[1] == nullptr)
+        throw std::runtime_error("There is no Project File");
+
+    m_ProjectLocation = argv[1];
+    m_ProjectFile = GetLineBetweenAfterLast(m_ProjectLocation, "\\");
+    m_ProjectLocation = RemoveFromLine(m_ProjectLocation, m_ProjectFile);
 #endif
 
     std::string line;
