@@ -97,6 +97,8 @@ private:
     ImVec2 m_Scrolling = ImVec2(0.0f, 0.0f);
 
     int m_CurrentScript = 0;
+
+    float m_Zoom = 1;
 };
 
 #endif

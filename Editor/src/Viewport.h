@@ -17,6 +17,8 @@ public:
     void ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, int& SelectedNode, bool& Saved, Project& CurrentProject);
 private:
     ImVec2 m_Scrolling;
+
+    float m_Zoom = 1;
 };
 
 #endif

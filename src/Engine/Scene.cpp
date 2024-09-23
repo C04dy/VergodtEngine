@@ -11,7 +11,7 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
 
     if (scene_file.fail())
     {
-        std::cout << "Scene File did not found.\n";
+        std::cout << "Scene File did not found. " << m_Project->GetProjectLocation() + SceneFilePath << "\n";
         return;
     }
 

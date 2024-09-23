@@ -282,7 +282,7 @@ void Scripting::ScriptingSpace()
     if (m_ShowGrid)
     {
         ImU32 grid_color = IM_COL32(200, 200, 200, 40);
-        float grid_size = 64.0f;
+        float grid_size = 64.0f * m_Zoom;
         ImVec2 window_position = ImGui::GetCursorScreenPos();
         ImVec2 canvas_size = ImGui::GetWindowSize();
         for (float x = fmodf(m_Scrolling.x, grid_size); x < canvas_size.x; x += grid_size)
@@ -302,14 +302,14 @@ void Scripting::ScriptingSpace()
                 ImVec2 p1;
                 p1.x = offset.x + m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedConnectionNode].GetInputSlotPos(m_Scripts[m_CurrentScript].NodeInputSelected).x;
                 p1.y = offset.y + m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedConnectionNode].GetInputSlotPos(m_Scripts[m_CurrentScript].NodeInputSelected).y;
-                draw_list->AddBezierCubic(p1, ImVec2(p1.x, p1.y), ImVec2(io.MousePos.x, io.MousePos.y), ImVec2(io.MousePos.x, io.MousePos.y), IM_COL32(200, 200, 100, 255), 3.0f);
+                draw_list->AddBezierCubic(p1, ImVec2(p1.x, p1.y), ImVec2(io.MousePos.x, io.MousePos.y), ImVec2(io.MousePos.x, io.MousePos.y), IM_COL32(200, 200, 100, 255), 3.0f * m_Zoom);
             }
             if (m_Scripts[m_CurrentScript].NodeOutputSelected != -1)
             {
                 ImVec2 p1;
                 p1.x = offset.x + m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedConnectionNode].GetOutputSlotPos(m_Scripts[m_CurrentScript].NodeOutputSelected).x;
                 p1.y = offset.y + m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedConnectionNode].GetOutputSlotPos(m_Scripts[m_CurrentScript].NodeOutputSelected).y;
-                draw_list->AddBezierCubic(p1, ImVec2(p1.x, p1.y), ImVec2(io.MousePos.x, io.MousePos.y), ImVec2(io.MousePos.x, io.MousePos.y), IM_COL32(200, 200, 100, 255), 3.0f);
+                draw_list->AddBezierCubic(p1, ImVec2(p1.x, p1.y), ImVec2(io.MousePos.x, io.MousePos.y), ImVec2(io.MousePos.x, io.MousePos.y), IM_COL32(200, 200, 100, 255), 3.0f * m_Zoom);
             }
         }
         for (NodeLink link : m_Scripts[m_CurrentScript].Links)
@@ -317,12 +317,12 @@ void Scripting::ScriptingSpace()
             ScriptingNode* node_inp = &m_Scripts[m_CurrentScript].Nodes[link.InputIndex];
             ScriptingNode* node_out = &m_Scripts[m_CurrentScript].Nodes[link.OutputIndex];
             ImVec2 p1;
-            p1.x = offset.x + node_inp->GetOutputSlotPos(link.InputSlot).x;
-            p1.y = offset.y + node_inp->GetOutputSlotPos(link.InputSlot).y;
+            p1.x = offset.x + node_inp->GetOutputSlotPos(link.InputSlot).x * m_Zoom;
+            p1.y = offset.y + node_inp->GetOutputSlotPos(link.InputSlot).y * m_Zoom;
             ImVec2 p2;
-            p2.x = offset.x + node_out->GetInputSlotPos(link.OutputSlot).x;
-            p2.y = offset.y + node_out->GetInputSlotPos(link.OutputSlot).y;
-            draw_list->AddBezierCubic(p1, ImVec2(p1.x + 50, p1.y), ImVec2(p2.x + -50, p2.y), p2, IM_COL32(200, 200, 100, 255), 3.0f);
+            p2.x = offset.x + node_out->GetInputSlotPos(link.OutputSlot).x * m_Zoom;
+            p2.y = offset.y + node_out->GetInputSlotPos(link.OutputSlot).y * m_Zoom;
+            draw_list->AddBezierCubic(p1, ImVec2(p1.x + 50, p1.y), ImVec2(p2.x + -50, p2.y), p2, IM_COL32(200, 200, 100, 255), 3.0f * m_Zoom);
         }
 
 
@@ -331,13 +331,13 @@ void Scripting::ScriptingSpace()
         {
             ImGui::PushID(i);
             ImVec2 node_rect_min;
-            node_rect_min.x = offset.x + m_Scripts[m_CurrentScript].Nodes[i].Position.x;
-            node_rect_min.y = offset.y + m_Scripts[m_CurrentScript].Nodes[i].Position.y;
+            node_rect_min.x = offset.x + m_Scripts[m_CurrentScript].Nodes[i].Position.x * m_Zoom;
+            node_rect_min.y = offset.y + m_Scripts[m_CurrentScript].Nodes[i].Position.y * m_Zoom;
 
             // Display node contents first
             draw_list->ChannelsSetCurrent(1); // Foreground
             bool old_any_active = ImGui::IsAnyItemActive();
-            ImGui::SetCursorScreenPos(ImVec2(node_rect_min.x + node_window_padding.x, node_rect_min.y + node_window_padding.y));
+            ImGui::SetCursorScreenPos(ImVec2(node_rect_min.x + node_window_padding.x * m_Zoom, node_rect_min.y + node_window_padding.y * m_Zoom));
             ImGui::BeginGroup(); // Lock horizontal position
             ImGui::Text("%s", m_Scripts[m_CurrentScript].Nodes[i].Name);
             for (int j = 0; j < static_cast<int>(m_Scripts[m_CurrentScript].Nodes[i].NodeValues.size()); j++)
@@ -397,11 +397,11 @@ void Scripting::ScriptingSpace()
 
             // Save the size of what we have emitted and whether any of the widgets are being used
             bool node_widgets_active = (!old_any_active && ImGui::IsAnyItemActive());
-            m_Scripts[m_CurrentScript].Nodes[i].Size.x = ImGui::GetItemRectSize().x + node_window_padding.x + node_window_padding.x;
-            m_Scripts[m_CurrentScript].Nodes[i].Size.y = ImGui::GetItemRectSize().y + node_window_padding.y + node_window_padding.y;
+            m_Scripts[m_CurrentScript].Nodes[i].Size.x = ImGui::GetItemRectSize().x + node_window_padding.x + node_window_padding.x * m_Zoom;
+            m_Scripts[m_CurrentScript].Nodes[i].Size.y = ImGui::GetItemRectSize().y + node_window_padding.y + node_window_padding.y * m_Zoom;
             ImVec2 node_rect_max;
-            node_rect_max.x = node_rect_min.x + m_Scripts[m_CurrentScript].Nodes[i].Size.x;
-            node_rect_max.y = node_rect_min.y + m_Scripts[m_CurrentScript].Nodes[i].Size.y;
+            node_rect_max.x = node_rect_min.x + m_Scripts[m_CurrentScript].Nodes[i].Size.x * m_Zoom;
+            node_rect_max.y = node_rect_min.y + m_Scripts[m_CurrentScript].Nodes[i].Size.y * m_Zoom;
 
             // Display node box
             draw_list->ChannelsSetCurrent(0); // Background
@@ -426,8 +426,8 @@ void Scripting::ScriptingSpace()
 
             for (int j = 0; j < m_Scripts[m_CurrentScript].Nodes[i].InputsCount; j++)
             {
-                ImGui::SetCursorScreenPos(ImVec2(offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(j).x - node_slot_radius, offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(j).y - node_slot_radius));
-                ImGui::InvisibleButton("inputs", ImVec2(node_slot_radius * 2, node_slot_radius * 2));
+                ImGui::SetCursorScreenPos(ImVec2(offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(j).x - node_slot_radius * m_Zoom, offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(j).y - node_slot_radius * m_Zoom));
+                ImGui::InvisibleButton("inputs", ImVec2(node_slot_radius * 2 * m_Zoom, node_slot_radius * 2 * m_Zoom));
                 if (ImGui::IsItemHovered())
                 {
                     if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -470,12 +470,12 @@ void Scripting::ScriptingSpace()
                         }
                     }
                 }
-                draw_list->AddCircleFilled(ImVec2(offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(j).x, offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(j).y), node_slot_radius, IM_COL32(150, 150, 150, 150));
+                draw_list->AddCircleFilled(ImVec2(offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(j).x * m_Zoom, offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(j).y * m_Zoom), node_slot_radius * m_Zoom, IM_COL32(150, 150, 150, 150));
             }
             for (int j = 0; j < m_Scripts[m_CurrentScript].Nodes[i].OutputsCount; j++)
             {
-                ImGui::SetCursorScreenPos(ImVec2(offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetOutputSlotPos(j).x - node_slot_radius, offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetOutputSlotPos(j).y - node_slot_radius));
-                ImGui::InvisibleButton("output", ImVec2(node_slot_radius * 2, node_slot_radius * 2));
+                ImGui::SetCursorScreenPos(ImVec2(offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetOutputSlotPos(j).x - node_slot_radius * m_Zoom, offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetOutputSlotPos(j).y - node_slot_radius * m_Zoom));
+                ImGui::InvisibleButton("output", ImVec2(node_slot_radius * 2 * m_Zoom, node_slot_radius * 2 * m_Zoom));
                 if (ImGui::IsItemHovered())
                 {
                     if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -514,7 +514,7 @@ void Scripting::ScriptingSpace()
                     }
                 }
 
-                draw_list->AddCircleFilled(ImVec2(offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetOutputSlotPos(j).x, offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetOutputSlotPos(j).y), node_slot_radius, IM_COL32(150, 150, 150, 150));
+                draw_list->AddCircleFilled(ImVec2(offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetOutputSlotPos(j).x * m_Zoom, offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetOutputSlotPos(j).y * m_Zoom), node_slot_radius * m_Zoom, IM_COL32(150, 150, 150, 150));
             }
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
             {
@@ -619,7 +619,14 @@ void Scripting::ScriptingSpace()
     }
     ImGui::PopStyleVar();
 
-    // Scrolling
+    if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
+        m_Zoom += io.MouseWheel / 10.0f;
+    
+    if (m_Zoom >= 2.5f)
+        m_Zoom = 2.5f;
+    else if (m_Zoom <= 0.1f)
+        m_Zoom = 0.1f;
+
     if (ImGui::IsWindowHovered() && !ImGui::IsAnyItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Middle, 0.0f))
     {
         m_Scrolling.x = m_Scrolling.x + io.MouseDelta.x;

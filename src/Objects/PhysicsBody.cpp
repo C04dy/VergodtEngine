@@ -45,7 +45,6 @@ void PhysicsBody::SetCollider(Collider* _Collider)
 	b2ShapeDef shape_definition = b2DefaultShapeDef();
 
 	shape_definition.density = m_Density;
-	std::cout << m_Friction << '\n';
 	shape_definition.friction = m_Friction;
 
 	switch (_Collider->ColliderType)

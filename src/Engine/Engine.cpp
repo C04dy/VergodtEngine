@@ -5,6 +5,22 @@
 #include "Window.h"
 #include <box2d/box2d.h>
 
+/*static uint32_t s_AllocCount = 0;
+
+bool CountAlloc = false;
+
+void* operator new(size_t size)
+{
+    if (CountAlloc)
+    {
+        s_AllocCount++;
+
+        std::cout << "Allocating " << size << " bytes\n";
+    }
+
+    return malloc(size);
+}*/
+
 void Engine::EngineStart(int argc, char** argv)
 {
     Scene scene;
@@ -46,6 +62,7 @@ void Engine::EngineStart(int argc, char** argv)
     scene.SetProject(&project);
     scene.SetPhysicsWorldID(PhysicsWorldID);
     scene.SetInput(&input);
+
     scene.Start();
 
     //SetRunning(false);

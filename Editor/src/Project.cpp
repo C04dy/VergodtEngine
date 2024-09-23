@@ -360,7 +360,6 @@ void Project::SaveSceneFile()
     saved_nodes.clear();
 
     std::ofstream write_file(m_ProjectLocation + m_CurrentScene);
-    std::cout << m_CurrentScene;
     write_file << line;
 }
 
@@ -575,6 +574,9 @@ void Project::LoadSceneFile(const std::string& FilePath)
                             Nodes[Nodes.size() - 1].ChildIDs.push_back(ci[i] - '0');
                             Nodes[ci[i] - '0'].IsChild = true;
                             Nodes[ci[i] - '0'].ParentID = Nodes[Nodes.size() - 1].ID;
+
+                            if (Nodes[Nodes.size() - 1].NodeType == Node::Type::PHYSICSBODY && Nodes[ci[i] - '0'].NodeType == Node::Type::COLLIDER)
+                                Nodes[Nodes.size() - 1].ColliderCount += 1;
                         }
                     }
                 }
@@ -583,6 +585,9 @@ void Project::LoadSceneFile(const std::string& FilePath)
                     Nodes[Nodes.size() - 1].ChildIDs.push_back(std::stoi(ci));
                     Nodes[std::stoi(ci)].IsChild = true;
                     Nodes[std::stoi(ci)].ParentID = Nodes[Nodes.size() - 1].ID;
+
+                    if (Nodes[Nodes.size() - 1].NodeType == Node::Type::PHYSICSBODY && Nodes[std::stoi(ci)].NodeType == Node::Type::COLLIDER)
+                        Nodes[Nodes.size() - 1].ColliderCount += 1;
                 }
             }
             Nodes[Nodes.size() - 1].Name = GetLineBetween(line, "[NAME=", "]");

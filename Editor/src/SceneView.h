@@ -16,6 +16,8 @@ public:
 private:
     void CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode, bool& Saved);
     int CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>& ChildNodes, int& SelectedNode, int CurrentParentIndex, bool& Saved);
+
+    bool m_SceneHasCam;
 };
 
 #endif

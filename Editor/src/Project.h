@@ -99,6 +99,8 @@ public:
     SDL_Texture* Texture = nullptr;
 
     float TextureWidth, TextureHeight;
+
+    int ColliderCount = 0;
 };
 
 std::string CreateFileDialog(const std::vector<std::string>& FileTypes, const std::vector<std::string>& FileExtensions);

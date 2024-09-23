@@ -3,12 +3,44 @@
 #include "App.h"
 #include <bits/stdc++.h>
 
+static void CreateErrorMarker(const char* Message)
+{
+    ImGui::TextDisabled("(!)");
+    if (ImGui::BeginItemTooltip())
+    {
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(Message);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
+static void CreateWarningMarker(const char* Message)
+{
+    ImGui::TextDisabled("(?)");
+    if (ImGui::BeginItemTooltip())
+    {
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(Message);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
 void SceneView::SceneViewSpace(std::vector<Node>& Nodes, int& SelectedNode, bool& Saved)
 {
     ImGui::Begin("Scene");
 
+    m_SceneHasCam = false;
     CreateTreeNodes(Nodes, SelectedNode, Saved);
-    
+
+    if (!m_SceneHasCam)
+    {
+        CreateErrorMarker("There is no Camera on the scene.\n"
+            "If scene is not an instantiatable object scene create a Camera.\n"
+            "If scene has no camera game will not run.");
+    }
+
     ImGui::End();
 }
 
@@ -20,11 +52,21 @@ void SceneView::CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode, boo
 
     for (int i = 0; i < static_cast<int>(Nodes.size()); i++)
     {
+        if (Nodes[i].NodeType == Node::Type::CAM)
+            m_SceneHasCam = true;
         if (Nodes[i].IsChild)
             continue;
         ImGui::PushID(i + 1);
         ImGui::BeginGroup();
 
+        if (Nodes[i].NodeType == Node::Type::PHYSICSBODY && Nodes[i].ColliderCount <= 0)
+        {
+            CreateWarningMarker("Physicsbody has no collider.\n"
+                                "The body will be effected by forces but will not collide with anything and be effected by gravity.");
+
+            ImGui::SameLine();
+        }
+        
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
         const bool is_selected = (selection_mask & (1 << i)) != 0;
         if (is_selected)
@@ -72,6 +114,9 @@ void SceneView::CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode, boo
                             }
                         }
 
+                        if (Nodes[parent_index].NodeType == Node::Type::PHYSICSBODY && Nodes[from].NodeType == Node::Type::COLLIDER)
+                            Nodes[parent_index].ColliderCount -= 1;
+
                         auto it = std::find(Nodes[parent_index].ChildIDs.begin(), Nodes[parent_index].ChildIDs.end(), Nodes[from].ID);
                         if (it != Nodes[parent_index].ChildIDs.end())
                             Nodes[parent_index].ChildIDs.erase(it);
@@ -107,7 +152,7 @@ void SceneView::CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode, boo
                 for (int x = 0; x < static_cast<int>(Nodes[i].ChildIDs.size()); x++)
                     if (Nodes[j].ID == Nodes[i].ChildIDs[x])
                         Childs[x] = &Nodes[j];
-
+            
             CreateChildTreeNodes(Nodes, Childs, SelectedNode, i, Saved);
 
             ImGui::TreePop();
@@ -125,11 +170,21 @@ void SceneView::CreateTreeNodes(std::vector<Node>& Nodes, int& SelectedNode, boo
                     Nodes[i].ChildIDs.push_back(Nodes[drag_index].ID);
 
                     for (int j = 0; j < static_cast<int>(Nodes.size()); j++)
+                    {
                         if (Nodes[j].ID == Nodes[drag_index].ParentID)
+                        {
+                            if (Nodes[j].NodeType == Node::Type::PHYSICSBODY && Nodes[drag_index].NodeType == Node::Type::COLLIDER)
+                                Nodes[j].ColliderCount -= 1;
+                            
                             Nodes[j].ChildIDs.erase(std::find(Nodes[j].ChildIDs.begin(), Nodes[j].ChildIDs.end(), Nodes[drag_index].ID));
+                        }
+                    }
 
                     Nodes[drag_index].ParentID = Nodes[i].ID;
                     Nodes[drag_index].IsChild = true;
+
+                    if (Nodes[i].NodeType == Node::Type::PHYSICSBODY && Nodes[drag_index].NodeType == Node::Type::COLLIDER)
+                        Nodes[i].ColliderCount += 1;
                 }
                 Saved = false;
             }
@@ -202,6 +257,9 @@ int SceneView::CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>
                         bool pop_tree = ChildNodes[i]->ChildIDs.size() > 0 && ChildNodes[i]->TreeOpen;
                         if (Nodes[drag_index].ParentID == Nodes[node_index].ParentID)
                         {
+                            if (Nodes[node_index].NodeType == Node::Type::PHYSICSBODY && Nodes[drag_index].NodeType == Node::Type::COLLIDER)
+                                Nodes[node_index].ColliderCount -= 1;
+
                             int from = std::find(Nodes[CurrentParentIndex].ChildIDs.begin(), Nodes[CurrentParentIndex].ChildIDs.end(), Nodes[drag_index].ID) - Nodes[CurrentParentIndex].ChildIDs.begin();
                             int to = i;
 
@@ -216,6 +274,9 @@ int SceneView::CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>
                             {
                                 if (Nodes[j].ID == Nodes[drag_index].ParentID)
                                 {
+                                    if (Nodes[j].NodeType == Node::Type::PHYSICSBODY && Nodes[drag_index].NodeType == Node::Type::COLLIDER)
+                                        Nodes[j].ColliderCount -= 1;
+                                    
                                     Nodes[j].ChildIDs.erase(std::find(Nodes[j].ChildIDs.begin(), Nodes[j].ChildIDs.end(), Nodes[drag_index].ID));
                                 }
                             }
@@ -223,6 +284,9 @@ int SceneView::CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>
                             Nodes[drag_index].ParentID = ChildNodes[i]->ParentID;
                             Nodes[CurrentParentIndex].ChildIDs.push_back(Nodes[drag_index].ID);
                             Nodes[drag_index].IsChild = true;
+
+                            if (Nodes[CurrentParentIndex].NodeType == Node::Type::PHYSICSBODY && Nodes[drag_index].NodeType == Node::Type::COLLIDER)
+                                Nodes[CurrentParentIndex].ColliderCount += 1;
                         }
 
 
@@ -271,6 +335,9 @@ int SceneView::CreateChildTreeNodes(std::vector<Node>& Nodes, std::vector<Node*>
                     Nodes[drag_index].IsChild = true;
                     Nodes[node_index].ChildIDs.push_back(Nodes[drag_index].ID);
                     Nodes[drag_index].ParentID = Nodes[node_index].ID;
+
+                    if (Nodes[node_index].NodeType == Node::Type::PHYSICSBODY && Nodes[drag_index].NodeType == Node::Type::COLLIDER)
+                        Nodes[node_index].ColliderCount += 1;
                 }
                 Saved = false;
             }

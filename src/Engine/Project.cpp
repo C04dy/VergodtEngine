@@ -13,7 +13,6 @@ Project::Project(int argc, char** argv)
 
     if (argv[1] == nullptr)
         throw std::runtime_error("There is no Project File");
-
     m_ProjectLocation = argv[1];
     m_ProjectFile = GetLineBetweenAfterLast(m_ProjectLocation, "\\");
     m_ProjectLocation = RemoveFromLine(m_ProjectLocation, m_ProjectFile);
@@ -22,10 +21,7 @@ Project::Project(int argc, char** argv)
     std::string line;
     std::ifstream project_file(m_ProjectLocation + m_ProjectFile);
     if (project_file.fail())
-    {
-        std::cout << "Project File did not found.\n";
-        return;
-    }
+        throw std::runtime_error("Project File did not found.");
 
     while (std::getline(project_file, line))
     {
