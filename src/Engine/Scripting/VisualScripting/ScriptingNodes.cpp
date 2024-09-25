@@ -5,6 +5,54 @@ SDL_Keycode GetKeyCode(const std::string& Type)
 {
     if (Type == "A")
         return SDLK_A;
+    else if (Type == "B")
+        return SDLK_B;
+    else if (Type == "C")
+        return SDLK_C;
+    else if (Type == "D")
+        return SDLK_D;
+    else if (Type == "E")
+        return SDLK_E;
+    else if (Type == "F")
+        return SDLK_F;
+    else if (Type == "G")
+        return SDLK_G;
+    else if (Type == "H")
+        return SDLK_I;
+    else if (Type == "J")
+        return SDLK_J;
+    else if (Type == "K")
+        return SDLK_K;
+    else if (Type == "L")
+        return SDLK_L;
+    else if (Type == "M")
+        return SDLK_M;
+    else if (Type == "N")
+        return SDLK_N;
+    else if (Type == "O")
+        return SDLK_O;
+    else if (Type == "P")
+        return SDLK_P;
+    else if (Type == "Q")
+        return SDLK_Q;
+    else if (Type == "R")
+        return SDLK_R;
+    else if (Type == "S")
+        return SDLK_S;
+    else if (Type == "T")
+        return SDLK_T;
+    else if (Type == "U")
+        return SDLK_U;
+    else if (Type == "V")
+        return SDLK_V;
+    else if (Type == "W")
+        return SDLK_W;
+    else if (Type == "X")
+        return SDLK_X;
+    else if (Type == "Y")
+        return SDLK_Y;
+    else if (Type == "Z")
+        return SDLK_Z;
     return SDLK_UNKNOWN;
 }
 

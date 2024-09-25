@@ -46,16 +46,23 @@ public:
             InputsCount = Inputs;
             OutputsCount = Outputs;
             strcpy(Type, _Type);
+
+            ID  = s_IDs;
+            s_IDs += 1;
         }
 
         ImVec2 GetInputSlotPos(int SlotNo) const { return ImVec2(Position.x, Position.y + Size.y * ((float)SlotNo+ 1) / ((float)InputsCount + 1)); }
         ImVec2 GetOutputSlotPos(int SlotNo) const { return ImVec2(Position.x + Size.x, Position.y + Size.y * ((float)SlotNo + 1) / ((float)OutputsCount + 1)); }
+
+        int ID = 0;
 
         char Name[32] = "ScriptingNode";
         ImVec2 Position, Size;
         int InputsCount = 1, OutputsCount = 1;
         std::vector<ScriptingNodeValue> NodeValues;
         char Type[32] = "NULL";
+    private:
+        static int s_IDs;
     };
     
     struct NodeLink
@@ -72,7 +79,7 @@ public:
         std::vector<NodeLink> Links;
         int SelectedNode = -1;
 
-        int SelectedConnectionNode = -1;
+        int SelectedConnectionNodeID = -1;
         int NodeInputSelected = -1;
         int NodeOutputSelected = -1;
 

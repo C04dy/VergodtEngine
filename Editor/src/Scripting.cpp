@@ -9,6 +9,8 @@
 // Used this example as a base here since i started using ImGui for the first time and started to learn it from here
 // https://gist.github.com/ocornut/7e9b3ec566a333d725d4
 
+int Scripting::ScriptingNode::s_IDs = 0;
+
 static void CreateKeyboardInputNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2 Position, int Key, int Type)
 {
     Nodes.push_back(Scripting::ScriptingNode(Position, "KEYBOARDINPUT", 0, 1, "Keyboard Input"));
@@ -16,6 +18,31 @@ static void CreateKeyboardInputNode(std::vector<Scripting::ScriptingNode>& Nodes
     Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValue::Type::INT, new int(Key), "Key"));
     Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("None");
     Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("A");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("B");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("C");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("D");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("E");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("F");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("G");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("H");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("I");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("J");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("K");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("L");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("M");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("N");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("O");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("P");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("Q");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("R");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("S");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("T");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("U");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("V");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("W");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("X");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("Y");
+    Nodes[Nodes.size() - 1].NodeValues[0].ComboValues.push_back("Z");
 
     Nodes[Nodes.size() - 1].NodeValues.push_back(Scripting::ScriptingNodeValue(Scripting::ScriptingNodeValue::Type::INT, new int(Type), "Input Type"));
     Nodes[Nodes.size() - 1].NodeValues[1].ComboValues.push_back("None");
@@ -52,6 +79,7 @@ static void CreatePrintNode(std::vector<Scripting::ScriptingNode>& Nodes, ImVec2
 
 void Scripting::SaveScript(const std::string& ScriptPath)
 {
+    std::locale::global(std::locale("C"));
     std::string line;
 
     for (int i = 0; i < static_cast<int>(m_Scripts[m_CurrentScript].Nodes.size()); i++)
@@ -109,10 +137,14 @@ void Scripting::SaveScript(const std::string& ScriptPath)
 
         for (int j = 0; j < static_cast<int>(m_Scripts[m_CurrentScript].Links.size()); j++)
         {
-            if (m_Scripts[m_CurrentScript].Links[j].OutputIndex == i)
+            if (m_Scripts[m_CurrentScript].Links[j].OutputIndex == m_Scripts[m_CurrentScript].Nodes[i].ID)
             {
                 line += "[CONNECTEDID=";
-                line += std::to_string(m_Scripts[m_CurrentScript].Links[j].InputIndex);
+
+                for (int k = 0; k < static_cast<int>(m_Scripts[m_CurrentScript].Nodes.size()); k++)
+                    if (m_Scripts[m_CurrentScript].Nodes[k].ID == m_Scripts[m_CurrentScript].Links[j].InputIndex)
+                        line += std::to_string(k);
+                
                 line += "] ";
             }
         }
@@ -121,7 +153,8 @@ void Scripting::SaveScript(const std::string& ScriptPath)
         line += "(Y=" + std::to_string(m_Scripts[m_CurrentScript].Nodes[i].Position.y) + ") ";
         line += '\n';
     }
-    line.erase(line.size() - 2, line.size());
+    if (line.size() > 0)
+        line.erase(line.size() - 2, line.size());
 
     std::ofstream write_file(ScriptPath);
     write_file << line;
@@ -193,7 +226,7 @@ void Scripting::LoadScript(const std::string& ScriptPath)
         {
             int connectedNode = std::stoi(GetLineBetween(line, "[CONNECTEDID=", "]"));
             
-            m_Scripts[m_CurrentScript].Links.push_back(NodeLink(connectedNode, 0, m_Scripts[m_CurrentScript].Nodes.size() - 1, 0));
+            m_Scripts[m_CurrentScript].Links.push_back(NodeLink(connectedNode, 0, m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].Nodes.size() - 1].ID, 0));
         }
     }
     script_file.close();
@@ -228,6 +261,11 @@ void Scripting::ScriptingSpace()
             {
                 m_CurrentScript = i;
                 ImGui::EndTabItem();
+            }
+            if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Middle))
+            {
+                SaveScript(m_Scripts[i].CurrentScriptPath);
+                m_Scripts.erase(m_Scripts.begin() + i); 
             }
         }
 
@@ -295,27 +333,48 @@ void Scripting::ScriptingSpace()
     {
         draw_list->ChannelsSplit(2);
         draw_list->ChannelsSetCurrent(0);
-        if (m_Scripts[m_CurrentScript].SelectedConnectionNode != -1)
+        if (m_Scripts[m_CurrentScript].SelectedConnectionNodeID != -1)
         {
             if (m_Scripts[m_CurrentScript].NodeInputSelected != -1)
             {
                 ImVec2 p1;
-                p1.x = offset.x + m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedConnectionNode].GetInputSlotPos(m_Scripts[m_CurrentScript].NodeInputSelected).x;
-                p1.y = offset.y + m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedConnectionNode].GetInputSlotPos(m_Scripts[m_CurrentScript].NodeInputSelected).y;
+                for (int i = 0; i < static_cast<int>(m_Scripts[m_CurrentScript].Nodes.size()); i++)
+                {
+                    if (m_Scripts[m_CurrentScript].SelectedConnectionNodeID == m_Scripts[m_CurrentScript].Nodes[i].ID)
+                    {
+                        p1.x = offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(m_Scripts[m_CurrentScript].NodeInputSelected).x;
+                        p1.y = offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(m_Scripts[m_CurrentScript].NodeInputSelected).y;
+                    }
+                }
                 draw_list->AddBezierCubic(p1, ImVec2(p1.x, p1.y), ImVec2(io.MousePos.x, io.MousePos.y), ImVec2(io.MousePos.x, io.MousePos.y), IM_COL32(200, 200, 100, 255), 3.0f * m_Zoom);
             }
             if (m_Scripts[m_CurrentScript].NodeOutputSelected != -1)
             {
                 ImVec2 p1;
-                p1.x = offset.x + m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedConnectionNode].GetOutputSlotPos(m_Scripts[m_CurrentScript].NodeOutputSelected).x;
-                p1.y = offset.y + m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedConnectionNode].GetOutputSlotPos(m_Scripts[m_CurrentScript].NodeOutputSelected).y;
+
+                for (int i = 0; i < static_cast<int>(m_Scripts[m_CurrentScript].Nodes.size()); i++)
+                {
+                    if (m_Scripts[m_CurrentScript].SelectedConnectionNodeID == m_Scripts[m_CurrentScript].Nodes[i].ID)
+                    {
+                        p1.x = offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetOutputSlotPos(m_Scripts[m_CurrentScript].NodeOutputSelected).x;
+                        p1.y = offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetOutputSlotPos(m_Scripts[m_CurrentScript].NodeOutputSelected).y;
+                    }
+                }
                 draw_list->AddBezierCubic(p1, ImVec2(p1.x, p1.y), ImVec2(io.MousePos.x, io.MousePos.y), ImVec2(io.MousePos.x, io.MousePos.y), IM_COL32(200, 200, 100, 255), 3.0f * m_Zoom);
             }
         }
         for (NodeLink link : m_Scripts[m_CurrentScript].Links)
         {
-            ScriptingNode* node_inp = &m_Scripts[m_CurrentScript].Nodes[link.InputIndex];
-            ScriptingNode* node_out = &m_Scripts[m_CurrentScript].Nodes[link.OutputIndex];
+            ScriptingNode* node_inp = nullptr;//&m_Scripts[m_CurrentScript].Nodes[link.InputIndex]; 
+            ScriptingNode* node_out = nullptr;//&m_Scripts[m_CurrentScript].Nodes[link.OutputIndex];
+            for (int i = 0; i < static_cast<int>(m_Scripts[m_CurrentScript].Nodes.size()); i++)
+            {
+                if (m_Scripts[m_CurrentScript].Nodes[i].ID == link.InputIndex)
+                    node_inp = &m_Scripts[m_CurrentScript].Nodes[i];
+                if (m_Scripts[m_CurrentScript].Nodes[i].ID == link.OutputIndex)
+                    node_out = &m_Scripts[m_CurrentScript].Nodes[i];
+            }
+            
             ImVec2 p1;
             p1.x = offset.x + node_inp->GetOutputSlotPos(link.InputSlot).x * m_Zoom;
             p1.y = offset.y + node_inp->GetOutputSlotPos(link.InputSlot).y * m_Zoom;
@@ -428,46 +487,36 @@ void Scripting::ScriptingSpace()
             {
                 ImGui::SetCursorScreenPos(ImVec2(offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(j).x - node_slot_radius * m_Zoom, offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(j).y - node_slot_radius * m_Zoom));
                 ImGui::InvisibleButton("inputs", ImVec2(node_slot_radius * 2 * m_Zoom, node_slot_radius * 2 * m_Zoom));
-                if (ImGui::IsItemHovered())
+                if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
-                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    if (m_Scripts[m_CurrentScript].NodeOutputSelected != -1)
                     {
-                        if (m_Scripts[m_CurrentScript].NodeOutputSelected != -1)
+                        m_Scripts[m_CurrentScript].Links.push_back(NodeLink(m_Scripts[m_CurrentScript].SelectedConnectionNodeID, m_Scripts[m_CurrentScript].NodeOutputSelected, m_Scripts[m_CurrentScript].Nodes[i].ID, j));   
+
+
+                        for (int k = 0; k < static_cast<int>(m_Scripts[m_CurrentScript].Nodes.size()); k++)
                         {
-                            if (i < m_Scripts[m_CurrentScript].SelectedConnectionNode)
+                            if (m_Scripts[m_CurrentScript].Nodes[k].ID == m_Scripts[m_CurrentScript].SelectedConnectionNodeID)
                             {
-                                auto from = m_Scripts[m_CurrentScript].Nodes.begin() + i;
-                                auto to = m_Scripts[m_CurrentScript].Nodes.begin() + m_Scripts[m_CurrentScript].SelectedConnectionNode;
-
-                                std::rotate(from, from + 1, to + 1);
-
-                                m_Scripts[m_CurrentScript].Links.push_back(NodeLink(m_Scripts[m_CurrentScript].SelectedConnectionNode - 1, m_Scripts[m_CurrentScript].NodeOutputSelected, m_Scripts[m_CurrentScript].SelectedConnectionNode, j));
-
-                                for (int x = i; x < static_cast<int>(m_Scripts[m_CurrentScript].Links.size()); x++)
+                                if (k > i)
                                 {
-                                    m_Scripts[m_CurrentScript].Links[x].InputIndex = m_Scripts[m_CurrentScript].Links[x].InputIndex - 1;
-                                    m_Scripts[m_CurrentScript].Links[x].OutputIndex = m_Scripts[m_CurrentScript].Links[x].OutputIndex - 1;
+                                    int from = k;
+                                    int to = i;
+                                    std::rotate(m_Scripts[m_CurrentScript].Nodes.begin() + to, m_Scripts[m_CurrentScript].Nodes.begin() + from, m_Scripts[m_CurrentScript].Nodes.begin() + from + 1);
                                 }
-
-                                m_Scripts[m_CurrentScript].NodeOutputSelected = -1;
-                                m_Scripts[m_CurrentScript].NodeInputSelected = -1;
-                                m_Scripts[m_CurrentScript].SelectedConnectionNode = -1;
-                                m_Scripts[m_CurrentScript].Saved = false;
-                                break;
                             }
+                        }
+                        
 
-                            m_Scripts[m_CurrentScript].Links.push_back(NodeLink(m_Scripts[m_CurrentScript].SelectedConnectionNode, m_Scripts[m_CurrentScript].NodeOutputSelected, i, j));
-                            m_Scripts[m_CurrentScript].NodeOutputSelected = -1;
-                            m_Scripts[m_CurrentScript].NodeInputSelected = -1;
-                            m_Scripts[m_CurrentScript].SelectedConnectionNode = -1;
-                            m_Scripts[m_CurrentScript].Saved = false;
-                        }
-                        else
-                        {
-                            m_Scripts[m_CurrentScript].NodeInputSelected = j;
-                            m_Scripts[m_CurrentScript].SelectedConnectionNode = i;
-                            m_Scripts[m_CurrentScript].Saved = false;
-                        }
+                        m_Scripts[m_CurrentScript].NodeInputSelected = -1;
+                        m_Scripts[m_CurrentScript].NodeOutputSelected = -1;
+                        m_Scripts[m_CurrentScript].SelectedConnectionNodeID = -1;
+                    }
+                    else
+                    {
+                        m_Scripts[m_CurrentScript].NodeInputSelected = j;
+                        m_Scripts[m_CurrentScript].SelectedConnectionNodeID = m_Scripts[m_CurrentScript].Nodes[i].ID;
+                        m_Scripts[m_CurrentScript].Saved = false;
                     }
                 }
                 draw_list->AddCircleFilled(ImVec2(offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(j).x * m_Zoom, offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetInputSlotPos(j).y * m_Zoom), node_slot_radius * m_Zoom, IM_COL32(150, 150, 150, 150));
@@ -476,41 +525,34 @@ void Scripting::ScriptingSpace()
             {
                 ImGui::SetCursorScreenPos(ImVec2(offset.x + m_Scripts[m_CurrentScript].Nodes[i].GetOutputSlotPos(j).x - node_slot_radius * m_Zoom, offset.y + m_Scripts[m_CurrentScript].Nodes[i].GetOutputSlotPos(j).y - node_slot_radius * m_Zoom));
                 ImGui::InvisibleButton("output", ImVec2(node_slot_radius * 2 * m_Zoom, node_slot_radius * 2 * m_Zoom));
-                if (ImGui::IsItemHovered())
+                if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
-                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    if (m_Scripts[m_CurrentScript].NodeInputSelected != -1)
                     {
-                        if (m_Scripts[m_CurrentScript].NodeInputSelected != -1)
+                        m_Scripts[m_CurrentScript].Links.push_back(NodeLink(m_Scripts[m_CurrentScript].Nodes[i].ID, j, m_Scripts[m_CurrentScript].SelectedConnectionNodeID, m_Scripts[m_CurrentScript].NodeInputSelected));
+
+                        for (int k = 0; k < static_cast<int>(m_Scripts[m_CurrentScript].Nodes.size()); k++)
                         {
-                            if (i > m_Scripts[m_CurrentScript].SelectedConnectionNode)
+                            if (m_Scripts[m_CurrentScript].Nodes[k].ID == m_Scripts[m_CurrentScript].SelectedConnectionNodeID)
                             {
-                                auto from = m_Scripts[m_CurrentScript].Nodes.begin() + m_Scripts[m_CurrentScript].SelectedConnectionNode;
-                                auto to = m_Scripts[m_CurrentScript].Nodes.begin() + i;
-                                std::rotate(from, from + 1, to + 1);
-                                m_Scripts[m_CurrentScript].Links.push_back(NodeLink(i - 1, j, i, m_Scripts[m_CurrentScript].NodeInputSelected));
-                                for (int x = m_Scripts[m_CurrentScript].SelectedConnectionNode; x < static_cast<int>(m_Scripts[m_CurrentScript].Links.size()); x++)
+                                if (k < i)
                                 {
-                                    m_Scripts[m_CurrentScript].Links[x].InputIndex = m_Scripts[m_CurrentScript].Links[x].InputIndex - 1;
-                                    m_Scripts[m_CurrentScript].Links[x].OutputIndex = m_Scripts[m_CurrentScript].Links[x].OutputIndex - 1;
+                                    int from = k;
+                                    int to = i;
+                                    std::rotate(m_Scripts[m_CurrentScript].Nodes.begin() + to, m_Scripts[m_CurrentScript].Nodes.begin() + from, m_Scripts[m_CurrentScript].Nodes.begin() + from + 1);
                                 }
-                                m_Scripts[m_CurrentScript].NodeOutputSelected = -1;
-                                m_Scripts[m_CurrentScript].NodeInputSelected = -1;
-                                m_Scripts[m_CurrentScript].SelectedConnectionNode = -1;
-                                m_Scripts[m_CurrentScript].Saved = false;
-                                break;
                             }
-                            m_Scripts[m_CurrentScript].Links.push_back(NodeLink(i, j, m_Scripts[m_CurrentScript].SelectedConnectionNode, m_Scripts[m_CurrentScript].NodeInputSelected));
-                            m_Scripts[m_CurrentScript].NodeOutputSelected = -1;
-                            m_Scripts[m_CurrentScript].NodeInputSelected = -1;
-                            m_Scripts[m_CurrentScript].SelectedConnectionNode = -1;
-                            m_Scripts[m_CurrentScript].Saved = false;
                         }
-                        else
-                        {
-                            m_Scripts[m_CurrentScript].NodeOutputSelected = j;
-                            m_Scripts[m_CurrentScript].SelectedConnectionNode = i;
-                            m_Scripts[m_CurrentScript].Saved = false;
-                        }
+
+                        m_Scripts[m_CurrentScript].NodeInputSelected = -1;
+                        m_Scripts[m_CurrentScript].NodeOutputSelected = -1;
+                        m_Scripts[m_CurrentScript].SelectedConnectionNodeID = -1;
+                    }
+                    else
+                    {
+                        m_Scripts[m_CurrentScript].NodeOutputSelected = j;
+                        m_Scripts[m_CurrentScript].SelectedConnectionNodeID = m_Scripts[m_CurrentScript].Nodes[i].ID;
+                        m_Scripts[m_CurrentScript].Saved = false;
                     }
                 }
 
@@ -520,7 +562,7 @@ void Scripting::ScriptingSpace()
             {
                 m_Scripts[m_CurrentScript].NodeInputSelected = -1;
                 m_Scripts[m_CurrentScript].NodeOutputSelected = -1;
-                m_Scripts[m_CurrentScript].SelectedConnectionNode = -1;
+                m_Scripts[m_CurrentScript].SelectedConnectionNodeID = -1;
             }
             ImGui::PopID();
         }
@@ -538,7 +580,7 @@ void Scripting::ScriptingSpace()
     {
         m_Scripts[m_CurrentScript].NodeInputSelected = -1;
         m_Scripts[m_CurrentScript].NodeOutputSelected = -1;
-        m_Scripts[m_CurrentScript].SelectedConnectionNode = -1;
+        m_Scripts[m_CurrentScript].SelectedConnectionNodeID = -1;
 
         ImGui::OpenPopup("context_menu");
         if (node_hovered_in_list != -1)
@@ -547,7 +589,6 @@ void Scripting::ScriptingSpace()
             m_Scripts[m_CurrentScript].SelectedNode = node_hovered_in_scene;
     }
 
-    // Draw context menu
     bool open_node_menu = false;
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
     if (ImGui::BeginPopup("Node Menu") && m_Scripts.size() != 0)
@@ -555,16 +596,24 @@ void Scripting::ScriptingSpace()
         ImVec2 scene_pos;
         scene_pos.x = ImGui::GetMousePosOnOpeningCurrentPopup().x - offset.x;
         scene_pos.y = ImGui::GetMousePosOnOpeningCurrentPopup().y - offset.y;
-        if (ImGui::MenuItem("Start")) { m_Scripts[m_CurrentScript].Nodes.push_back(ScriptingNode(scene_pos, "START", 0, 1, "Start")); }
-        if (ImGui::MenuItem("Update")) { m_Scripts[m_CurrentScript].Nodes.push_back(ScriptingNode(scene_pos, "UPDATE", 0, 1, "Update")); }
-        if (ImGui::MenuItem("Print")) { CreatePrintNode(m_Scripts[m_CurrentScript].Nodes, scene_pos, ""); }
-        if (ImGui::MenuItem("Keyboard Input")) { CreateKeyboardInputNode(m_Scripts[m_CurrentScript].Nodes, scene_pos, 0, 0); }
-        if (ImGui::MenuItem("Mouse Input")) { CreateMouseInputNode(m_Scripts[m_CurrentScript].Nodes, scene_pos, 0, 0); }
+        if (ImGui::MenuItem("Start")) { m_Scripts[m_CurrentScript].Nodes.push_back(ScriptingNode(scene_pos, "START", 0, 1, "Start")); m_Scripts[m_CurrentScript].Saved = false; }
+        if (ImGui::MenuItem("Update")) { m_Scripts[m_CurrentScript].Nodes.push_back(ScriptingNode(scene_pos, "UPDATE", 0, 1, "Update")); m_Scripts[m_CurrentScript].Saved = false; }
+        if (ImGui::MenuItem("Print")) { CreatePrintNode(m_Scripts[m_CurrentScript].Nodes, scene_pos, ""); m_Scripts[m_CurrentScript].Saved = false; }
+        if (ImGui::MenuItem("Keyboard Input")) { CreateKeyboardInputNode(m_Scripts[m_CurrentScript].Nodes, scene_pos, 0, 0); m_Scripts[m_CurrentScript].Saved = false; }
+        if (ImGui::MenuItem("Mouse Input")) { CreateMouseInputNode(m_Scripts[m_CurrentScript].Nodes, scene_pos, 0, 0); m_Scripts[m_CurrentScript].Saved = false; }
         if (ImGui::MenuItem("Apply Force"))
         {
             m_Scripts[m_CurrentScript].Nodes.push_back(ScriptingNode(scene_pos, "APPLYFORCE", 1, 1, "Apply Force"));
             m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].Nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValue::Type::FLOAT, new float(0), "X"));
             m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].Nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValue::Type::FLOAT, new float(0), "Y"));
+            m_Scripts[m_CurrentScript].Saved = false;
+        }
+        if (ImGui::MenuItem("Set Velocity"))
+        {
+            m_Scripts[m_CurrentScript].Nodes.push_back(ScriptingNode(scene_pos, "SETVELOCITY", 1, 1, "Set Velocity"));
+            m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].Nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValue::Type::FLOAT, new float(0), "X"));
+            m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].Nodes.size() - 1].NodeValues.push_back(ScriptingNodeValue(ScriptingNodeValue::Type::FLOAT, new float(0), "Y"));
+            m_Scripts[m_CurrentScript].Saved = false;
         }
         ImGui::EndPopup();
     }
@@ -578,33 +627,35 @@ void Scripting::ScriptingSpace()
             if (ImGui::MenuItem("Copy", NULL, false, false)) {}
             if (ImGui::MenuItem("Delete"))
             {
-                for (int i = 0; i < static_cast<int>(m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedNode].NodeValues.size()); i++)
+                for (int i = 0; i < static_cast<int>(node->NodeValues.size()); i++)
                 {
-                    switch (m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedNode].NodeValues[i].ValueType)
+                    switch (node->NodeValues[i].ValueType)
                     {
                     case ScriptingNodeValue::Type::FLOAT:
-                        delete (float*)m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedNode].NodeValues[i].Value;
+                        delete (float*)node->NodeValues[i].Value;
                         break;
                     case ScriptingNodeValue::Type::INT:
-                        delete (int*)m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedNode].NodeValues[i].Value;
+                        delete (int*)node->NodeValues[i].Value;
                         break;
                     case ScriptingNodeValue::Type::STRING:
-                        delete (std::string*)m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedNode].NodeValues[i].Value;
+                        delete (std::string*)node->NodeValues[i].Value;
                         break;
                     default:
                         break;
                     }
-                    m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedNode].NodeValues[i].Value = nullptr;
-                    m_Scripts[m_CurrentScript].Nodes[m_Scripts[m_CurrentScript].SelectedNode].NodeValues[i].ComboValues.clear();
+                    node->NodeValues[i].Value = nullptr;
+                    node->NodeValues[i].ComboValues.clear();
                 }
-                m_Scripts[m_CurrentScript].Nodes.erase(m_Scripts[m_CurrentScript].Nodes.begin() + m_Scripts[m_CurrentScript].SelectedNode);
                 for (int i = 0; i < static_cast<int>(m_Scripts[m_CurrentScript].Links.size()); i++)
                 {
-                    if (m_Scripts[m_CurrentScript].Links[i].InputIndex == m_Scripts[m_CurrentScript].SelectedNode || m_Scripts[m_CurrentScript].Links[i].OutputIndex == m_Scripts[m_CurrentScript].SelectedNode)
+                    if (m_Scripts[m_CurrentScript].Links[i].InputIndex == node->ID || m_Scripts[m_CurrentScript].Links[i].OutputIndex == node->ID)
                     {
                         m_Scripts[m_CurrentScript].Links.erase(m_Scripts[m_CurrentScript].Links.begin() + i);
                     }
                 }
+                m_Scripts[m_CurrentScript].Nodes.erase(m_Scripts[m_CurrentScript].Nodes.begin() + m_Scripts[m_CurrentScript].SelectedNode);
+                
+                m_Scripts[m_CurrentScript].Saved = false;
             }
         }
         else
