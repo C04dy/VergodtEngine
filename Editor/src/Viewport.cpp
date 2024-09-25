@@ -183,7 +183,11 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 {
                     float new_x = ((minrec.x - ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x / 2 * m_Zoom)) - ImGui::GetMousePos().x) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x += new_x;
-                    Nodes[i].Position.x -= new_x / 2;
+
+                    if (((ImVec2*)Nodes[i].NodeValues[1]->Value)->x <= 0.0f)
+                        ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x = 0.1f;
+                    else
+                        Nodes[i].Position.x -= new_x / 2;
                     Saved = false;
                 }
 
@@ -197,11 +201,19 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 {
                     float new_x = ((minrec.x - ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x / 2 * m_Zoom)) - ImGui::GetMousePos().x) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x += new_x;
-                    Nodes[i].Position.x -= new_x / 2;
+
+                    if (((ImVec2*)Nodes[i].NodeValues[1]->Value)->x <= 0.0f)
+                        ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x = 0.1f;
+                    else
+                        Nodes[i].Position.x -= new_x / 2;
 
                     float new_y = ((minrec.y - ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y / 2 * m_Zoom)) - ImGui::GetMousePos().y) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y += new_y;
-                    Nodes[i].Position.y -= new_y / 2;
+
+                    if (((ImVec2*)Nodes[i].NodeValues[1]->Value)->y <= 0.0f)
+                        ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y = 0.1f;
+                    else
+                        Nodes[i].Position.y -= new_y / 2;
                     Saved = false;
                 }
                 
@@ -215,11 +227,19 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 {
                     float new_x = ((minrec.x - ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x / 2 * m_Zoom)) - ImGui::GetMousePos().x) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x += new_x;
-                    Nodes[i].Position.x -= new_x / 2;
+                    
+                    if (((ImVec2*)Nodes[i].NodeValues[1]->Value)->x <= 0.0f)
+                        ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x = 0.1f;
+                    else
+                        Nodes[i].Position.x -= new_x / 2;
 
                     float new_y = ((minrec.y + ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y / 2 * m_Zoom)) - ImGui::GetMousePos().y) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y -= new_y;
-                    Nodes[i].Position.y -= new_y / 2;
+
+                    if (((ImVec2*)Nodes[i].NodeValues[1]->Value)->y <= 0.0f)
+                        ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y = 0.1f;
+                    else
+                        Nodes[i].Position.y -= new_y / 2;
                     Saved = false;
                 }
                 
@@ -233,7 +253,11 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 {
                     float new_x = ((minrec.x + ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x / 2 * m_Zoom)) - ImGui::GetMousePos().x) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x -= new_x;
-                    Nodes[i].Position.x -= new_x / 2;
+
+                    if (((ImVec2*)Nodes[i].NodeValues[1]->Value)->x <= 0.0f)
+                        ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x = 0.1f;
+                    else
+                        Nodes[i].Position.x -= new_x / 2;
                     Saved = false;
                 }
                 
@@ -247,11 +271,20 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 {
                     float new_x = ((minrec.x + ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x / 2 * m_Zoom)) - ImGui::GetMousePos().x) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x -= new_x;
-                    Nodes[i].Position.x -= new_x / 2;
+
+                    if (((ImVec2*)Nodes[i].NodeValues[1]->Value)->x <= 0.0f)
+                        ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x = 0.1f;
+                    else
+                        Nodes[i].Position.x -= new_x / 2;
 
                     float new_y = ((minrec.y - ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y / 2 * m_Zoom)) - ImGui::GetMousePos().y) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y += new_y;
-                    Nodes[i].Position.y -= new_y / 2;
+                    
+                    if (((ImVec2*)Nodes[i].NodeValues[1]->Value)->y <= 0.0f)
+                        ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y = 0.1f;
+                    else
+                        Nodes[i].Position.y -= new_y / 2;
+                    
                     Saved = false;
                 }
 
@@ -265,11 +298,19 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 {
                     float new_x = ((minrec.x + ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).x * Nodes[i].Size.x / 2 * m_Zoom)) - ImGui::GetMousePos().x) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x -= new_x;
-                    Nodes[i].Position.x -= new_x / 2;
+
+                    if (((ImVec2*)Nodes[i].NodeValues[1]->Value)->x <= 0.0f)
+                        ((ImVec2*)Nodes[i].NodeValues[1]->Value)->x = 0.1f;
+                    else
+                        Nodes[i].Position.x -= new_x / 2;
 
                     float new_y = ((minrec.y + ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y / 2 * m_Zoom)) - ImGui::GetMousePos().y) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y -= new_y;
-                    Nodes[i].Position.y -= new_y / 2;
+
+                    if (((ImVec2*)Nodes[i].NodeValues[1]->Value)->y <= 0.0f)
+                        ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y = 0.1f;
+                    else
+                        Nodes[i].Position.y -= new_y / 2;
                     Saved = false;
                 }
                 
@@ -283,7 +324,11 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 {
                     float new_y = ((minrec.y - ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y / 2 * m_Zoom)) - ImGui::GetMousePos().y) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y += new_y;
-                    Nodes[i].Position.y -= new_y / 2;
+
+                    if (((ImVec2*)Nodes[i].NodeValues[1]->Value)->y <= 0.0f)
+                        ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y = 0.1f;
+                    else
+                        Nodes[i].Position.y -= new_y / 2;
                     Saved = false;
                 }
 
@@ -297,7 +342,11 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 {
                     float new_y = ((minrec.y + ((*(ImVec2*)Nodes[i].NodeValues[1]->Value).y * Nodes[i].Size.y / 2 * m_Zoom)) - ImGui::GetMousePos().y) / 2;
                     ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y -= new_y;
-                    Nodes[i].Position.y -= new_y / 2;
+
+                    if (((ImVec2*)Nodes[i].NodeValues[1]->Value)->y <= 0.0f)
+                        ((ImVec2*)Nodes[i].NodeValues[1]->Value)->y = 0.1f;
+                    else
+                        Nodes[i].Position.y -= new_y / 2;
                     Saved = false;
                 }
 
@@ -325,7 +374,7 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
                 draw_list->AddCircleFilled(ImVec2(minrec.x , minrec.y - ((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y * m_Zoom) - 2.5f), 5.0f * m_Zoom, IM_COL32(210, 215, 211, 255));
 
                 static int resizing = -1;
-                if (IsMouseHoveringCircle(5.0f * m_Zoom, ImVec2(minrec.x , minrec.y - (((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y) - 2.5f) * m_Zoom)) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                if (IsMouseHoveringCircle(5.0f * m_Zoom, ImVec2(minrec.x , minrec.y - ((*(float*)Nodes[i].NodeValues[1]->Value) * Nodes[i].Size.y * m_Zoom) - 2.5f)) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     resizing = i;
                 if (resizing == i && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
                 {
@@ -333,7 +382,11 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
 
                     float new_y = ((minrec.y - ((((*radius * Nodes[i].Size.y)) - 2.5f) * m_Zoom)) - ImGui::GetMousePos().y) / 2;
                     *radius += new_y;
-                    Nodes[i].Position.y -= new_y;
+
+                    if (*radius <= 0.0f)
+                        *radius = 0.1f;
+                    else
+                        Nodes[i].Position.y -= new_y;
                     Saved = false;
                 }
                 if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && resizing != -1)

@@ -95,6 +95,11 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
                 if (ImGui::InputFloat("Y", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value).y))
                     Saved = false;
 
+                if (((ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value)->x < 0.0f)
+                    (*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value).x = std::abs((*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value).x);
+                if (((ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value)->y < 0.0f)
+                    (*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value).y = std::abs((*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->Value).y);
+
                 ImGui::PopItemWidth();
                 break;
             case (int)Node::ColliderType::CIRCLE:
@@ -102,6 +107,9 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
 
                 if (ImGui::InputFloat(" ", ((float*)Nodes[SelectedNode].NodeValues[1]->Value)))
                     Saved = false;
+
+                if ((*(float*)Nodes[SelectedNode].NodeValues[1]->Value) < 0.0f)
+                    (*(float*)Nodes[SelectedNode].NodeValues[1]->Value) = std::abs((*(float*)Nodes[SelectedNode].NodeValues[1]->Value));
                 break;
             case (int)Node::ColliderType::POLYGONS:
                 for (int i = 0; i < static_cast<int>(Nodes[SelectedNode].NodeValues[1]->VectorValues.size()); i++)
@@ -114,7 +122,6 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
                     ImGui::SameLine();
                     if (ImGui::InputFloat("Y", &(*(ImVec2*)Nodes[SelectedNode].NodeValues[1]->VectorValues[i]).y))
                         Saved = false;
-                    
 
                     ImGui::SameLine();
                     if (ImGui::Button("Delete"))

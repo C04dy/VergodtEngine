@@ -117,12 +117,13 @@ std::string CreateFileDialog(const std::vector<std::string>& FileTypes, const st
 
     nfdopendialogu8args_t args = { 0 };
     args.filterList = filters;
-    args.filterCount = 2;
+    args.filterCount = FileTypes.size();
     nfdresult_t result = NFD_OpenDialogU8_With(&out_path, &args);
     if (result == NFD_OKAY)
     {
+        std::string path = out_path;
         NFD_FreePathU8(out_path);
-        return out_path;
+        return path;
     }
     else if (result != NFD_CANCEL)
     {
@@ -209,6 +210,7 @@ static std::string GetColliderTypeAsString(Node::ColliderType ColliderNodeType)
 
 static void SaveNodes(std::string& Line, const std::vector<Node>& Nodes, std::vector<Node>& AllNodes, std::vector<Node*>& SavedNodes, bool IsChild = false)
 {
+    std::locale::global(std::locale("C"));
     for (int i = 0; i < static_cast<int>(Nodes.size()); i++)
     {
         if (Nodes[i].IsChild && !IsChild)
@@ -365,36 +367,42 @@ void Project::SaveSceneFile()
 
 bool Project::InitilizeProject()
 {
-    bool return_value = false;
     ImGui::Begin("Project List");
 
     if (ImGui::Button("Select Project"))
     {
-        LoadProjectFile(CreateFileDialog({ "VergodtEngine Project File" }, { "verproj" }));
+        std::string project_location = CreateFileDialog({ "VergodtEngine Project File" }, { "verproj" });
+        LoadProjectFile(project_location);
 
         LoadSceneFile(m_ProjectLocation + m_CurrentScene);
 
         ProjectInitilized = true;
-        return_value = true;
+        ImGui::End();
+        return true;
     }
 
     ImGui::End();
-
-    return return_value;
+    return false;
 }
 
 void Project::LoadProjectFile(const std::string& FilePath)
 {
-    m_ProjectLocation = GetLineBetweenTillLast(FilePath, "\\");
-    m_ProjectLocation += "\\";
-    m_ProjectFile = GetLineBetweenAfterLast(FilePath, "\\");
+#ifdef _WIN32
+    std::string Slash = "\\";
+#else
+    std::string Slash = "/";
+#endif
+
+    m_ProjectLocation = GetLineBetweenTillLast(FilePath, Slash);
+    m_ProjectLocation += Slash;
+    m_ProjectFile = GetLineBetweenAfterLast(FilePath, Slash);
 
     std::string line;
     std::ifstream project_file(FilePath);
     if (project_file.fail())
     {
-        std::cout << "Project File did not found.\n";
-        return;
+        std::cout << FilePath << '\n';
+        throw std::runtime_error("Project File did not found.\n");
     }
 
     while (std::getline(project_file, line))

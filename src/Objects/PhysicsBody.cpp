@@ -14,7 +14,7 @@ static float DegreeToRadian(float Degree)
 
 static float RadianToDegree(float Radian)
 {
-	return Radian * (180.0f / b2_pi);
+	return Radian * (180.0 / b2_pi);
 }
 
 void PhysicsBody::InitPhysicsBody(std::vector<Node*>& Nodes, b2WorldId& PhysicsWorldID, b2BodyType BodyType, float Friction, float Density)

@@ -183,8 +183,13 @@ int App::Run() {
             ImGui::Begin("Debug");
             if (ImGui::Button("Play"))
             {
+#ifdef _WIN32
+                std::string engine = "VergodtEngine.exe ";
+#else
+                std::string engine = "./VergodtEngine ";
+#endif
                 // i will fix this surely someday..
-                TinyProcessLib::Process process("VergodtEngine.exe " + m_Project.GetProjectLocation() + m_Project.GetProjectFile(), "",
+                TinyProcessLib::Process process(engine + m_Project.GetProjectLocation() + m_Project.GetProjectFile(), "",
                     [](const char* bytes, size_t n)
                     {
                         std::cout << "Game output: " << std::string(bytes, n);
