@@ -163,6 +163,8 @@ int App::Run() {
         {
             if (m_Project.InitilizeProject())
                 SDL_MaximizeWindow(m_Window);
+
+            
         }
         else
         {
@@ -173,6 +175,8 @@ int App::Run() {
             m_SceneView.SceneViewSpace(m_Project.Nodes, selected_node, m_Project.SavedProject);
 
             m_Inspector.InspectorSpace(m_Project.Nodes, selected_node, m_Scripting, m_Project.SavedProject, m_Project);
+
+            m_FileSystem.FileSystemSpace();
 
             if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_S))
             {

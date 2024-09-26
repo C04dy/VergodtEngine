@@ -12,6 +12,7 @@
 #include "Inspector.h"
 #include "SceneView.h"
 #include "Project.h"
+#include "FileSystem.h"
 
 class SDL_Window;
 class SDL_Renderer;
@@ -46,6 +47,8 @@ private:
     SceneView m_SceneView;
 
     Project m_Project;
+
+    FileSystem m_FileSystem;
 };
 
 #endif

@@ -103,7 +103,8 @@ public:
     int ColliderCount = 0;
 };
 
-std::string CreateFileDialog(const std::vector<std::string>& FileTypes, const std::vector<std::string>& FileExtensions);
+std::string CreateFileOpenDialog(const std::vector<std::string>& FileTypes, const std::vector<std::string>& FileExtensions);
+std::string CreateFileSaveDialog(const std::vector<std::string>& FileTypes, const std::vector<std::string>& FileExtensions);
 
 class Project
 {

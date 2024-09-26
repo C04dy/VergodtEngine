@@ -530,7 +530,7 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
 
     draw_list->ChannelsMerge();
 
-    if (ImGui::IsAnyItemActive() && ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+    if (ImGui::IsAnyItemActive() && ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && SelectedNode != -1)
     {
         Nodes[SelectedNode].Position.x += io.MouseDelta.x;
         Nodes[SelectedNode].Position.y += io.MouseDelta.y;

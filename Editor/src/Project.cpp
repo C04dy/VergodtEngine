@@ -104,7 +104,7 @@ Node::NodeValue::~NodeValue()
     ComboValues.clear();
 }
 
-std::string CreateFileDialog(const std::vector<std::string>& FileTypes, const std::vector<std::string>& FileExtensions)
+std::string CreateFileOpenDialog(const std::vector<std::string>& FileTypes, const std::vector<std::string>& FileExtensions)
 {
     nfdu8char_t* out_path;
 
@@ -128,6 +128,35 @@ std::string CreateFileDialog(const std::vector<std::string>& FileTypes, const st
     else if (result != NFD_CANCEL)
     {
         std::cout << "Error file did not opened: " << NFD_GetError() << '\n';
+    }
+    return "None";
+}
+
+std::string CreateFileSaveDialog(const std::vector<std::string> &FileTypes, const std::vector<std::string> &FileExtensions)
+{
+    nfdchar_t* save_path;
+
+    nfdu8filteritem_t filters[FileTypes.size()];
+
+    for (int i = 0; i < static_cast<int>(FileTypes.size()); i++)
+    {
+        filters[i] = { FileTypes[i].c_str(), FileExtensions[i].c_str() };
+    }
+
+    nfdresult_t result = NFD_SaveDialog(&save_path, filters, FileTypes.size(), NULL, ("File." + FileExtensions[0]).c_str());
+    if (result == NFD_OKAY)
+    {
+        std::string path = save_path;
+        NFD_FreePath(save_path);
+
+        std::ofstream out_file(path);
+        out_file.close();
+
+        return path;
+    }
+    else if (result != NFD_CANCEL)
+    {
+        std::cout << "Error file did not created: " << NFD_GetError() << '\n';
     }
     return "None";
 }
@@ -348,12 +377,20 @@ static void SaveNodes(std::string& Line, const std::vector<Node>& Nodes, std::ve
         Line += '\n';
     }
 
-    if (!IsChild)
+    if (!IsChild && Line.size() > 0)
         Line.erase(Line.size() - 2, Line.size());
 }
 
 void Project::SaveSceneFile()
 {
+    if (m_CurrentScene == "NULL")
+    {
+        std::string scene_path = CreateFileSaveDialog({ "VergodtEngine Scene File" }, { "vscene" });
+        if (scene_path == "None")
+            return;
+        m_CurrentScene = scene_path;
+    }
+
     std::string line;
 
     std::vector<Node*> saved_nodes;
@@ -371,14 +408,30 @@ bool Project::InitilizeProject()
 
     if (ImGui::Button("Select Project"))
     {
-        std::string project_location = CreateFileDialog({ "VergodtEngine Project File" }, { "verproj" });
-        LoadProjectFile(project_location);
+        std::string project_location = CreateFileOpenDialog({ "VergodtEngine Project File" }, { "verproj" });
 
-        LoadSceneFile(m_ProjectLocation + m_CurrentScene);
+        if (project_location != "None")
+        {
+            LoadProjectFile(project_location);
 
-        ProjectInitilized = true;
-        ImGui::End();
-        return true;
+            ProjectInitilized = true;
+            ImGui::End();
+            return true;
+        }
+    }
+
+    if (ImGui::Button("Create Project"))
+    {
+        std::string project_location = CreateFileSaveDialog({ "VergodtEngine Project File" }, { "verproj" });
+        
+        if (project_location != "None")
+        {
+            LoadProjectFile(project_location);
+
+            ProjectInitilized = true;
+            ImGui::End();
+            return true;
+        }
     }
 
     ImGui::End();
@@ -411,6 +464,9 @@ void Project::LoadProjectFile(const std::string& FilePath)
     }
 
     project_file.close();
+
+    if (m_CurrentScene != "NULL")
+        LoadSceneFile(m_ProjectLocation + m_CurrentScene);
 }
 
 void Project::LoadTextureFromFile(const std::string& FilePath, Node& Sprite)

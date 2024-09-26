@@ -17,7 +17,7 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
             ImGui::Text("Texture");
             if (ImGui::Button((*(std::string*)Nodes[SelectedNode].NodeValues[0]->Value).c_str()))
             {
-                std::string new_path = CreateFileDialog({ "Image File" }, { "png,jpg,avif,jxl,tif,webp" });
+                std::string new_path = CreateFileOpenDialog({ "Image File" }, { "png,jpg,avif,jxl,tif,webp" });
                 if (new_path != "None")
                 {
                     *(std::string*)Nodes[SelectedNode].NodeValues[0]->Value = RemoveFromLine(new_path, CurrentProject.GetProjectLocation());
@@ -244,7 +244,7 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
             }
             else
             {
-                Nodes[SelectedNode].Script = CreateFileDialog({"VergodtScript File"}, {"verscript"});
+                Nodes[SelectedNode].Script = CreateFileSaveDialog({"VergodtScript File"}, {"verscript"});
                 Nodes[SelectedNode].Script = RemoveFromLine(Nodes[SelectedNode].Script, CurrentProject.GetProjectLocation());
             }
             Saved = false;
@@ -260,7 +260,7 @@ void Inspector::InspectorSpace(std::vector<Node>& Nodes, int& SelectedNode, Scri
             ImGui::SameLine();
             if (ImGui::Button("Change"))
             {
-                Nodes[SelectedNode].Script = CreateFileDialog({ "VergodtScript File" }, { "verscript" });
+                Nodes[SelectedNode].Script = CreateFileOpenDialog({ "VergodtScript File" }, { "verscript" });
                 Nodes[SelectedNode].Script = RemoveFromLine(Nodes[SelectedNode].Script, CurrentProject.GetProjectLocation());
                 Saved = false;
             }
