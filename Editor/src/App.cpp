@@ -162,9 +162,10 @@ int App::Run() {
         if (!m_Project.ProjectInitilized)
         {
             if (m_Project.InitilizeProject())
+            {
                 SDL_MaximizeWindow(m_Window);
-
-            
+                m_FileSystem.SetProjectDirectory(m_Project.GetProjectLocation());
+            }
         }
         else
         {

@@ -1,4 +1,5 @@
 #include "Viewport.h"
+#include "StringFunctions.h"
 #include <math.h>
 #include <string>
 #include <algorithm>
@@ -446,6 +447,38 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
         ImGui::PopID();
     }
 
+    ImGui::SetCursorPos(ImGui::GetWindowViewport()->Pos);
+    ImGui::InvisibleButton("VIEWPORT_TARGET", ImGui::GetWindowViewport()->Size);
+    if (ImGui::BeginDragDropTarget())
+    {
+        if (const ImGuiPayload* p = ImGui::AcceptDragDropPayload("FILE"))
+        {
+            std::string file_path = *(std::string*)p->Data;
+
+            if (IsLineExist(file_path, ".vscene"))
+            {
+                CurrentProject.LoadSceneFile(file_path);
+            } 
+            else if (IsLineExist(file_path, ".png") || IsLineExist(file_path, ".jpeg") || IsLineExist(file_path, ".jpg") || IsLineExist(file_path, ".webp"))
+            {
+                ImVec2 scene_pos;
+                scene_pos.x = ImGui::GetMousePosOnOpeningCurrentPopup().x - draw_list_offset.x;
+                scene_pos.y = ImGui::GetMousePosOnOpeningCurrentPopup().y - draw_list_offset.y;
+
+                Nodes.push_back(Node(scene_pos));
+
+                Nodes[Nodes.size() - 1].NodeType = Node::Type::SPRITE;
+            
+                Nodes[Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new std::string(file_path), Node::NodeValue::Type::STRING));
+
+                CurrentProject.LoadTextureFromFile(CurrentProject.GetProjectLocation() + file_path, Nodes[Nodes.size() - 1]);
+
+                Saved = false;
+            }
+        }
+        ImGui::EndDragDropTarget();
+    }
+
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
     {
         if (SelectedNode != -1)
@@ -530,7 +563,7 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
 
     draw_list->ChannelsMerge();
 
-    if (ImGui::IsAnyItemActive() && ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && SelectedNode != -1)
+    if (ImGui::IsAnyItemActive() && ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && ImGui::IsWindowFocused() && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && SelectedNode != -1)
     {
         Nodes[SelectedNode].Position.x += io.MouseDelta.x;
         Nodes[SelectedNode].Position.y += io.MouseDelta.y;

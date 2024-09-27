@@ -466,7 +466,7 @@ void Project::LoadProjectFile(const std::string& FilePath)
     project_file.close();
 
     if (m_CurrentScene != "NULL")
-        LoadSceneFile(m_ProjectLocation + m_CurrentScene);
+        LoadSceneFile(m_CurrentScene);
 }
 
 void Project::LoadTextureFromFile(const std::string& FilePath, Node& Sprite)
@@ -500,22 +500,22 @@ void Project::LoadTextureFromFile(const std::string& FilePath, Node& Sprite)
 void Project::LoadSceneFile(const std::string& FilePath)
 {
     std::string line;
-    std::ifstream scene_file(FilePath);
+    std::ifstream scene_file(m_ProjectLocation + FilePath);
 
     if (scene_file.fail())
     {
         std::cout << "Scene File did not found.\n";
         return;
     }
-
-    m_CurrentScene = RemoveFromLine(FilePath, m_ProjectLocation);
+    
+    m_CurrentScene = FilePath;
 
     int line_count = 0;
+    Nodes.clear();
     while (std::getline(scene_file, line))
     {
         if (line[0] != '#')
         {
-            
             line_count += 1;
             Nodes.push_back(Node());
 
