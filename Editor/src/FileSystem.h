@@ -6,22 +6,37 @@
 #include <string>
 #include <vector>
 
+struct SDL_Texture;
+class Project;
+
 class FileSystem
 {
 public:
     struct FileData
     {
+        ~FileData();
+        
         std::string FilePath = "None";
+
+        SDL_Texture* Texture = nullptr;
+        int TextureWidth, TextureHeight;
+
+        bool IsFolder = false;
     };
 public:
     FileSystem();
     ~FileSystem();
 
-    void FileSystemSpace();
+    void FileSystemSpace(Project& _Project);
 
-    void SetProjectDirectory(const std::string& ProjectDirectory);
+    void SetProjectDirectory(const std::string& ProjectDirectory, Project& _Project);
+private:
+    void SetDirectory(const std::string& ProjectDirectory, Project& _Project);
 private:
     std::string m_ProjectDirectory = "None";
+    std::string m_CurrentDirectoryPath = "";
+    std::string m_CurrentDirectoryName = "";
+    std::string m_DragDropPath = "";
 
     std::vector<FileData> m_FileDatas;
 };

@@ -45,7 +45,7 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input, const 
 
                 all_script_nodes.push_back(print_node);
 
-                if (GetLineBetween(line, "[CONNECTEDID=", "]") != "NULL")
+                if (GetLineBetween(line, "[CONNECTEDID=", "]") != "None")
                     all_script_nodes[std::stoi(GetLineBetween(line, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(print_node); 
             }
             else if (node_type == "KEYBOARDINPUT")
@@ -77,7 +77,7 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input, const 
 
                 all_script_nodes.push_back(apply_force_node);
 
-                if (GetLineBetween(line, "[CONNECTEDID=", "]") != "NULL")
+                if (GetLineBetween(line, "[CONNECTEDID=", "]") != "None")
                     all_script_nodes[std::stoi(GetLineBetween(line, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(apply_force_node); 
             }
             else if (node_type == "SETVELOCITY")
@@ -91,7 +91,7 @@ void SetScript(Node* _Node, const std::string& Line, InputManager* Input, const 
 
                 all_script_nodes.push_back(set_velocity_node);
 
-                if (GetLineBetween(line, "[CONNECTEDID=", "]") != "NULL")
+                if (GetLineBetween(line, "[CONNECTEDID=", "]") != "None")
                     all_script_nodes[std::stoi(GetLineBetween(line, "[CONNECTEDID=", "]"))]->ConnectedNodes.push_back(set_velocity_node); 
             }
         }

@@ -200,7 +200,7 @@ static std::string GetNodeTypeAsString(Node::Type NodeType)
         return "COLLIDER";
         break;
     }
-    return "NULL";
+    return "None";
 }
 
 static std::string GetPhysicsbodyTypeAsString(Node::PhysicsbodyType PhysicsbodyNodeType)
@@ -217,7 +217,7 @@ static std::string GetPhysicsbodyTypeAsString(Node::PhysicsbodyType PhysicsbodyN
         return "STATIC";
         break;
     }
-    return "NULL";
+    return "None";
 }
 
 static std::string GetColliderTypeAsString(Node::ColliderType ColliderNodeType)
@@ -234,7 +234,7 @@ static std::string GetColliderTypeAsString(Node::ColliderType ColliderNodeType)
         return "POLYGON";
         break;
     }
-    return "NULL";
+    return "None";
 }
 
 static void SaveNodes(std::string& Line, const std::vector<Node>& Nodes, std::vector<Node>& AllNodes, std::vector<Node*>& SavedNodes, bool IsChild = false)
@@ -381,13 +381,13 @@ static void SaveNodes(std::string& Line, const std::vector<Node>& Nodes, std::ve
         Line.erase(Line.size() - 2, Line.size());
 }
 
-void Project::SaveSceneFile()
+bool Project::SaveSceneFile()
 {
-    if (m_CurrentScene == "NULL")
+    if (m_CurrentScene == "None")
     {
         std::string scene_path = CreateFileSaveDialog({ "VergodtEngine Scene File" }, { "vscene" });
         if (scene_path == "None")
-            return;
+            return false;
         m_CurrentScene = scene_path;
     }
 
@@ -400,6 +400,7 @@ void Project::SaveSceneFile()
 
     std::ofstream write_file(m_ProjectLocation + m_CurrentScene);
     write_file << line;
+    return true;
 }
 
 bool Project::InitilizeProject()
@@ -465,11 +466,13 @@ void Project::LoadProjectFile(const std::string& FilePath)
 
     project_file.close();
 
-    if (m_CurrentScene != "NULL")
-        LoadSceneFile(m_CurrentScene);
+    if (m_CurrentScene != "None")
+    {
+        LoadSceneFile(m_CurrentScene);   
+    }
 }
 
-void Project::LoadTextureFromFile(const std::string& FilePath, Node& Sprite)
+void Project::LoadTextureFromFile(const std::string& FilePath, SDL_Texture** Texture, int& Width, int& Height)
 {
     SDL_Surface* surface = IMG_Load(FilePath.c_str());
 
@@ -479,20 +482,19 @@ void Project::LoadTextureFromFile(const std::string& FilePath, Node& Sprite)
         return;
     }
 
-    if (Sprite.Texture != nullptr)
-        SDL_DestroyTexture(Sprite.Texture);
+    if (*Texture != nullptr)
+        SDL_DestroyTexture(*Texture);
 
-    Sprite.Texture = SDL_CreateTextureFromSurface(m_Renderer, surface);
+    *Texture = SDL_CreateTextureFromSurface(m_Renderer, surface);
 
-    if (Sprite.Texture == nullptr)
+    if (*Texture == nullptr)
     {
         std::cout << "Failed to create texture from surface\n";
         return;
     }
 
-
-    Sprite.TextureWidth = surface->w;
-    Sprite.TextureHeight = surface->h;
+    Width = surface->w;
+    Height = surface->h;
 
     SDL_DestroySurface(surface);
 }
@@ -504,7 +506,7 @@ void Project::LoadSceneFile(const std::string& FilePath)
 
     if (scene_file.fail())
     {
-        std::cout << "Scene File did not found.\n";
+        std::cout << "Scene File did not found: " << FilePath << '\n';
         return;
     }
     
@@ -554,7 +556,7 @@ void Project::LoadSceneFile(const std::string& FilePath)
                 {
                     Nodes[Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new std::string(GetLineBetween(line, "[ASSET=", "]")), Node::NodeValue::Type::STRING));
 
-                    LoadTextureFromFile(m_ProjectLocation + GetLineBetween(line, "[ASSET=", "]"), Nodes[Nodes.size() - 1]);
+                    LoadTextureFromFile(m_ProjectLocation + GetLineBetween(line, "[ASSET=", "]"), &Nodes[Nodes.size() - 1].Texture, Nodes[Nodes.size() - 1].TextureWidth, Nodes[Nodes.size() - 1].TextureHeight);
                 }
                 else
                 {

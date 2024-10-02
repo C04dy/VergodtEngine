@@ -471,7 +471,7 @@ void Viewport::ViewportSpace(SDL_Renderer* Renderer, std::vector<Node>& Nodes, i
             
                 Nodes[Nodes.size() - 1].NodeValues.push_back(new Node::NodeValue(new std::string(file_path), Node::NodeValue::Type::STRING));
 
-                CurrentProject.LoadTextureFromFile(CurrentProject.GetProjectLocation() + file_path, Nodes[Nodes.size() - 1]);
+                CurrentProject.LoadTextureFromFile(CurrentProject.GetProjectLocation() + file_path, &Nodes[Nodes.size() - 1].Texture, Nodes[Nodes.size() - 1].TextureWidth, Nodes[Nodes.size() - 1].TextureHeight);
 
                 Saved = false;
             }

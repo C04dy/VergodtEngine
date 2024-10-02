@@ -98,7 +98,7 @@ public:
 
     SDL_Texture* Texture = nullptr;
 
-    float TextureWidth, TextureHeight;
+    int TextureWidth, TextureHeight;
 
     int ColliderCount = 0;
 };
@@ -114,11 +114,11 @@ public:
 
     void LoadSceneFile(const std::string& FilePath);
 
-    void LoadTextureFromFile(const std::string& FilePath, Node& Sprite);
+    void LoadTextureFromFile(const std::string& FilePath, SDL_Texture** Texture, int& Width, int& Height);
 
     void SetRenderer(SDL_Renderer* Renderer) { m_Renderer = Renderer; }
     
-    void SaveSceneFile();
+    bool SaveSceneFile();
 
     bool InitilizeProject();
 

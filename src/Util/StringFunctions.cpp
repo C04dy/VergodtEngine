@@ -16,7 +16,7 @@ std::string GetLineBetween(const std::string& Text, const std::string& Start, co
     if (IsLineExist(Text, Start))
         return Text.substr( Text.find( Start ) + ( Start.length() ) , Text.find( Finish, Text.find(Start) ) - ( Text.find(Start) + (Start.length() ) ) );
     
-    return "NULL";
+    return "None";
 }
 
 std::string GetLineBetween(const std::string& Text, int Start, const std::string& Finish)

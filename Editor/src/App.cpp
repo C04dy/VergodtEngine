@@ -164,7 +164,7 @@ int App::Run() {
             if (m_Project.InitilizeProject())
             {
                 SDL_MaximizeWindow(m_Window);
-                m_FileSystem.SetProjectDirectory(m_Project.GetProjectLocation());
+                m_FileSystem.SetProjectDirectory(m_Project.GetProjectLocation(), m_Project);
             }
         }
         else
@@ -177,12 +177,12 @@ int App::Run() {
 
             m_Inspector.InspectorSpace(m_Project.Nodes, selected_node, m_Scripting, m_Project.SavedProject, m_Project);
 
-            m_FileSystem.FileSystemSpace();
+            m_FileSystem.FileSystemSpace(m_Project);
 
             if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_S))
             {
-                m_Project.SaveSceneFile();
-                m_Project.SavedProject = true;
+                if (m_Project.SaveSceneFile())
+                    m_Project.SavedProject = true;
             }
 
             ImGui::Begin("Debug");
