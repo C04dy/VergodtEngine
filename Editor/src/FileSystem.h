@@ -30,8 +30,10 @@ public:
     void FileSystemSpace(Project& _Project);
 
     void SetProjectDirectory(const std::string& ProjectDirectory, Project& _Project);
-private:
-    void SetDirectory(const std::string& ProjectDirectory, Project& _Project);
+
+    void CopyDroppedFile(const std::string& CopiedFilePath, Project& _Project);
+
+    void SetDirectory(Project& _Project);
 private:
     std::string m_ProjectDirectory = "None";
     std::string m_CurrentDirectoryPath = "";

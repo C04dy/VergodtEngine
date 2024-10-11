@@ -39,8 +39,7 @@ void FileSystem::FileSystemSpace(Project& _Project)
                 m_CurrentDirectoryPath = "";
             }
 
-            m_FileDatas.clear();
-            SetDirectory(m_ProjectDirectory + m_CurrentDirectoryPath, _Project);
+            SetDirectory(_Project);
         }
         ImGui::SameLine();
     }
@@ -60,8 +59,7 @@ void FileSystem::FileSystemSpace(Project& _Project)
         {
             m_CurrentDirectoryPath += m_FileDatas[i].FilePath + "\\";
             m_CurrentDirectoryName = m_FileDatas[i].FilePath;
-            m_FileDatas.clear();
-            SetDirectory(m_ProjectDirectory + m_CurrentDirectoryPath, _Project);
+            SetDirectory(_Project);
             ImGui::PopID();
             break;
         }
@@ -85,9 +83,11 @@ void FileSystem::FileSystemSpace(Project& _Project)
     if (ImGui::BeginPopup("FileCreate"))
     {
         if (ImGui::MenuItem("Make Folder"))
+        {
             std::filesystem::create_directory(m_ProjectDirectory + m_CurrentDirectoryPath + "Test");
+            SetDirectory(_Project);
+        }
 
-        SetDirectory(m_ProjectDirectory + m_CurrentDirectoryPath, _Project);
         ImGui::EndPopup();
     }
 
@@ -98,12 +98,23 @@ void FileSystem::SetProjectDirectory(const std::string &ProjectDirectory, Projec
 {
     m_ProjectDirectory = ProjectDirectory;
 
-    SetDirectory(m_ProjectDirectory, _Project);
+    SetDirectory(_Project);
 }
 
-void FileSystem::SetDirectory(const std::string& ProjectDirectory, Project& _Project)
+void FileSystem::CopyDroppedFile(const std::string& CopiedFilePath, Project& _Project)
 {
-    for (const auto& entry : std::filesystem::directory_iterator(ProjectDirectory)) {
+    std::filesystem::path from = CopiedFilePath;
+    std::filesystem::path to = m_ProjectDirectory + m_CurrentDirectoryPath;
+
+    std::filesystem::copy(from, to / from.filename(), std::filesystem::copy_options::overwrite_existing);
+
+    SetDirectory(_Project);
+}
+
+void FileSystem::SetDirectory(Project& _Project)
+{
+    m_FileDatas.clear();
+    for (const auto& entry : std::filesystem::directory_iterator(m_ProjectDirectory + m_CurrentDirectoryPath)) {
         std::string outfilename = entry.path().string();
 
         m_FileDatas.push_back(FileData());
@@ -114,7 +125,7 @@ void FileSystem::SetDirectory(const std::string& ProjectDirectory, Project& _Pro
         if (IsLineExist(outfilename, ".png") || IsLineExist(outfilename, ".jpeg") || IsLineExist(outfilename, ".jpg") || IsLineExist(outfilename, ".webp"))
             _Project.LoadTextureFromFile(outfilename, &m_FileDatas[m_FileDatas.size() - 1].Texture, m_FileDatas[m_FileDatas.size() - 1].TextureWidth, m_FileDatas[m_FileDatas.size() - 1].TextureHeight);
             
-        m_FileDatas[m_FileDatas.size() - 1].FilePath = RemoveFromLine(outfilename, ProjectDirectory);
+        m_FileDatas[m_FileDatas.size() - 1].FilePath = RemoveFromLine(outfilename, m_ProjectDirectory + m_CurrentDirectoryPath);
     } 
 }
 

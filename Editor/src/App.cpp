@@ -71,36 +71,23 @@ void App::Init()
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     m_io = &ImGui::GetIO(); (void)m_io;
-    m_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    m_io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+    m_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    m_io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-    //ImGui::LoadIniSettingsFromDisk("../Assets/VergodtEngine.ini");
-    //ImGui::StyleColorsLight();
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 3));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 4));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(4, 4));
+    ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 21);
+    ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, 14);
+    ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, 13);
 
-    // Setup Platform/Renderer backends
     ImGui_ImplSDL3_InitForSDLRenderer(m_Window, m_Renderer);
     ImGui_ImplSDLRenderer3_Init(m_Renderer);
-
-    // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-    // - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
-    // - Read 'docs/FONTS.md' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
-    //io.Fonts->AddFontDefault();
-    //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../Assets/JetBrainsMono-Medium.ttf", 16.0f);
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-    //IM_ASSERT(font != nullptr);
 
     m_io->Fonts->AddFontFromFileTTF("../Assets/JetBrainsMono-Medium.ttf", 15.0f);
     m_io->IniFilename = "../Assets/VergodtEngine.ini";
@@ -119,21 +106,15 @@ void App::Init()
 int App::Run() {
     int selected_node = -1;
     std::string ConsoleLine;
+
+    SDL_Event event;
 #ifdef __EMSCRIPTEN__
-    // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
-    // You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
     io.IniFilename = nullptr;
     EMSCRIPTEN_MAINLOOP_BEGIN
 #else
     while (IsAppRunning())
 #endif
     {
-        // Poll and handle events (inputs, window resize, etc.)
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
-        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-        SDL_Event event;
         while (SDL_PollEvent(&event))
         {
             ImGui_ImplSDL3_ProcessEvent(&event);
@@ -141,6 +122,10 @@ int App::Run() {
                 m_Running = false;
             if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(m_Window))
                 m_Running = false;
+            if (event.type == SDL_EVENT_DROP_FILE && m_Project.ProjectInitilized)
+            {
+                m_FileSystem.CopyDroppedFile(event.drop.data, m_Project);
+            }
         }
 
         if (SDL_GetWindowFlags(m_Window) & SDL_WINDOW_MINIMIZED)
@@ -155,7 +140,7 @@ int App::Run() {
         ImGui::NewFrame();
 
         // Do stuff here
-        //bool sdw = true; ImGui::ShowDemoWindow(&sdw);
+        static bool sdw = true; ImGui::ShowDemoWindow(&sdw);
 
         DockSpace();
 
@@ -181,7 +166,7 @@ int App::Run() {
 
             if (ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_S))
             {
-                if (m_Project.SaveSceneFile())
+                if (m_Project.SaveSceneFile(m_FileSystem))
                     m_Project.SavedProject = true;
             }
 
@@ -210,7 +195,6 @@ int App::Run() {
 
         // Rendering
         ImGui::Render();
-        //SDL_RenderSetScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
         SDL_SetRenderDrawColorFloat(m_Renderer, 0.45f, 0.55f, 0.60f, 1.00f);
         SDL_RenderClear(m_Renderer);
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_Renderer);

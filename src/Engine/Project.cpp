@@ -14,14 +14,11 @@ Project::Project(int argc, char** argv)
     m_ProjectLocation = "../Assets/FlappyBird/";
     m_ProjectFile = "FlappyBird.verproj";
 #else
-    m_ProjectLocation = "../Assets/FlappyBird/";
-    m_ProjectFile = "FlappyBird.verproj";
-
-    //if (argv[1] == nullptr)
-    //    throw std::runtime_error("There is no Project File");
-    //m_ProjectLocation = argv[1];
-    //m_ProjectFile = GetLineBetweenAfterLast(m_ProjectLocation, Slash);
-    //m_ProjectLocation = RemoveFromLine(m_ProjectLocation, m_ProjectFile);
+    if (argv[1] == nullptr)
+        throw std::runtime_error("There is no Project File");
+    m_ProjectLocation = argv[1];
+    m_ProjectFile = GetLineBetweenAfterLast(m_ProjectLocation, Slash);
+    m_ProjectLocation = RemoveFromLine(m_ProjectLocation, m_ProjectFile);
 #endif
 
     std::string line;

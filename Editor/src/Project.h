@@ -106,6 +106,8 @@ public:
 std::string CreateFileOpenDialog(const std::vector<std::string>& FileTypes, const std::vector<std::string>& FileExtensions);
 std::string CreateFileSaveDialog(const std::vector<std::string>& FileTypes, const std::vector<std::string>& FileExtensions);
 
+class FileSystem;
+
 class Project
 {
 public:
@@ -118,7 +120,7 @@ public:
 
     void SetRenderer(SDL_Renderer* Renderer) { m_Renderer = Renderer; }
     
-    bool SaveSceneFile();
+    bool SaveSceneFile(FileSystem& _FileSystem);
 
     bool InitilizeProject();
 

@@ -5,6 +5,7 @@
 #include "nfd.h"
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
+#include "FileSystem.h"
 
 int Node::s_IDs = 0;
 
@@ -381,7 +382,7 @@ static void SaveNodes(std::string& Line, const std::vector<Node>& Nodes, std::ve
         Line.erase(Line.size() - 2, Line.size());
 }
 
-bool Project::SaveSceneFile()
+bool Project::SaveSceneFile(FileSystem& _FileSystem)
 {
     if (m_CurrentScene == "None")
     {
@@ -389,6 +390,7 @@ bool Project::SaveSceneFile()
         if (scene_path == "None")
             return false;
         m_CurrentScene = scene_path;
+        _FileSystem.SetDirectory(*this);
     }
 
     std::string line;
@@ -424,6 +426,11 @@ bool Project::InitilizeProject()
     if (ImGui::Button("Create Project"))
     {
         std::string project_location = CreateFileSaveDialog({ "VergodtEngine Project File" }, { "verproj" });
+
+        std::ofstream out_file(project_location);
+        out_file << "GameName=(" + RemoveFromLine(GetLineBetweenAfterLast(project_location, "\\"), ".verproj") + ") ";
+        out_file << "WindowWidth=(1280) WindowHeight=(720)";
+        out_file.close();
         
         if (project_location != "None")
         {
