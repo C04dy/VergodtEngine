@@ -112,7 +112,7 @@ void ScriptingNode::ReciveSignal()
 
 void PrintNode::NodesFunction()
 {
-    std::cout << Message << '\n';
+    std::cout << Message << std::endl;
 }
 
 // INPUT NODE

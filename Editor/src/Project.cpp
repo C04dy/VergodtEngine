@@ -400,6 +400,18 @@ bool Project::SaveSceneFile(FileSystem& _FileSystem)
     SaveNodes(line, Nodes, Nodes, saved_nodes);
     saved_nodes.clear();
 
+    // this will be fixed
+
+    std::ofstream out_file(m_ProjectLocation + m_ProjectFile);
+    out_file << "CurrentScene=(";
+    out_file << m_CurrentScene;
+    out_file << ") ";
+    out_file << "GameName=(" + RemoveFromLine(m_ProjectFile, ".verproj") + ") ";
+    out_file << "WindowWidth=(1280) WindowHeight=(720)";
+    out_file.close();
+
+    std::cout << m_ProjectLocation;
+
     std::ofstream write_file(m_ProjectLocation + m_CurrentScene);
     write_file << line;
     return true;

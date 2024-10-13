@@ -15,6 +15,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAK
 set(BUILD_TESTING OFF)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../vendor/nativefiledialog-extended ${CMAKE_BINARY_DIR}/vendor/nativefiledialog-extended)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../vendor/tiny-process-library ${CMAKE_BINARY_DIR}/vendor/tiny-process-library)
 
-target_link_libraries(${PROJECT_NAME} SDL3::SDL3-static SDL3_image-static nfd tiny-process-library)
+target_link_libraries(${PROJECT_NAME} SDL3::SDL3-static SDL3_image-static nfd)

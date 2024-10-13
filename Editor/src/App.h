@@ -49,6 +49,8 @@ private:
     Project m_Project;
 
     FileSystem m_FileSystem;
+
+    std::string m_ConsoleLine;
 };
 
 #endif

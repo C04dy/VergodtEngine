@@ -18,7 +18,163 @@
 #include "Inspector.h"
 #include "SceneView.h"
 #include "Project.h"
-#include "process.hpp"
+#include <future>
+#include <queue>
+#include <ctime>
+#include <chrono>
+#include <iomanip>
+#include <thread>
+
+static std::queue<std::string> output_queue;
+static std::mutex queue_mutex;
+
+#if _WIN32
+
+static void ReadFromPipe(HANDLE Pipe)
+{
+    char buffer[128];
+    DWORD bytes_read;
+    std::string partial_line;
+
+    while (true)
+    {
+        if (!PeekNamedPipe(Pipe, NULL, 0, NULL, &bytes_read, NULL) || bytes_read == 0)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
+        }
+
+        if (ReadFile(Pipe, buffer, sizeof(buffer) - 1, &bytes_read, NULL) && bytes_read > 0)
+        {
+            buffer[bytes_read] = '\0';
+            std::string data(buffer);
+
+            partial_line += data;
+
+            std::istringstream stream(partial_line);
+            std::string line;
+            while (std::getline(stream, line))
+            {
+                if (stream.eof() && data.back() != '\n')
+                {
+                    partial_line = line;
+                }
+                else
+                {
+                    std::lock_guard<std::mutex> lock(queue_mutex);
+                    output_queue.push(line + "\n");
+                }
+            }
+
+            if (data.back() != '\n')
+            {
+                partial_line = line;
+            }
+            else
+            {
+                partial_line.clear();
+            }
+        }
+
+        if (bytes_read == 0)
+        {
+            break;
+        }
+    }
+}
+
+static void RunEngine(const std::string& Command, PROCESS_INFORMATION& Pi) {
+    SECURITY_ATTRIBUTES sa;
+    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa.lpSecurityDescriptor = NULL;
+    sa.bInheritHandle = TRUE;
+
+    HANDLE stdout_read = NULL;
+    HANDLE stdout_write = NULL;
+    CreatePipe(&stdout_read, &stdout_write, &sa, 0);
+    SetHandleInformation(stdout_read, HANDLE_FLAG_INHERIT, 0);
+
+    STARTUPINFO si = { 0 };
+    si.cb = sizeof(si);
+    si.hStdOutput = stdout_write;
+    si.hStdError = stdout_write;
+    si.dwFlags |= STARTF_USESTDHANDLES;
+
+    if (!CreateProcess(NULL, const_cast<char*>(Command.c_str()), NULL, NULL, TRUE, 0, NULL, NULL, &si, &Pi))
+    {
+        std::cerr << "Engine failed: " << GetLastError() << std::endl;
+        return;
+    }
+
+    CloseHandle(stdout_write);
+
+    std::thread output_thread(ReadFromPipe, stdout_read);
+
+    DWORD result;
+    do
+    {
+        result = WaitForSingleObject(Pi.hProcess, 100);
+        if (result == WAIT_OBJECT_0)
+        {
+            std::cout << "Engine exited" << std::endl;
+            break;
+        }
+    } while (true);
+
+    if (output_thread.joinable())
+    {
+        output_thread.join();
+    }
+
+    CloseHandle(stdout_read);
+    CloseHandle(Pi.hProcess);
+    CloseHandle(Pi.hThread);
+}
+
+
+#else
+
+// Linux part
+
+static void setNonblocking(FILE* File) {
+    int fd = fileno(File);
+    int flags = fcntl(fd, F_GETFL, 0);
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+}
+
+static void RunEngine(const std::string& Command) {
+    std::array<char, 128> buffer;
+
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(Command.c_str(), "r"), pclose);
+    if (!pipe)
+    {
+        throw std::runtime_error("popen() failed!");
+    }
+
+    setNonblocking(pipe.get());
+
+    while (true)
+    {
+        if (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+        {
+            std::lock_guard<std::mutex> lock(queue_mutex);
+            output_queue.push(buffer.data());
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+
+        if (feof(pipe.get()))
+        {
+            break;
+        }
+    }
+}
+
+#endif
+
+
 
 App::~App()
 {
@@ -105,9 +261,15 @@ void App::Init()
 
 int App::Run() {
     int selected_node = -1;
-    std::string ConsoleLine;
 
     SDL_Event event;
+
+    std::thread subprocess_thread;
+
+    bool engine_running = false;
+
+    PROCESS_INFORMATION pi;
+
 #ifdef __EMSCRIPTEN__
     io.IniFilename = nullptr;
     EMSCRIPTEN_MAINLOOP_BEGIN
@@ -171,25 +333,45 @@ int App::Run() {
             }
 
             ImGui::Begin("Debug");
-            if (ImGui::Button("Play"))
+            if (ImGui::Button("Play") && !engine_running)
             {
 #ifdef _WIN32
                 std::string engine = "VergodtEngine.exe ";
 #else
                 std::string engine = "./VergodtEngine ";
 #endif
-                // i will fix this surely someday..
-                TinyProcessLib::Process process(engine + m_Project.GetProjectLocation() + m_Project.GetProjectFile(), "",
-                    [](const char* bytes, size_t n)
-                    {
-                        std::cout << "Game output: " << std::string(bytes, n);
-                    },
-                    [](const char *bytes, size_t n) {
-                    }
-                );
-
-                int exit_status = process.get_exit_status();
+                m_ConsoleLine = "";
+                subprocess_thread = std::thread(RunEngine, engine + m_Project.GetProjectLocation() + m_Project.GetProjectFile(), std::ref(pi));
+                engine_running = true;
             }
+            
+            {
+                std::lock_guard<std::mutex> lock(queue_mutex);
+                while (!output_queue.empty())
+                {
+                    auto now = std::chrono::system_clock::now();
+                    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+
+                    // Convert to local time
+                    std::tm* localTime = std::localtime(&currentTime);
+
+                    std::ostringstream oss;
+                    oss << std::put_time(localTime, "%H:%M:%S");
+
+                    m_ConsoleLine += "[" + oss.str() + "]" + output_queue.front();
+                    output_queue.pop(); 
+                }
+            }
+
+            if (engine_running && WaitForSingleObject(pi.hProcess, 0) == WAIT_OBJECT_0)
+            {
+                subprocess_thread.detach();
+                engine_running = false;
+            }
+
+            ImGui::Text("Output :");
+            ImGui::InputTextMultiline(" ", &m_ConsoleLine, { ImGui::GetWindowSize().x - 50, ImGui::GetWindowSize().y / 2 }, ImGuiInputTextFlags_ReadOnly);
+
             ImGui::End();
         }
 
