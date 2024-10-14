@@ -135,6 +135,7 @@ static void RunEngine(const std::string& Command, PROCESS_INFORMATION& Pi) {
 #else
 
 // Linux part
+#include <fcntl.h>
 
 static void setNonblocking(FILE* File) {
     int fd = fileno(File);
@@ -194,7 +195,7 @@ App::~App()
 void App::Init()
 {
     // Setup SDL
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD) == SDL_FALSE)
+    if (SDL_Init(SDL_INIT_VIDEO ) == false)
     {
         std::cout << "SDL_Init failed : ";
         throw std::runtime_error(SDL_GetError());
@@ -275,7 +276,9 @@ int App::Run() {
 
     bool engine_running = false;
 
+#if _WIN32
     PROCESS_INFORMATION pi;
+#endif
 
 #ifdef __EMSCRIPTEN__
     io.IniFilename = nullptr;
@@ -309,7 +312,7 @@ int App::Run() {
         ImGui::NewFrame();
 
         // Do stuff here
-        static bool sdw = true; ImGui::ShowDemoWindow(&sdw);
+        //static bool sdw = true; ImGui::ShowDemoWindow(&sdw);
 
         DockSpace();
 
@@ -342,13 +345,14 @@ int App::Run() {
             ImGui::Begin("Debug");
             if (ImGui::Button("Play") && !engine_running)
             {
+                m_ConsoleLine = "";
 #ifdef _WIN32
                 std::string engine = "VergodtEngine.exe ";
+                subprocess_thread = std::thread(RunEngine, engine + m_Project.GetProjectLocation() + m_Project.GetProjectFile(), std::ref(pi));
 #else
                 std::string engine = "./VergodtEngine ";
+                subprocess_thread = std::thread(RunEngine, engine + m_Project.GetProjectLocation() + m_Project.GetProjectFile());
 #endif
-                m_ConsoleLine = "";
-                subprocess_thread = std::thread(RunEngine, engine + m_Project.GetProjectLocation() + m_Project.GetProjectFile(), std::ref(pi));
                 engine_running = true;
             }
             
@@ -370,11 +374,18 @@ int App::Run() {
                 }
             }
 
+#if _WIN32
             if (engine_running && WaitForSingleObject(pi.hProcess, 0) == WAIT_OBJECT_0)
             {
                 subprocess_thread.detach();
                 engine_running = false;
             }
+#else
+            if (engine_running && subprocess_thread.joinable()) {
+                subprocess_thread.detach();
+                engine_running = false;
+            }
+#endif
 
             ImGui::Text("Output :");
             ImGui::InputTextMultiline(" ", &m_ConsoleLine, { ImGui::GetWindowSize().x - 50, ImGui::GetWindowSize().y / 2 }, ImGuiInputTextFlags_ReadOnly);

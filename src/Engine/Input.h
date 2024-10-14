@@ -48,7 +48,7 @@ public:
 
     Vector2 GetMousePos() { return m_Mousepos; }
 private:
-    const SDL_bool* m_KeyStates = nullptr;
+    const bool* m_KeyStates = nullptr;
     SDL_Keycode m_Key = 0;
     bool m_IsKeyUp = true;
     bool m_IsKeyDown = false;

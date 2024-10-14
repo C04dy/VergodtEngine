@@ -27,7 +27,7 @@ void Engine::EngineStart(int argc, char** argv)
 
     InputManager input; 
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS) == SDL_FALSE)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) == false)
     {
         std::cout << "SDL_Init failed";
         throw std::runtime_error(SDL_GetError());

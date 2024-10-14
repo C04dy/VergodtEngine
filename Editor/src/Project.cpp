@@ -9,6 +9,17 @@
 
 int Node::s_IDs = 0;
 
+
+#if _WIN32
+
+#define SLASHCHAR "\\"
+
+#else
+
+#define SLASHCHAR "/"
+
+#endif
+
 Node::Node(ImVec2 _Position, Type _NodeType)
 {
     Position = _Position;
@@ -440,7 +451,7 @@ bool Project::InitilizeProject()
         std::string project_location = CreateFileSaveDialog({ "VergodtEngine Project File" }, { "verproj" });
 
         std::ofstream out_file(project_location);
-        out_file << "GameName=(" + RemoveFromLine(GetLineBetweenAfterLast(project_location, "\\"), ".verproj") + ") ";
+        out_file << "GameName=(" + RemoveFromLine(GetLineBetweenAfterLast(project_location, SLASHCHAR), ".verproj") + ") ";
         out_file << "WindowWidth=(1280) WindowHeight=(720)";
         out_file.close();
         
@@ -460,15 +471,9 @@ bool Project::InitilizeProject()
 
 void Project::LoadProjectFile(const std::string& FilePath)
 {
-#ifdef _WIN32
-    std::string Slash = "\\";
-#else
-    std::string Slash = "/";
-#endif
-
-    m_ProjectLocation = GetLineBetweenTillLast(FilePath, Slash);
-    m_ProjectLocation += Slash;
-    m_ProjectFile = GetLineBetweenAfterLast(FilePath, Slash);
+    m_ProjectLocation = GetLineBetweenTillLast(FilePath, SLASHCHAR);
+    m_ProjectLocation += SLASHCHAR;
+    m_ProjectFile = GetLineBetweenAfterLast(FilePath, SLASHCHAR);
 
     std::string line;
     std::ifstream project_file(FilePath);

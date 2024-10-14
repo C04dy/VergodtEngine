@@ -13,6 +13,8 @@ if (WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive")
 endif(WIN32)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(BOX2D_SAMPLES OFF CACHE BOOL "" FORCE)
 set(BOX2D_UNIT_TESTS OFF CACHE BOOL "" FORCE)
 set(SDL_STATIC ON)
