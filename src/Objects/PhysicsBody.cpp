@@ -17,7 +17,7 @@ static float RadianToDegree(float Radian)
 	return Radian * (180.0 / b2_pi);
 }
 
-void PhysicsBody::InitPhysicsBody(std::vector<Node*>& Nodes, b2WorldId& PhysicsWorldID, b2BodyType BodyType, float Friction, float Density)
+void PhysicsBody::InitPhysicsBody(std::vector<Node*>& Nodes, b2WorldId& PhysicsWorldID, b2BodyType BodyType, std::vector<int>& Layer, float Friction, float Density)
 {
 	b2BodyDef body_def = b2DefaultBodyDef();
 	body_def.type = BodyType;
@@ -34,10 +34,6 @@ void PhysicsBody::InitPhysicsBody(std::vector<Node*>& Nodes, b2WorldId& PhysicsW
 			if (child_id == node->ID && node->NodeType == Node::Type::COLLIDER)
 				SetCollider((Collider*)node);
 	
-
-	//b2Filter f;
-	//f.maskBits = 
-	//m_Body->GetFixtureList()[0].SetFilterData();
 }
 
 void PhysicsBody::SetCollider(Collider* _Collider)
@@ -46,6 +42,8 @@ void PhysicsBody::SetCollider(Collider* _Collider)
 
 	shape_definition.density = m_Density;
 	shape_definition.friction = m_Friction;
+
+	shape_definition.filter.categoryBits = m_Layer | Layers::LAYER2; 
 
 	switch (_Collider->ColliderType)
 	{

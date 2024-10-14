@@ -85,9 +85,30 @@ void Scene::AddNodesToScene(const std::string& SceneFilePath)
                 }
 
                 float friction = std::stof(GetLineBetween(line, "[FRICTION=", "]"));
-                float density = std::stof(GetLineBetween(line, "[DENSITY=", "]"));
+                float density = std::stof(GetLineBetween(line, "[DENSITY=", "]"));	
 
-                ((PhysicsBody*)m_Nodes[m_Nodes.size() - 1])->InitPhysicsBody(m_Nodes, m_PhysicsWorldID, body_type, friction, density);
+
+								std::vector<int> layers;
+								
+								std::string which_layers = GetLineBetween(line, "[LAYERS=(", ")]");
+								
+								int layercount = HowMuchIsInsideString(which_layers, ',');
+								
+								if (layercount == 0)
+								{
+										layers.push_back(std::stoi(which_layers));
+								}
+								else
+								{
+										for (int i = 0; i < layercount; i++)
+										{
+												layers.push_back(std::stoi(GetLineBetween(which_layers, 0, ",")));
+												which_layers = which_layers.substr(which_layers.find_first_of(',') + 1, which_layers.size() - which_layers.find_first_of(','));
+										}
+								}
+
+
+                ((PhysicsBody*)m_Nodes[m_Nodes.size() - 1])->InitPhysicsBody(m_Nodes, m_PhysicsWorldID, body_type, layers, friction, density);
             }
             else if (current_node_type == "COLLIDER")
             {
