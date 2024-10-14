@@ -241,6 +241,17 @@ void App::Init()
     ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 21);
     ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, 14);
     ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, 13);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 1);
+    ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 1);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
+    ImGui::PushStyleVar(ImGuiStyleVar_TabBarBorderSize, 1);
+    ImGui::PushStyleVar(ImGuiStyleVar_TabBarOverlineSize, 0);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 7);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 7);
+    ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, 4);
+    ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, 8);
+
 
     ImGui_ImplSDL3_InitForSDLRenderer(m_Window, m_Renderer);
     ImGui_ImplSDLRenderer3_Init(m_Renderer);
@@ -252,10 +263,6 @@ void App::Init()
     
     m_Project.SetRenderer(m_Renderer);
 
-    //m_Project.LoadSceneFile("../Assets/FlappyBird/FlappyBird.vscene");
-    //m_Project.SaveSceneFile();
-
-    // Main loop
     m_Running = true;
 }
 
